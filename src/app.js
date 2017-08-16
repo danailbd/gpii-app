@@ -255,6 +255,9 @@ gpii.app.addCommunicationChannel = function () {
     });
 };
 
+/**
+ * Creates an Electron BrowserWindow which is to be used for settings management
+ */
 gpii.app.makeSettingsWindow = function () {
     var screenSize = electron.screen.getPrimaryDisplay().workAreaSize;
     // TODO Make window size relative to the screen size
@@ -282,6 +285,12 @@ gpii.app.makeSettingsWindow = function () {
     return settingsWindow;
 };
 
+/**
+ * Shows the passed Electron `BrowserWindow`
+ *
+ * @param keyedInUserToken {String} An user token.
+ * @param settingsWindow {Object} An Electron `BrowserWindow`.
+ */
 gpii.app.openSettings = function (keyedInUserToken, settingsWindow) {
     if (!keyedInUserToken || settingsWindow.isVisible()) {
         return;
