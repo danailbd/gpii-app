@@ -59,7 +59,7 @@ fluid.defaults("gpii.app", {
     },
     components: {
         menu: {
-            type: "gpii.app.menuInApp",
+            type: "gpii.app.menuInAppDev",
             createOnEvent: "onGPIIReady"
         },
         networkCheck: { // Network check component to meet GPII-2349
@@ -99,7 +99,8 @@ fluid.defaults("gpii.app", {
             args: ["{that}", "{that}.settingsWindow", "{that}.tray"]
         },
         "onCreate.addCommunicationChannel": {
-            listener: "{that}.addCommunicationChannel"
+            listener: "{that}.addCommunicationChannel",
+            args: ["{that}"]
         }
     },
     invokers: {
@@ -248,10 +249,14 @@ gpii.app.exit = function (that) {
     }
 };
 
-gpii.app.addCommunicationChannel = function () {
-    ipcMain.on("reply", function (event, data) {
-        // TODO Add more meaningfull handling
-        console.log("Message from browser window:", data);
+gpii.app.addCommunicationChannel = function (that) {
+    ipcMain.on("closeSettingsWindow", function () {
+        that.settingsWindow.hide();
+    });
+
+    ipcMain.on("keyOut", function () {
+        that.settingsWindow.hide();
+        that.keyOut(that.model.keyedInUserToken);
     });
 };
 
@@ -278,9 +283,9 @@ gpii.app.makeSettingsWindow = function () {
     });
     settingsWindow.loadURL(url);
 
-    settingsWindow.on("blur", function () {
-        settingsWindow.hide();
-    });
+    // settingsWindow.on("blur", function () {
+    //     settingsWindow.hide();
+    // });
 
     return settingsWindow;
 };
