@@ -2,6 +2,7 @@
 (function () {
     var fluid = window.fluid;
 
+    // TODO handle empty array (add expander)
     fluid.defaults("gpii.app.settings.widgets.dropDown", {
         gradeNames: "fluid.viewComponent",
         model: {

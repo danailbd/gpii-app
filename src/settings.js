@@ -29,10 +29,12 @@
                 "../icons/gear-cloud-white.png",
                 "../icons/gear-cloud-black.png"]
         });
+
+        that.updateAvailableSettings([{type: "gpii.app.settings.widgets.dropDown", values: ["a", "b"], title: "Setting one title", description: "Setting one description", icon: "../icons/gear-cloud-black.png"}, {type: "gpii.app.settings.widgets.dropDown", values: ["b"], title: "Setting two title", description: "Setting two description", icon: "../icons/gear-cloud-black.png"}]);
     };
 
     gpii.app.settings.hasPreferenceSets = function (preferenceSets) {
-        // TODO use in preferenceSetsDropDown
+        // TODO use in singleSettingVisualizer
         return preferenceSets && preferenceSets.names && preferenceSets.names.length > 0;
     };
 
@@ -40,92 +42,96 @@
         ipcRenderer.send("keyOut");
     };
 
-    fluid.defaults("gpii.app.settings.preferenceSetsDropDown", {
-        gradeNames: ["fluid.viewComponent"],
+    gpii.app.settings.closeSettingsWindow = function () {
+        ipcRenderer.send("closeSettingsWindow");
+    };
+
+    fluid.registerNamespace("gpii.app.settings.singleSettingVisualizer");
+
+    gpii.app.settings.singleSettingVisualizer.getWidgetOptions = function (widgetType, model) {
+        if (widgetType === "gpii.app.settings.widgets.dropDown") {
+            return {
+                model: {
+                    optionNames: model.values,
+                    optionList: model.values
+                }
+            };
+        }
+
+
+        // should not reach here
+        return "";
+    };
+
+    // TODO name singleSettingVisualizer / setting
+    fluid.defaults("gpii.app.settings.singleSettingVisualizer", {
+        gradeNames: ["fluid.modelComponent"],
         model: {
-            options: {names: [], icons: []},
-            activeOption: null,
-            icon: null
+            values: [],
+            icon: null,
+            // TODO add support
+            title: null,
+            description: null,
+            // XXX probably not needed 
+            selection: null // can be string/array/boolean
         },
         events: {
-            onTemplateLoaded: null,
+            onContainerCreated: null,
             onTemplateRendered: null
         },
+        widgetType: "@expand:gpii.app.settings.singleSettingVisualizer.getWidgetType({that}.model.type)",
         components: {
-            loadResource: {
-                type: "fluid.resourceLoader",
+            renderRowTemplate: {
+                type:  "fluid.viewComponent",
+                createOnEvent: "onContainerCreated",
+                container: "{singleSettingVisualizer}.options.rowContainer",
                 options: {
+                    gradeNames: "fluid.resourceLoader",
                     resources: {
-                        template: "./preferenceSetsDropDown.html"
+                        // TODO rename template
+                        template: "./settingRow.html"
                     },
                     listeners: {
-                        "onResourcesLoaded.createNext": "{preferenceSetsDropDown}.events.onTemplateLoaded"
-                    }
-                }
-            },
-            renderTemplate: {
-                type: "fluid.viewComponent",
-                container: "{preferenceSetsDropDown}.container",
-                createOnEvent: "onTemplateLoaded",
-                options: {
-                    listeners: {
-                        "onCreate.append": {
+                        "onResourcesLoaded.append": {
                             "this": "{that}.container",
                             method: "append",
                             args: "{resourceLoader}.resources.template.resourceText"
                         },
-                        "onCreate.createNext": "{preferenceSetsDropDown}.events.onTemplateRendered"
+                        "onResourcesLoaded.render": "{singleSettingVisualizer}.events.onTemplateRendered"
                     }
                 }
             },
-            dropDown: {
-                type: "fluid.rendererComponent",
-                container: "{preferenceSetsDropDown}.container",
+            setting: {
+                type: "fluid.viewComponent",
+                container: "{singleSettingVisualizer}.options.rowContainer",
                 createOnEvent: "onTemplateRendered",
                 options: {
-                    model: {
-                        options: "{preferenceSetsDropDown}.model.options",
-                        activeOption: null,
-                        icon: null
-                    },
                     selectors: {
+                        settingContainer: ".flc-setting",
                         icon: ".flc-icon",
-                        options: ".flc-options"
+                        // TODO
+                        //descriptions: ".flc-description",
                     },
-                    protoTree: {
-                        options: {
-                            selection: "${activeOption}",
-                            optionlist: "${options.names}",
-                            optionnames: "${options.names}"
-                        },
-                        icon: {
-                            decorators: [{
-                                type: "attrs",
-                                attributes: {src: "{that}.model.icon"}
-                            }]
+                    components: {
+                        // TODO altered from the outside
+                        widget: {
+                            type: "{singleSettingVisualizer}.options.widgetType",
+                            container: "{setting}.dom.settingContainer",
+                            options: "@expand:gpii.app.settings.singleSettingVisualizer.getWidgetOptions({singleSettingVisualizer}.options.widgetType, {singleSettingVisualizer}.model)"
                         }
                     },
-                    modelListeners: {
-                        "icon": {
-                            func: "{that}.refreshView"
-                        },
-                        "options": {
-                            func: "{that}.refreshView"
-                        }
-                    },
-                    modelRelay: {
-                        target: "icon",
-                        singleTransform: {
-                            type: "fluid.transforms.free",
-                            // TODO
-                            func: "gpii.app.settings.getIcon",
-                            args: ["{that}.model.options", "{that}.model.activeOption"]
+                    listeners: {
+                        "onCreate.setIcon": {
+                            "this": "{that}.dom.icon",
+                            method: "attr",
+                            args: ["src", "{singleSettingVisualizer}.model.icon"]
                         }
                     }
                 }
             }
         }
     });
+
 
     fluid.defaults("gpii.app.settings.header", {
         gradeNames: ["fluid.viewComponent"],
@@ -140,51 +146,104 @@
         },
         components: {
             preferenceSets: {
-                type: "gpii.app.settings.preferenceSetsDropDown",
+                type: "gpii.app.settings.singleSettingVisualizer",
                 container: "{header}.dom.preferenceSet",
                 options: {
                     model: {
-                        options: "{header}.model.preferenceSets"
+                        option: "{header}.model.preferenceSets",
+                        //TODO TEST ONLY - include in the option
+                        icon: "{header}.model.icon"
                     }
                 }
             }
         },
-        protoTree: {
-            closeBtn: {
-                decorators: [{
-                    type: "$",
-                    func: "on",
-                    args: ["click", function () {
-                        ipcRenderer.send("closeSettingsWindow");
-                    }]
-                }]
+        listeners: {
+            "onCreate.initCloseBtn": {
+                "this": "{that}.dom.closeBtn",
+                method: "on",
+                args: ["click", "{mainWindow}.close"]
             }
-        },
-        renderOnInit: true
+        }
     });
 
-    fluid.defaults("gpii.app.settings.settingsList", {
+    // TODO make pretier --------------------------
+
+    fluid.registerNamespace("gpii.app.settings.settingsVisualizer");
+
+    gpii.app.settings.settingsVisualizer.getRowContainerClass = function (markups, containerIndex) {
+        return "." + fluid.stringTemplate(markups.containerClassPrefix, { id: containerIndex });
+    };
+
+    gpii.app.settings.settingsVisualizer.getRowContainer = function (markups, containerIndex) {
+        // Remove the "#" prefix
+        var containerClass = gpii.app.settings.settingsVisualizer.getRowContainerClass(markups, containerIndex).substring(1);
+        return fluid.stringTemplate(markups.container, { containerClass: containerClass });
+    };
+
+    gpii.app.settings.singleSettingVisualizer.getWidgetType = function (type) {
+        // TODO improve - map api's type to a widget
+        return type;
+
+        throw "Widget " + type + " is not supported!";
+    };
+
+    fluid.defaults("gpii.app.settings.settingsVisualizer", {
         gradeNames: "fluid.viewComponent",
         model: {
-            preferenceSets: "{mainWindow}.model.preferenceSets"
+            settings: null,
+            // TODO include in options
+            icon: null
         },
-        components: {
-            preferenceSets: {
-                type: "gpii.app.settings.preferenceSetsDropDown",
-                container: "{settingsList}.container",
+        markups: {
+            container: "<div class=\"%containerClass\"></div>",
+            containerClassPrefix: "flc-settingListRow-%id"
+        },
+        dynamicComponents: {
+            settingVisulizer: {
+                sources: "{settingsVisualizer}.model.settings",
+                type: "gpii.app.settings.singleSettingVisualizer",
                 options: {
+                    containerIndex: "{sourcePath}",
+                    source: "{source}",
                     model: {
-                        options: "{settingsList}.model.preferenceSets"
+                        type: "{that}.options.source.type",
+                        values: "{that}.options.source.values",
+                        icon: "{that}.options.source.icon",
+                        title: "{that}.options.source.title",
+                        description: "{that}.options.source.description"
+                    },
+                    rowContainer: "@expand:gpii.app.settings.settingsVisualizer.getRowContainerClass({settingsVisualizer}.options.markups, {that}.options.containerIndex)",
+                    listeners: {
+                        "onCreate.createContainer": {
+                            "this": "{settingsVisualizer}.container",
+                            method: "append",
+                            // TODO use sourcePath
+                            args: "@expand:gpii.app.settings.settingsVisualizer.getRowContainer({settingsVisualizer}.options.markups, {that}.options.containerIndex)"
+                        },
+                        "onCreate.onContainerCreated": {
+                            funcName: "{that}.events.onContainerCreated.fire",
+                            //TODO send container name?
+                            priority: "after:createContainer"
+                        }
                     }
                 }
             }
         }
     });
 
+
+    /**
+     * Responsible for drawing the settings list
+     *
+     * TODO support redrawing of settings
+     * currently only single update of available setting is supported
+     */
     fluid.defaults("gpii.app.settings.mainWindow", {
         gradeNames: ["fluid.viewComponent"],
         model: {
-            preferenceSets: null
+            preferenceSets: null,
+            // TODO remove when dynamic component generation is postponed
+            availableSettings: []
         },
         selectors: {
             keyOutBtn: ".flc-keyOutBtn"
@@ -193,11 +252,21 @@
             header: {
                 type: "gpii.app.settings.header",
                 container: "#flc-settingsHeader"
+                // TODO send options
             },
-            settingsList: {
-                type: "gpii.app.settings.settingsList",
-                container: "#flc-settingsList"
+            settingsVisualizer: {
+                type: "gpii.app.settings.settingsVisualizer",
+                container: "#flc-settingsList",
+                createOnEvent: "onAvailableSettngsReceived",
+                options: {
+                    model: {
+                        settings: "{mainWindow}.model.availableSettings"
+                    }
+                }
             }
+        },
+        modelListeners: {
+            availableSettings: "{that}.events.onAvailableSettngsReceived"
         },
         listeners: {
             "onCreate.addCommunicationChannel": {
@@ -215,15 +284,26 @@
                 changePath: "preferenceSets",
                 value: "{arguments}.0"
             },
+            "updateAvailableSettings": {
+                changePath: "availableSettings",
+                value: "{arguments}.0"
+            },
+            "close": "gpii.app.settings.closeSettingsWindow()",
             "keyOut": {
                 funcName: "gpii.app.settings.keyOut"
             }
+        },
+        events: {
+            onAvailableSettngsReceived: null
         }
+
     });
 
     $(function () {
         var main = gpii.app.settings.mainWindow("#flc-body");
+//        var x = gpii.app.settings.settingsVisualizer("#flc-settingsVisualizer");
+        //console.log(x);
         // XXX Debuging
-        console.log(main.header);
+        console.log(main);
     });
 })();
