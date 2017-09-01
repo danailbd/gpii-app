@@ -69,8 +69,8 @@
         model: {
             values: [],
             icon: null,
-            // TODO add support
             title: null,
+            // TODO add as tooltip?
             description: null,
             // XXX probably not needed 
             selection: null // can be string/array/boolean
@@ -107,16 +107,18 @@
                 createOnEvent: "onTemplateRendered",
                 options: {
                     selectors: {
-                        settingContainer: ".flc-setting",
+                        //TODO set to current .flc-setting
                         icon: ".flc-icon",
                         // TODO
                         //descriptions: ".flc-description",
+                        title: ".flc-title",
+                        widget: ".flc-widget"
                     },
                     components: {
                         // TODO altered from the outside
                         widget: {
                             type: "{singleSettingVisualizer}.options.widgetType",
-                            container: "{setting}.dom.settingContainer",
+                            container: "{setting}.dom.widget",
                             options: "@expand:gpii.app.settings.singleSettingVisualizer.getWidgetOptions({singleSettingVisualizer}.options.widgetType, {singleSettingVisualizer}.model)"
                         }
                     },
@@ -125,6 +127,11 @@
                             "this": "{that}.dom.icon",
                             method: "attr",
                             args: ["src", "{singleSettingVisualizer}.model.icon"]
+                        },
+                        "onCreate.setTitle": {
+                            "this": "{that}.dom.title",
+                            method: "append",
+                            args: "{singleSettingVisualizer}.model.title"
                         }
                     }
                 }
