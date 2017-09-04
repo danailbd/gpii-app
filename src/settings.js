@@ -30,12 +30,35 @@
                 "../icons/gear-cloud-black.png"]
         });
 
-        that.updateAvailableSettings([{type: "string", values: ["a", "b"], title: "Setting one title", description: "Setting one description", icon: "../icons/gear-cloud-black.png"}, {type: "string", values: ["b"], title: "Setting two title", description: "Setting two description", icon: "../icons/gear-cloud-black.png"}]);
+        that.updateAvailableSettings([{
+            path: "settingOnePath",
+            type: "string",
+            values: ["a", "b", "c", "d"],
+            title: "Setting one title",
+            description: "Setting one description",
+            icon: "../icons/gear-cloud-black.png",
+            value: "b"
+        }, {
+            path: "settingTwoPath",
+            type: "string",
+            values: ["b", "c", "d", "e"],
+            title: "Setting two title",
+            description: "Setting two description",
+            icon: "../icons/gear-cloud-black.png",
+            value: "c"
+        }]);
     };
 
     gpii.app.settings.hasPreferenceSets = function (preferenceSets) {
         // TODO use in singleSettingVisualizer
         return preferenceSets && preferenceSets.names && preferenceSets.names.length > 0;
+    };
+
+    gpii.app.settings.updateSetting = function (path, value) {
+        ipcRenderer.send("updateSetting", {
+            path: path,
+            value: value
+        });
     };
 
     gpii.app.settings.keyOut = function () {
@@ -53,11 +76,11 @@
             return {
                 model: {
                     optionNames: model.values,
-                    optionList: model.values
+                    optionList: model.values,
+                    selection: "{singleSettingVisualizer}.model.value"
                 }
             };
         }
-
 
         // should not reach here
         return "";
@@ -72,8 +95,8 @@
             title: null,
             // TODO add as tooltip?
             description: null,
-            // XXX probably not needed 
-            selection: null // can be string/array/boolean
+            // XXX probably not needed
+            value: null // can be string/array/boolean
         },
         events: {
             onContainerCreated: null,
@@ -186,7 +209,6 @@
         return fluid.stringTemplate(markups.container, { containerClass: containerClass });
     };
 
-    
     /**
      * Returns the widget grade matching the given GPII setting scheme type.
      *
@@ -208,15 +230,13 @@
             console.log("Widget " + type + " is not supported.");
         }
 
-        console.log("the grade: ", widgetGrade);
-
         return widgetPrefix + "." + widgetGrade;
     };
 
     fluid.defaults("gpii.app.settings.settingsVisualizer", {
         gradeNames: "fluid.viewComponent",
         model: {
-            settings: null,
+            settings: null
         },
         // TODO comment
         widgets: {
@@ -240,12 +260,13 @@
                     containerIndex: "{sourcePath}",
                     source: "{source}",
                     widgetType: "@expand:gpii.app.settings.singleSettingVisualizer.getWidgetGrade({settingsVisualizer}, {that}.model.type)",
-                    model: {
-                        type: "{that}.options.source.type",
-                        values: "{that}.options.source.values",
-                        icon: "{that}.options.source.icon",
-                        title: "{that}.options.source.title",
-                        description: "{that}.options.source.description"
+                    model: "{that}.options.source",
+                    modelListeners: {
+                        value: {
+                            funcName: "gpii.app.settings.updateSetting",
+                            args: ["{that}.model.path", "{change}.value"],
+                            excludeSource: "init"
+                        }
                     },
                     rowContainer: "@expand:gpii.app.settings.settingsVisualizer.getRowContainerClass({settingsVisualizer}.options.markups, {that}.options.containerIndex)",
                     listeners: {

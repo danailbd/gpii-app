@@ -38,11 +38,16 @@
                         // from the injested html
                         options: ".flc-dropDown-options"
                     },
+                    model: {
+                        optionnames: "{dropDown}.model.optionNames",
+                        optionlist: "{dropDown}.model.optionList",
+                        selection: "{dropDown}.model.selection"
+                    },
                     protoTree: {
                         options: {
-                            optionnames: "${{dropDown}.model.optionNames}",
-                            optionlist: "${{dropDown}.model.optionList}",
-                            selection: "${{dropDown}.model.selection}"
+                            optionnames: "${optionnames}",
+                            optionlist: "${optionlist}",
+                            selection: "${selection}"
                         }
                     },
                     modelListeners: {
@@ -58,4 +63,4 @@
             onTemplateRendered: null
         }
     });
-})()
+})();

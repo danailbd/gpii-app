@@ -258,6 +258,14 @@ gpii.app.addCommunicationChannel = function (that) {
         that.settingsWindow.hide();
         that.keyOut(that.model.keyedInUserToken);
     });
+
+    ipcMain.on("updateSetting", function (event, arg) {
+        var message = fluid.stringTemplate("Updating setting with path \"%path\" to %value", {
+            path: arg.path,
+            value: arg.value
+        });
+        console.log(message);
+    });
 };
 
 /**
