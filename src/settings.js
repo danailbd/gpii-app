@@ -30,7 +30,7 @@
                 "../icons/gear-cloud-black.png"]
         });
 
-        that.updateAvailableSettings([{type: "gpii.app.settings.widgets.dropDown", values: ["a", "b"], title: "Setting one title", description: "Setting one description", icon: "../icons/gear-cloud-black.png"}, {type: "gpii.app.settings.widgets.dropDown", values: ["b"], title: "Setting two title", description: "Setting two description", icon: "../icons/gear-cloud-black.png"}]);
+        that.updateAvailableSettings([{type: "string", values: ["a", "b"], title: "Setting one title", description: "Setting one description", icon: "../icons/gear-cloud-black.png"}, {type: "string", values: ["b"], title: "Setting two title", description: "Setting two description", icon: "../icons/gear-cloud-black.png"}]);
     };
 
     gpii.app.settings.hasPreferenceSets = function (preferenceSets) {
@@ -79,7 +79,6 @@
             onContainerCreated: null,
             onTemplateRendered: null
         },
-        widgetType: "@expand:gpii.app.settings.singleSettingVisualizer.getWidgetType({that}.model.type)",
         components: {
             renderRowTemplate: {
                 type:  "fluid.viewComponent",
@@ -187,19 +186,47 @@
         return fluid.stringTemplate(markups.container, { containerClass: containerClass });
     };
 
-    gpii.app.settings.singleSettingVisualizer.getWidgetType = function (type) {
-        // TODO improve - map api's type to a widget
-        return type;
+    
+    /**
+     * Returns the widget grade matching the given GPII setting scheme type.
+     *
+     * @param that {Object} A fluid component containing `widgets` option, e.g. `settingsVisualizer`
+     * @param type {String} GPII setting scheme type
+     * @returns {String} The widget to be used
+     */
+    gpii.app.settings.singleSettingVisualizer.getWidgetGrade = function (that, type) {
+        var widgetPrefix = that.options.widgets.gradePrefix,
+            widgetGrade,
+            widgetGradesToTypes = that.options.widgets.typesToGrades;
 
-        throw "Widget " + type + " is not supported!";
+        if (!widgetGradesToTypes) {
+            console.log("`widgetGradesToTypes` missing - Widget grades to types not supplied.");
+        }
+
+        widgetGrade = widgetGradesToTypes[type];
+        if (!widgetGrade) {
+            console.log("Widget " + type + " is not supported.");
+        }
+
+        console.log("the grade: ", widgetGrade);
+
+        return widgetPrefix + "." + widgetGrade;
     };
 
     fluid.defaults("gpii.app.settings.settingsVisualizer", {
         gradeNames: "fluid.viewComponent",
         model: {
             settings: null,
-            // TODO include in options
-            icon: null
+        },
+        // TODO comment
+        widgets: {
+            typesToGrades: {
+                array: "",
+                boolean: "",
+                string: "dropDown",
+                number: ""
+            },
+            gradePrefix: "gpii.app.settings.widgets"
         },
         markups: {
             container: "<div class=\"%containerClass\"></div>",
@@ -212,6 +239,7 @@
                 options: {
                     containerIndex: "{sourcePath}",
                     source: "{source}",
+                    widgetType: "@expand:gpii.app.settings.singleSettingVisualizer.getWidgetGrade({settingsVisualizer}, {that}.model.type)",
                     model: {
                         type: "{that}.options.source.type",
                         values: "{that}.options.source.values",
