@@ -50,7 +50,7 @@
     };
 
     gpii.app.settings.hasPreferenceSets = function (preferenceSets) {
-        // TODO use in singleSettingVisualizer
+        // TODO use in settingRow
         return preferenceSets && preferenceSets.names && preferenceSets.names.length > 0;
     };
 
@@ -69,15 +69,15 @@
         ipcRenderer.send("closeSettingsWindow");
     };
 
-    fluid.registerNamespace("gpii.app.settings.singleSettingVisualizer");
+    fluid.registerNamespace("gpii.app.settings.settingRow");
 
-    gpii.app.settings.singleSettingVisualizer.getWidgetOptions = function (widgetType, model) {
-        if (widgetType === "gpii.app.settings.widgets.dropDown") {
+    gpii.app.settings.settingRow.getWidgetOptions = function (widgetGrade, model) {
+        if (widgetGrade === "gpii.app.settings.widgets.dropDown") {
             return {
                 model: {
                     optionNames: model.values,
                     optionList: model.values,
-                    selection: "{singleSettingVisualizer}.model.value"
+                    selection: "{settingRow}.model.value"
                 }
             };
         }
@@ -86,9 +86,9 @@
         return "";
     };
 
-    // TODO name singleSettingVisualizer / setting
-    fluid.defaults("gpii.app.settings.singleSettingVisualizer", {
+    fluid.defaults("gpii.app.settings.settingRow", {
         gradeNames: ["fluid.modelComponent"],
+        template: "./settingRow.html",
         model: {
             values: [],
             icon: null,
@@ -100,33 +100,56 @@
         },
         events: {
             onContainerCreated: null,
-            onTemplateRendered: null
+            onRowTemplateRendered: null,
+            onWidgetTemplateRendered: null
         },
         components: {
+            // TODO pass row template
             renderRowTemplate: {
-                type:  "fluid.viewComponent",
+                //TODO do we need viewComponent
+                type: "fluid.viewComponent",
+                container: "{settingRow}.options.rowContainer",
                 createOnEvent: "onContainerCreated",
-                container: "{singleSettingVisualizer}.options.rowContainer",
                 options: {
-                    gradeNames: "fluid.resourceLoader",
-                    resources: {
-                        // TODO rename template
-                        template: "./settingRow.html"
+                    listeners: {
+                        "onCreate.renderRowTemplate" : {
+                            this: "{that}.container",
+                            method: "append",
+                            args: "{settingRow}.options.markups.row"
+                        },
+                        "onCreate.onRowTemplateRendered" : {
+                            func: "{settingRow}.events.onRowTemplateRendered.fire",
+                            priority: "after:renderRowTemplate"
+                        }
+                    }
+                }
+            },
+            // Add widget template under the suplied widget container
+            renderWidgetTemplate: {
+                type: "fluid.viewComponent",
+                container: "{settingRow}.options.rowContainer",
+                createOnEvent: "onRowTemplateRendered",
+                options: {
+                    selectors: {
+                        widget: ".flc-widget"
                     },
                     listeners: {
-                        "onResourcesLoaded.append": {
-                            "this": "{that}.container",
+                        "onCreate.renderWidgetTemplate": {
+                            this: "{that}.dom.widget",
                             method: "append",
-                            args: "{resourceLoader}.resources.template.resourceText"
+                            args: "{settingRow}.options.markups.widget"
                         },
-                        "onResourcesLoaded.render": "{singleSettingVisualizer}.events.onTemplateRendered"
+                        "onCreate.onWidgetTemplateRendered": {
+                            func: "{settingRow}.events.onWidgetTemplateRendered.fire",
+                            priority: "after:renderWidgetTemplate"
+                        }
                     }
                 }
             },
             setting: {
                 type: "fluid.viewComponent",
-                container: "{singleSettingVisualizer}.options.rowContainer",
-                createOnEvent: "onTemplateRendered",
+                container: "{settingRow}.options.rowContainer",
+                createOnEvent: "onWidgetTemplateRendered",
                 options: {
                     selectors: {
                         //TODO set to current .flc-setting
@@ -139,21 +162,21 @@
                     components: {
                         // TODO altered from the outside
                         widget: {
-                            type: "{singleSettingVisualizer}.options.widgetType",
+                            type: "{settingRow}.options.widgetGrade",
                             container: "{setting}.dom.widget",
-                            options: "@expand:gpii.app.settings.singleSettingVisualizer.getWidgetOptions({singleSettingVisualizer}.options.widgetType, {singleSettingVisualizer}.model)"
+                            options: "@expand:gpii.app.settings.settingRow.getWidgetOptions({settingRow}.options.widgetGrade, {settingRow}.model)"
                         }
                     },
                     listeners: {
                         "onCreate.setIcon": {
                             "this": "{that}.dom.icon",
                             method: "attr",
-                            args: ["src", "{singleSettingVisualizer}.model.icon"]
+                            args: ["src", "{settingRow}.model.icon"]
                         },
                         "onCreate.setTitle": {
                             "this": "{that}.dom.title",
                             method: "append",
-                            args: "{singleSettingVisualizer}.model.title"
+                            args: "{settingRow}.model.title"
                         }
                     }
                 }
@@ -175,7 +198,7 @@
         },
         components: {
             preferenceSets: {
-                type: "gpii.app.settings.singleSettingVisualizer",
+                type: "gpii.app.settings.settingRow",
                 container: "{header}.dom.preferenceSet",
                 options: {
                     model: {
@@ -209,6 +232,11 @@
         return fluid.stringTemplate(markups.container, { containerClass: containerClass });
     };
 
+    gpii.app.settings.settingsVisualizer.getWidgetMarkup = function (resources, widgetGrade) {
+        //TODO improve; use markup if any
+        return resources[widgetGrade] && resources[widgetGrade].resourceText;
+    };
+
     /**
      * Returns the widget grade matching the given GPII setting scheme type.
      *
@@ -216,7 +244,7 @@
      * @param type {String} GPII setting scheme type
      * @returns {String} The widget to be used
      */
-    gpii.app.settings.singleSettingVisualizer.getWidgetGrade = function (that, type) {
+    gpii.app.settings.settingsVisualizer.getWidgetGrade = function (that, type) {
         var widgetPrefix = that.options.widgets.gradePrefix,
             widgetGrade,
             widgetGradesToTypes = that.options.widgets.typesToGrades;
@@ -233,14 +261,41 @@
         return widgetPrefix + "." + widgetGrade;
     };
 
+    // TODO simplify - probably do this sort of mapping somewhere up the chain?
+    gpii.app.settings.settingsVisualizer.getRequiredResources = function (settingsVisualizer, settings) {
+        function appendWidgetResources (resources, settings, settingsVisualizer) {
+            var widgetGrades = settings
+                .map(function (setting) { return setting.type; })
+                .filter(function uniq (setting, idx, settings) { return settings.indexOf(setting) === idx; })
+                .map(
+                    // receives the GPII setting type
+                    gpii.app.settings.settingsVisualizer.getWidgetGrade.bind(null, settingsVisualizer)
+                );
+
+            widgetGrades.forEach(function (widgetGrade) {
+                var template = fluid.defaults(widgetGrade).template;
+                resources[widgetGrade] = template;
+            });
+        }
+
+        // TODO remove this ugliness
+        var resources = {
+            rowTemplate:  fluid.defaults("gpii.app.settings.settingRow").template
+        };
+
+        appendWidgetResources(resources, settings, settingsVisualizer);
+
+        return resources;
+    };
+
     fluid.defaults("gpii.app.settings.settingsVisualizer", {
         gradeNames: "fluid.viewComponent",
         model: {
             settings: null
         },
-        // TODO comment
         widgets: {
-            typesToGrades: {
+            // Represents a map for GPII settings schema type to PCP widget grade to be used
+           typesToGrades: {
                 array: "",
                 boolean: "",
                 string: "dropDown",
@@ -252,38 +307,71 @@
             container: "<div class=\"%containerClass\"></div>",
             containerClassPrefix: "flc-settingListRow-%id"
         },
-        dynamicComponents: {
-            settingVisulizer: {
-                sources: "{settingsVisualizer}.model.settings",
-                type: "gpii.app.settings.singleSettingVisualizer",
+        components: {
+            resourcesLoader: {
+                type: "fluid.resourceLoader",
                 options: {
-                    containerIndex: "{sourcePath}",
-                    source: "{source}",
-                    widgetType: "@expand:gpii.app.settings.singleSettingVisualizer.getWidgetGrade({settingsVisualizer}, {that}.model.type)",
-                    model: "{that}.options.source",
-                    modelListeners: {
-                        value: {
-                            funcName: "gpii.app.settings.updateSetting",
-                            args: ["{that}.model.path", "{change}.value"],
-                            excludeSource: "init"
-                        }
-                    },
-                    rowContainer: "@expand:gpii.app.settings.settingsVisualizer.getRowContainerClass({settingsVisualizer}.options.markups, {that}.options.containerIndex)",
+                    resources: "@expand:gpii.app.settings.settingsVisualizer.getRequiredResources({settingsVisualizer}, {settingsVisualizer}.model.settings)",
                     listeners: {
-                        "onCreate.createContainer": {
-                            "this": "{settingsVisualizer}.container",
-                            method: "append",
-                            // TODO use sourcePath
-                            args: "@expand:gpii.app.settings.settingsVisualizer.getRowContainer({settingsVisualizer}.options.markups, {that}.options.containerIndex)"
-                        },
-                        "onCreate.onContainerCreated": {
-                            funcName: "{that}.events.onContainerCreated.fire",
-                            //TODO send container name?
-                            priority: "after:createContainer"
+                        onResourcesLoaded: {
+                            func: "{settingsVisualizer}.events.onTemplatesLoaded.fire"
+                        }
+                    }
+                }
+            },
+            // TODO comment
+            settingsLoader: {
+                type: "fluid.component",
+                createOnEvent: "onTemplatesLoaded",
+                //TODO Is this the best approach - component wrapper only to postpone initialization of dynamic components?
+                options: {
+                    dynamicComponents: {
+                        settingVisulizer: {
+                            sources: "{settingsVisualizer}.model.settings",
+                            type: "gpii.app.settings.settingRow",
+                            options: {
+                                containerIndex: "{sourcePath}",
+                                source: "{source}",
+                                widgetGrade: "@expand:gpii.app.settings.settingsVisualizer.getWidgetGrade({settingsVisualizer}, {that}.model.type)",
+                                markups: {
+                                    row: "{resourcesLoader}.resources.rowTemplate.resourceText",
+                                    widget: {
+                                        expander: {
+                                            funcName: "gpii.app.settings.settingsVisualizer.getWidgetMarkup",
+                                            args: ["{resourcesLoader}.resources", "{that}.options.widgetGrade"]
+                                        }
+                                    }
+                                },
+                                model: "{that}.options.source",
+                                modelListeners: {
+                                    value: {
+                                        funcName: "gpii.app.settings.updateSetting",
+                                        args: ["{that}.model.path", "{change}.value"],
+                                        excludeSource: "init"
+                                    }
+                                },
+                                // TODO return container instead of string?
+                                rowContainer: "@expand:gpii.app.settings.settingsVisualizer.getRowContainerClass({settingsVisualizer}.options.markups, {that}.options.containerIndex)",
+                                listeners: {
+                                    "onCreate.createContainer": {
+                                        "this": "{settingsVisualizer}.container",
+                                        method: "append",
+                                        args: "@expand:gpii.app.settings.settingsVisualizer.getRowContainer({settingsVisualizer}.options.markups, {that}.options.containerIndex)"
+                                    },
+                                    "onCreate.onContainerCreated": {
+                                        funcName: "{that}.events.onContainerCreated.fire",
+                                        priority: "after:createContainer"
+                                    }
+                                }
+                            }
                         }
                     }
                 }
             }
+        },
+
+        events: {
+            onTemplatesLoaded: null
         }
     });
 
@@ -338,7 +426,7 @@
         },
         listeners: {
             "onCreate.addCommunicationChannel": {
-                listener: "gpii.app.settings.addCommunicationChannel",
+                funcName: "gpii.app.settings.addCommunicationChannel",
                 args: ["{that}"]
             }
         },
@@ -362,7 +450,7 @@
 
     $(function () {
         var main = gpii.app.settings.mainWindow("#flc-body");
-//        var x = gpii.app.settings.settingsVisualizer("#flc-settingsVisualizer");
+        //        var x = gpii.app.settings.settingsVisualizer("#flc-settingsVisualizer");
         //console.log(x);
         // XXX Debuging
         console.log(main);
