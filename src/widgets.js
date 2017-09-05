@@ -68,7 +68,7 @@
         model: {
             enabled: false
         },
-        template: "./radioToggle.html",
+        template: "radioToggle.html",
         attrs: {
             // it is mandatory to specify "name" here!
         },
@@ -117,5 +117,15 @@
                 args: ["{that}"]
             }
         }
+    });
+
+    fluid.defaults("gpii.app.settings.widgets.textfield", {
+        gradeNames: ["fluid.textfield"],
+        template: "textfield.html"
+    });
+
+    fluid.defaults("gpii.app.settings.widgets.switch", {
+        gradeNames: ["fluid.switchUI"],
+        template: "switch.html"
     });
 })();

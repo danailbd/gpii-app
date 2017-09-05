@@ -46,6 +46,27 @@
             description: "Setting two description",
             icon: "../icons/gear-cloud-black.png",
             value: "c"
+        }, {
+            path: "textfieldPath",
+            type: "text",
+            title: "Text input",
+            description: "Text input description",
+            icon: "../icons/gear-cloud-white.png",
+            value: ""
+        }, {
+            path: "invertColorsPath",
+            type: "boolean",
+            title: "Invert colors",
+            description: "Invert colors description",
+            icon: "../icons/gear-cloud-black.png",
+            value: true
+        }, {
+            path: "highContrastPath",
+            type: "radio",
+            title: "High contrast",
+            description: "High contrast description",
+            icon: "../icons/gear-cloud-white.png",
+            value: false
         }]);
     };
 
@@ -78,6 +99,34 @@
                     optionNames: model.values,
                     optionList: model.values,
                     selection: "{settingRow}.model.value"
+                }
+            };
+        }
+
+        if (widgetGrade === "gpii.app.settings.widgets.textfield") {
+            return {
+                model: {
+                    value: "{settingRow}.model.value"
+                }
+            };
+        }
+
+        if (widgetGrade === "gpii.app.settings.widgets.switch") {
+            return {
+                model: {
+                    enabled: "{settingRow}.model.value"
+                }
+            };
+        }
+
+        if (widgetGrade === "gpii.app.settings.widgets.radioToggle") {
+            console.log("name/path", model.path);
+            return {
+                model: {
+                    enabled: "{settingRow}.model.value"
+                },
+                attrs: {
+                    name: model.path
                 }
             };
         }
@@ -295,11 +344,13 @@
         },
         widgets: {
             // Represents a map for GPII settings schema type to PCP widget grade to be used
-           typesToGrades: {
+            typesToGrades: {
                 array: "",
-                boolean: "",
+                boolean: "switch",
                 string: "dropDown",
-                number: ""
+                number: "",
+                text: "textfield",
+                radio: "radioToggle"
             },
             gradePrefix: "gpii.app.settings.widgets"
         },
