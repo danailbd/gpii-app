@@ -42,13 +42,7 @@ hr {
     padding: 5px;
     border: 2px solid rgb(54, 191, 220);
 
-    vertical-align: text-bottom;
+    line-height: 70px;
     user-select: none;
     cursor: pointer;
-}
-
-.flc-keyOutBtn-text {
-    position: absolute;
-    bottom: 5px;
-    left: 5px;
 }

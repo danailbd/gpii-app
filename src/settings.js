@@ -302,21 +302,33 @@
             availableSettings: []
         },
         selectors: {
+            header: "#flc-settingsHeader",
+            settingsList: "#flc-settingsList",
             keyOutBtn: ".flc-keyOutBtn"
         },
         components: {
             header: {
                 type: "gpii.app.settings.header",
-                container: "#flc-settingsHeader"
+                container: "{that}.dom.header"
                 // TODO send options
             },
             settingsVisualizer: {
                 type: "gpii.app.settings.settingsVisualizer",
-                container: "#flc-settingsList",
+                container: "{that}.dom.settingsList",
                 createOnEvent: "onAvailableSettngsReceived",
                 options: {
                     model: {
                         settings: "{mainWindow}.model.availableSettings"
+                    }
+                }
+            },
+            keyOutBtn: {
+                type: "gpii.app.settings.widgets.button",
+                container: "{that}.dom.keyOutBtn",
+                options: {
+                    label: "Key Out",
+                    invokers: {
+                        "onClick": "{mainWindow}.keyOut"
                     }
                 }
             }
@@ -328,11 +340,6 @@
             "onCreate.addCommunicationChannel": {
                 listener: "gpii.app.settings.addCommunicationChannel",
                 args: ["{that}"]
-            },
-            "onCreate.keyOut": {
-                "this": "{that}.dom.keyOutBtn",
-                method: "click",
-                args: ["{that}.keyOut"]
             }
         },
         invokers: {
@@ -345,9 +352,7 @@
                 value: "{arguments}.0"
             },
             "close": "gpii.app.settings.closeSettingsWindow()",
-            "keyOut": {
-                funcName: "gpii.app.settings.keyOut"
-            }
+            "keyOut": "gpii.app.settings.keyOut()"
         },
         events: {
             onAvailableSettngsReceived: null

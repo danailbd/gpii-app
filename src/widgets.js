@@ -1,6 +1,13 @@
 "use strict";
 (function () {
-    var fluid = window.fluid;
+    var fluid = window.fluid,
+        gpii = fluid.registerNamespace("gpii");
+
+    fluid.registerNamespace("gpii.app.settings.widgets");
+
+    gpii.app.settings.widgets.noop = function () {
+        // A function that does nothing.
+    };
 
     // TODO handle empty array (add expander)
     fluid.defaults("gpii.app.settings.widgets.dropDown", {
@@ -61,6 +68,28 @@
             onOptionChanged: null,
             onTemplateLoaded: null,
             onTemplateRendered: null
+        }
+    });
+
+    fluid.defaults("gpii.app.settings.widgets.button", {
+        gradeNames: ["fluid.viewComponent"],
+        label: null,
+        listeners: {
+            "onCreate.bindClickEvt": {
+                "this": "{that}.container",
+                method: "click",
+                args: ["{that}.onClick"]
+            },
+            "onCreate.initText": {
+                "this": "{that}.container",
+                method: "text",
+                args: ["{that}.options.label"]
+            }
+        },
+        invokers: {
+            onClick: {
+                funcName: "gpii.app.settings.noop"
+            }
         }
     });
 })();
