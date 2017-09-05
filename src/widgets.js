@@ -92,4 +92,69 @@
             }
         }
     });
+
+    gpii.app.settings.widgets.onRadioToggleChanged = function (that, onInput, offInput) {
+        var input = that.model.enabled ? onInput : offInput;
+        input.attr("checked", true);
+    };
+
+    gpii.app.settings.widgets.toggleRadioModel = function (that) {
+        that.applier.change("enabled", !that.model.enabled);
+    };
+
+    fluid.defaults("gpii.app.settings.widgets.radioToggle", {
+        gradeNames: ["fluid.viewComponent"],
+        model: {
+            enabled: false
+        },
+        template: "./radioToggle.html",
+        attrs: {
+            // it is mandatory to specify "name" here!
+        },
+        strings: {
+            on: "On",
+            off: "Off"
+        },
+        modelListeners: {
+            enabled: {
+                funcName: "gpii.app.settings.widgets.onRadioToggleChanged",
+                args: ["{that}", "{that}.dom.onInput", "{that}.dom.offInput"]
+            }
+        },
+        selectors: {
+            inputs: ".flc-radioToggleInput",
+            onLabel: ".flc-radioToggleLabel-on",
+            offLabel: ".flc-radioToggleLabel-off",
+            onInput: ".flc-radioToggleInput-on",
+            offInput: ".flc-radioToggleInput-off"
+        },
+        listeners: {
+            "onCreate.addAttrs": {
+                "this": "{that}.dom.inputs",
+                method: "attr",
+                args: ["{that}.options.attrs"]
+            },
+            "onCreate.addOnText": {
+                "this": "{that}.dom.onLabel",
+                method: "text",
+                args: ["{that}.options.strings.on"]
+            },
+            "onCreate.addOffText": {
+                "this": "{that}.dom.offLabel",
+                method: "text",
+                args: ["{that}.options.strings.off"]
+            },
+            "onCreate.bindChange": {
+                "this": "{that}.dom.inputs",
+                method: "on",
+                "args": ["change", "{that}.toggleRadioModel"]
+            }
+        },
+        invokers: {
+            toggleRadioModel: {
+                funcName: "gpii.app.settings.widgets.toggleRadioModel",
+                args: ["{that}"]
+            }
+        }
+    });
 })();
