@@ -174,7 +174,14 @@
         }
     };
 
+    /**
+     * Handles a signle row of the visualized list of settings.
+     * Responsible for injecting the markup required for the row itself,
+     * and the widget that is to be used (based on the setting type).
+     * Expects to be supplied: widget grade, model data
+     */
     fluid.defaults("gpii.app.settings.settingRow", {
+        // TODO make viewComponent to use container
         gradeNames: ["fluid.modelComponent"],
         template: "./settingRow.html",
         model: {
@@ -192,9 +199,7 @@
             onWidgetTemplateRendered: null
         },
         components: {
-            // TODO pass row template
             renderRowTemplate: {
-                //TODO do we need viewComponent
                 type: "fluid.viewComponent",
                 container: "{settingRow}.options.rowContainer",
                 createOnEvent: "onContainerCreated",
@@ -212,13 +217,13 @@
                     }
                 }
             },
-            // Add widget template under the suplied widget container
             renderWidgetTemplate: {
                 type: "fluid.viewComponent",
                 container: "{settingRow}.options.rowContainer",
                 createOnEvent: "onRowTemplateRendered",
                 options: {
                     selectors: {
+                        // Add the widget template under the dedicated widget container
                         widget: ".flc-widget"
                     },
                     listeners: {
@@ -240,15 +245,13 @@
                 createOnEvent: "onWidgetTemplateRendered",
                 options: {
                     selectors: {
-                        //TODO set to current .flc-setting
                         icon: ".flc-icon",
-                        // TODO
+                        // TODO supply usage of description
                         //descriptions: ".flc-description",
                         title: ".flc-title",
                         widget: ".flc-widget"
                     },
                     components: {
-                        // TODO altered from the outside
                         widget: {
                             type: "{settingRow}.options.widgetGrade",
                             container: "{setting}.dom.widget",
@@ -272,50 +275,14 @@
         }
     });
 
-
-    fluid.defaults("gpii.app.settings.header", {
-        gradeNames: ["fluid.viewComponent"],
-        selectors: {
-            preferenceSet: ".flc-prefSetPicker",
-            closeBtn: ".flc-closeBtn"
-        },
-        model: {
-            preferenceSets: "{mainWindow}.model.preferenceSets",
-            activePreferenceSet: "GPII Default",
-            icon: "../icons/gear-cloud-black.png"
-        },
-        components: {
-            preferenceSets: {
-                type: "gpii.app.settings.settingRow",
-                container: "{header}.dom.preferenceSet",
-                options: {
-                    model: {
-                        option: "{header}.model.preferenceSets",
-                        //TODO TEST ONLY - include in the option
-                        icon: "{header}.model.icon"
-                    }
-                }
-            }
-        },
-        listeners: {
-            "onCreate.initCloseBtn": {
-                "this": "{that}.dom.closeBtn",
-                method: "on",
-                args: ["click", "{mainWindow}.close"]
-            }
-        }
-    });
-
-    // TODO make pretier --------------------------
-
     fluid.registerNamespace("gpii.app.settings.settingsVisualizer");
 
     gpii.app.settings.settingsVisualizer.getRowContainerClass = function (markups, containerIndex) {
         return "." + fluid.stringTemplate(markups.containerClassPrefix, { id: containerIndex });
     };
 
-    gpii.app.settings.settingsVisualizer.getRowContainer = function (markups, containerIndex) {
-        // Remove the "#" prefix
+    gpii.app.settings.settingsVisualizer.getRowContainerMarkup = function (markups, containerIndex) {
+        // Remove the "." prefix
         var containerClass = gpii.app.settings.settingsVisualizer.getRowContainerClass(markups, containerIndex).substring(1);
         return fluid.stringTemplate(markups.container, { containerClass: containerClass });
     };
@@ -376,10 +343,20 @@
         return resources;
     };
 
+
+    /**
+     * Responsible for visualizing the list of user settings.
+     * Behaviour:
+     *  - Loads templates for the setting row and widget that is to be used
+     *  - Once templates are loaded, dynamicaly creates and supplies container for a `settingRow` element, for every user setting
+     * Expects: list of settings
+     */
     fluid.defaults("gpii.app.settings.settingsVisualizer", {
         gradeNames: "fluid.viewComponent",
         model: {
-            settings: null
+            // TODO modelRelay - transform received settings with 
+            //  pcp specific data (widgets)
+            settings: []
         },
         widgets: {
             // Represents a map for GPII settings schema type to PCP widget grade to be used
@@ -410,7 +387,8 @@
                     }
                 }
             },
-            // TODO comment
+            // TODO
+            // Represents the list of the settings component
             settingsLoader: {
                 type: "fluid.component",
                 createOnEvent: "onTemplatesLoaded",
@@ -420,6 +398,7 @@
                         settingVisulizer: {
                             sources: "{settingsVisualizer}.model.settings",
                             type: "gpii.app.settings.settingRow",
+                            // TODO extract to a function?
                             options: {
                                 containerIndex: "{sourcePath}",
                                 source: "{source}",
@@ -447,7 +426,7 @@
                                     "onCreate.createContainer": {
                                         "this": "{settingsVisualizer}.container",
                                         method: "append",
-                                        args: "@expand:gpii.app.settings.settingsVisualizer.getRowContainer({settingsVisualizer}.options.markups, {that}.options.containerIndex)"
+                                        args: "@expand:gpii.app.settings.settingsVisualizer.getRowContainerMarkup({settingsVisualizer}.options.markups, {that}.options.containerIndex)"
                                     },
                                     "onCreate.onContainerCreated": {
                                         funcName: "{that}.events.onContainerCreated.fire",
@@ -460,12 +439,46 @@
                 }
             }
         },
-
         events: {
             onTemplatesLoaded: null
         }
     });
 
+    /**
+     * TODO
+     */
+    fluid.defaults("gpii.app.settings.header", {
+        gradeNames: ["fluid.viewComponent"],
+        selectors: {
+            preferenceSet: ".flc-prefSetPicker",
+            closeBtn: ".flc-closeBtn"
+        },
+        model: {
+            preferenceSets: "{mainWindow}.model.preferenceSets",
+            activePreferenceSet: "GPII Default",
+            icon: "../icons/gear-cloud-black.png"
+        },
+        components: {
+            preferenceSets: {
+                type: "gpii.app.settings.settingRow",
+                container: "{header}.dom.preferenceSet",
+                options: {
+                    model: {
+                        option: "{header}.model.preferenceSets",
+                        //TODO TEST ONLY - include in the option
+                        icon: "{header}.model.icon"
+                    }
+                }
+            }
+        },
+        listeners: {
+            "onCreate.initCloseBtn": {
+                "this": "{that}.dom.closeBtn",
+                method: "on",
+                args: ["click", "{mainWindow}.close"]
+            }
+        }
+    });
 
     /**
      * Responsible for drawing the settings list
@@ -477,7 +490,6 @@
         gradeNames: ["fluid.viewComponent"],
         model: {
             preferenceSets: null,
-            // TODO remove when dynamic component generation is postponed
             availableSettings: []
         },
         selectors: {
