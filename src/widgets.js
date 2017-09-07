@@ -178,7 +178,7 @@
                 rowID: "item",
                 inputID: "input",
                 labelID: "label",
-                selectID: "{that}.attrs.name",
+                selectID: "{that}.options.attrs.name",
                 tree: {
                     optionnames: "${names}",
                     optionlist: "${values}",

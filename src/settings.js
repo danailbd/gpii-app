@@ -143,6 +143,9 @@
             return {
                 model: {
                     enabled: "{settingRow}.model.value"
+                },
+                attrs: {
+                    name: model.path
                 }
             };
         }
@@ -165,6 +168,9 @@
                     values: "{settingRow}.model.values",
                     names: "{settingRow}.model.values",
                     value: "{settingRow}.model.value"
+                },
+                attrs: {
+                    name: model.path
                 }
             };
         }

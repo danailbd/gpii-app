@@ -9,3 +9,7 @@
 .flc-multipickerItem {
     display: block;
 }
+
+.flc-multipickerItem {
+	cursor: pointer;
+}
