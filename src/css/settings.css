@@ -46,3 +46,7 @@ hr {
     user-select: none;
     cursor: pointer;
 }
+
+*[class*="flc-settingListRow"] {
+    margin-bottom: 10px;
+}

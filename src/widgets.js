@@ -128,4 +128,25 @@
         gradeNames: ["fluid.switchUI"],
         template: "switch.html"
     });
+
+    fluid.defaults("gpii.app.settings.widgets.slider", {
+        gradeNames: ["fluid.textfieldSlider"],
+        template: "slider.html",
+        components: {
+            slider: {
+                options: {
+                    listeners: {
+                        // XXX: This is needed in order not to update the model too frequently.
+                        // However, the value of the textfield is not updated until the slider
+                        // is released which may not be desired. Need to create a wrapper which
+                        // will update the textfield as the slider is moved and to propagate
+                        // model changes only when the slider is released.
+                        "onCreate.bindSlideEvt": {
+                            funcName: "gpii.app.settings.widgets.noop"
+                        }
+                    }
+                }
+            }
+        }
+    });
 })();

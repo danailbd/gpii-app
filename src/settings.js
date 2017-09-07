@@ -67,6 +67,16 @@
             description: "High contrast description",
             icon: "../icons/gear-cloud-white.png",
             value: false
+        }, {
+            path: "zoomPath",
+            type: "number",
+            title: "Zoom",
+            description: "Zoom description",
+            icon: "../icons/gear-cloud-black.png",
+            value: 1,
+            min: 0.5,
+            max: 4,
+            divisibleBy: 0.1
         }]);
     };
 
@@ -93,7 +103,8 @@
     fluid.registerNamespace("gpii.app.settings.settingRow");
 
     gpii.app.settings.settingRow.getWidgetOptions = function (widgetGrade, model) {
-        if (widgetGrade === "gpii.app.settings.widgets.dropDown") {
+        switch (widgetGrade) {
+        case "gpii.app.settings.widgets.dropDown": {
             return {
                 model: {
                     optionNames: model.values,
@@ -102,25 +113,21 @@
                 }
             };
         }
-
-        if (widgetGrade === "gpii.app.settings.widgets.textfield") {
+        case "gpii.app.settings.widgets.textfield": {
             return {
                 model: {
                     value: "{settingRow}.model.value"
                 }
             };
         }
-
-        if (widgetGrade === "gpii.app.settings.widgets.switch") {
+        case "gpii.app.settings.widgets.switch": {
             return {
                 model: {
                     enabled: "{settingRow}.model.value"
                 }
             };
         }
-
-        if (widgetGrade === "gpii.app.settings.widgets.radioToggle") {
-            console.log("name/path", model.path);
+        case "gpii.app.settings.widgets.radioToggle": {
             return {
                 model: {
                     enabled: "{settingRow}.model.value"
@@ -130,9 +137,22 @@
                 }
             };
         }
-
-        // should not reach here
-        return "";
+        case "gpii.app.settings.widgets.slider": {
+            return {
+                model: {
+                    value: "{settingRow}.model.value",
+                    step: "{settingRow}.model.divisibleBy",
+                    range: {
+                        min: "{settingRow}.model.min",
+                        max: "{settingRow}.model.max"
+                    }
+                }
+            };
+        }
+        default:
+            // should not reach here
+            return "";
+        }
     };
 
     fluid.defaults("gpii.app.settings.settingRow", {
@@ -348,7 +368,7 @@
                 array: "",
                 boolean: "switch",
                 string: "dropDown",
-                number: "",
+                number: "slider",
                 text: "textfield",
                 radio: "radioToggle"
             },
