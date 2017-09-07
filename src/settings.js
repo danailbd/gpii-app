@@ -87,6 +87,14 @@
             min: 0.5,
             max: 2,
             divisibleBy: 0.25
+        }, {
+            path: "ttsTrackingPath",
+            type: "array",
+            title: "TTS tracking mode",
+            description: "TTS tracking mode description",
+            icon: "../icons/gear-cloud-white.png",
+            values:  ["mouse", "caret", "focus"],
+            value: ["mouse", "focus"]
         }]);
     };
 
@@ -148,6 +156,15 @@
                         min: "{settingRow}.model.min",
                         max: "{settingRow}.model.max"
                     }
+                }
+            };
+        }
+        case "gpii.app.settings.widgets.multipicker": {
+            return {
+                model: {
+                    values: "{settingRow}.model.values",
+                    names: "{settingRow}.model.values",
+                    value: "{settingRow}.model.value"
                 }
             };
         }
@@ -367,7 +384,7 @@
         widgets: {
             // Represents a map for GPII settings schema type to PCP widget grade to be used
             typesToGrades: {
-                array: "",
+                array: "multipicker",
                 boolean: "switch",
                 string: "dropDown",
                 number: "slider",

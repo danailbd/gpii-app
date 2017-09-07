@@ -154,4 +154,38 @@
         gradeNames: ["fluid.textfieldStepper"],
         template: "stepper.html"
     });
+
+    fluid.defaults("gpii.app.settings.widgets.multipicker", {
+        gradeNames: ["fluid.rendererComponent"],
+        template: "multipicker.html",
+        model: {
+            values: [],
+            names: [],
+            value: null
+        },
+        attrs: {
+            // it is mandatory to specify "name" here!
+        },
+        selectors: {
+            item: ".flc-multipickerItem",
+            input: ".flc-multipickerInput",
+            label: ".flc-multipickerLabel"
+        },
+        repeatingSelectors: ["item"],
+        protoTree: {
+            expander: {
+                type: "fluid.renderer.selection.inputs",
+                rowID: "item",
+                inputID: "input",
+                labelID: "label",
+                selectID: "{that}.attrs.name",
+                tree: {
+                    optionnames: "${names}",
+                    optionlist: "${values}",
+                    selection: "${value}"
+                }
+            }
+        },
+        renderOnInit: true
+    });
 })();
