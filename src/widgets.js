@@ -149,4 +149,9 @@
             }
         }
     });
+
+    fluid.defaults("gpii.app.settings.widgets.stepper", {
+        gradeNames: ["fluid.textfieldStepper"],
+        template: "stepper.html"
+    });
 })();

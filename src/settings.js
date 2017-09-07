@@ -77,6 +77,16 @@
             min: 0.5,
             max: 4,
             divisibleBy: 0.1
+        }, {
+            path: "spacingPath",
+            type: "numberStep",
+            title: "Spacing",
+            description: "Spacing description",
+            icon: "../icons/gear-cloud-black.png",
+            value: 1,
+            min: 0.5,
+            max: 2,
+            divisibleBy: 0.25
         }]);
     };
 
@@ -120,24 +130,16 @@
                 }
             };
         }
-        case "gpii.app.settings.widgets.switch": {
-            return {
-                model: {
-                    enabled: "{settingRow}.model.value"
-                }
-            };
-        }
+        case "gpii.app.settings.widgets.switch":
         case "gpii.app.settings.widgets.radioToggle": {
             return {
                 model: {
                     enabled: "{settingRow}.model.value"
-                },
-                attrs: {
-                    name: model.path
                 }
             };
         }
-        case "gpii.app.settings.widgets.slider": {
+        case "gpii.app.settings.widgets.slider":
+        case "gpii.app.settings.widgets.stepper": {
             return {
                 model: {
                     value: "{settingRow}.model.value",
@@ -332,10 +334,10 @@
 
     // TODO simplify - probably do this sort of mapping somewhere up the chain?
     gpii.app.settings.settingsVisualizer.getRequiredResources = function (settingsVisualizer, settings) {
-        function appendWidgetResources (resources, settings, settingsVisualizer) {
+        function appendWidgetResources(resources, settings, settingsVisualizer) {
             var widgetGrades = settings
                 .map(function (setting) { return setting.type; })
-                .filter(function uniq (setting, idx, settings) { return settings.indexOf(setting) === idx; })
+                .filter(function uniq(setting, idx, settings) { return settings.indexOf(setting) === idx; })
                 .map(
                     // receives the GPII setting type
                     gpii.app.settings.settingsVisualizer.getWidgetGrade.bind(null, settingsVisualizer)
@@ -369,6 +371,7 @@
                 boolean: "switch",
                 string: "dropDown",
                 number: "slider",
+                numberStep: "stepper",
                 text: "textfield",
                 radio: "radioToggle"
             },
