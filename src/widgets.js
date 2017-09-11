@@ -3,16 +3,15 @@
     var fluid = window.fluid,
         gpii = fluid.registerNamespace("gpii");
 
-    fluid.registerNamespace("gpii.app.settings.widgets");
+    fluid.registerNamespace("gpii.pcp.widgets");
 
-    gpii.app.settings.widgets.noop = function () {
+    gpii.pcp.widgets.noop = function () {
         // A function that does nothing.
     };
 
     // TODO handle empty array (add expander)
-    fluid.defaults("gpii.app.settings.widgets.dropDown", {
+    fluid.defaults("gpii.pcp.widgets.dropdown", {
         gradeNames: "fluid.rendererComponent",
-        template: "dropDown.html",
         model: {
             optionNames: [],
             optionList: [],
@@ -20,7 +19,7 @@
         },
         selectors: {
             // from the injested html
-            options: ".flc-dropDown-options"
+            options: ".flc-dropdown-options"
         },
         protoTree: {
             options: {
@@ -32,7 +31,7 @@
         renderOnInit: true
     });
 
-    fluid.defaults("gpii.app.settings.widgets.button", {
+    fluid.defaults("gpii.pcp.widgets.button", {
         gradeNames: ["fluid.viewComponent"],
         label: null,
         listeners: {
@@ -49,26 +48,25 @@
         },
         invokers: {
             onClick: {
-                funcName: "gpii.app.settings.noop"
+                funcName: "gpii.pcp.noop"
             }
         }
     });
 
-    gpii.app.settings.widgets.onRadioToggleChanged = function (that, onInput, offInput) {
+    gpii.pcp.widgets.onRadioToggleChanged = function (that, onInput, offInput) {
         var input = that.model.enabled ? onInput : offInput;
         input.attr("checked", true);
     };
 
-    gpii.app.settings.widgets.toggleRadioModel = function (that) {
+    gpii.pcp.widgets.toggleRadioModel = function (that) {
         that.applier.change("enabled", !that.model.enabled);
     };
 
-    fluid.defaults("gpii.app.settings.widgets.radioToggle", {
+    fluid.defaults("gpii.pcp.widgets.radioToggle", {
         gradeNames: ["fluid.viewComponent"],
         model: {
             enabled: false
         },
-        template: "radioToggle.html",
         attrs: {
             // it is mandatory to specify "name" here!
         },
@@ -78,7 +76,7 @@
         },
         modelListeners: {
             enabled: {
-                funcName: "gpii.app.settings.widgets.onRadioToggleChanged",
+                funcName: "gpii.pcp.widgets.onRadioToggleChanged",
                 args: ["{that}", "{that}.dom.onInput", "{that}.dom.offInput"]
             }
         },
@@ -113,25 +111,22 @@
         },
         invokers: {
             toggleRadioModel: {
-                funcName: "gpii.app.settings.widgets.toggleRadioModel",
+                funcName: "gpii.pcp.widgets.toggleRadioModel",
                 args: ["{that}"]
             }
         }
     });
 
-    fluid.defaults("gpii.app.settings.widgets.textfield", {
-        gradeNames: ["fluid.textfield"],
-        template: "textfield.html"
+    fluid.defaults("gpii.pcp.widgets.textfield", {
+        gradeNames: ["fluid.textfield"]
     });
 
-    fluid.defaults("gpii.app.settings.widgets.switch", {
-        gradeNames: ["fluid.switchUI"],
-        template: "switch.html"
+    fluid.defaults("gpii.pcp.widgets.switch", {
+        gradeNames: ["fluid.switchUI"]
     });
 
-    fluid.defaults("gpii.app.settings.widgets.slider", {
+    fluid.defaults("gpii.pcp.widgets.slider", {
         gradeNames: ["fluid.textfieldSlider"],
-        template: "slider.html",
         components: {
             slider: {
                 options: {
@@ -142,7 +137,7 @@
                         // will update the textfield as the slider is moved and to propagate
                         // model changes only when the slider is released.
                         "onCreate.bindSlideEvt": {
-                            funcName: "gpii.app.settings.widgets.noop"
+                            funcName: "gpii.pcp.widgets.noop"
                         }
                     }
                 }
@@ -150,14 +145,12 @@
         }
     });
 
-    fluid.defaults("gpii.app.settings.widgets.stepper", {
-        gradeNames: ["fluid.textfieldStepper"],
-        template: "stepper.html"
+    fluid.defaults("gpii.pcp.widgets.stepper", {
+        gradeNames: ["fluid.textfieldStepper"]
     });
 
-    fluid.defaults("gpii.app.settings.widgets.multipicker", {
+    fluid.defaults("gpii.pcp.widgets.multipicker", {
         gradeNames: ["fluid.rendererComponent"],
-        template: "multipicker.html",
         model: {
             values: [],
             names: [],

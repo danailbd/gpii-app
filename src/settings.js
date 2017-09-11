@@ -4,25 +4,13 @@
         gpii = fluid.registerNamespace("gpii"),
         ipcRenderer = require("electron").ipcRenderer;
 
-    fluid.registerNamespace("gpii.app.settings");
+    fluid.registerNamespace("gpii.pcp");
 
     ipcRenderer.on("message", function (event, message) {
         console.log("Browser window received message:", message);
     });
 
-    gpii.app.settings.getIcon = function (preferenceSets, activePreferenceSet) {
-        if (!gpii.app.settings.hasPreferenceSets(preferenceSets)) {
-            return;
-        }
-
-        for (var i = 0; i < preferenceSets.names.length; i++) {
-            if (preferenceSets.names[i] === activePreferenceSet) {
-                return preferenceSets.icons[i];
-            }
-        }
-    };
-
-    gpii.app.settings.addCommunicationChannel = function (that) {
+    gpii.pcp.addCommunicationChannel = function (that) {
         that.updatePreferenceSets({
             names: ["GPII Default", "Subway", "Noisy"],
             icons: ["../icons/gear-cloud-black.png",
@@ -98,87 +86,22 @@
         }]);
     };
 
-    gpii.app.settings.hasPreferenceSets = function (preferenceSets) {
-        // TODO use in settingRow
-        return preferenceSets && preferenceSets.names && preferenceSets.names.length > 0;
-    };
-
-    gpii.app.settings.updateSetting = function (path, value) {
+    gpii.pcp.updateSetting = function (path, value) {
         ipcRenderer.send("updateSetting", {
             path: path,
             value: value
         });
     };
 
-    gpii.app.settings.keyOut = function () {
+    gpii.pcp.keyOut = function () {
         ipcRenderer.send("keyOut");
     };
 
-    gpii.app.settings.closeSettingsWindow = function () {
+    gpii.pcp.closeSettingsWindow = function () {
         ipcRenderer.send("closeSettingsWindow");
     };
 
-    fluid.registerNamespace("gpii.app.settings.settingRow");
-
-    gpii.app.settings.settingRow.getWidgetOptions = function (widgetGrade, model) {
-        switch (widgetGrade) {
-        case "gpii.app.settings.widgets.dropDown": {
-            return {
-                model: {
-                    optionNames: model.values,
-                    optionList: model.values,
-                    selection: "{settingRow}.model.value"
-                }
-            };
-        }
-        case "gpii.app.settings.widgets.textfield": {
-            return {
-                model: {
-                    value: "{settingRow}.model.value"
-                }
-            };
-        }
-        case "gpii.app.settings.widgets.switch":
-        case "gpii.app.settings.widgets.radioToggle": {
-            return {
-                model: {
-                    enabled: "{settingRow}.model.value"
-                },
-                attrs: {
-                    name: model.path
-                }
-            };
-        }
-        case "gpii.app.settings.widgets.slider":
-        case "gpii.app.settings.widgets.stepper": {
-            return {
-                model: {
-                    value: "{settingRow}.model.value",
-                    step: "{settingRow}.model.divisibleBy",
-                    range: {
-                        min: "{settingRow}.model.min",
-                        max: "{settingRow}.model.max"
-                    }
-                }
-            };
-        }
-        case "gpii.app.settings.widgets.multipicker": {
-            return {
-                model: {
-                    values: "{settingRow}.model.values",
-                    names: "{settingRow}.model.values",
-                    value: "{settingRow}.model.value"
-                },
-                attrs: {
-                    name: model.path
-                }
-            };
-        }
-        default:
-            // should not reach here
-            return "";
-        }
-    };
+    fluid.registerNamespace("gpii.pcp.settingRow");
 
     /**
      * Handles a signle row of the visualized list of settings.
@@ -186,10 +109,9 @@
      * and the widget that is to be used (based on the setting type).
      * Expects to be supplied: widget grade, model data
      */
-    fluid.defaults("gpii.app.settings.settingRow", {
+    fluid.defaults("gpii.pcp.settingRow", {
         // TODO make viewComponent to use container
         gradeNames: ["fluid.modelComponent"],
-        template: "./settingRow.html",
         model: {
             values: [],
             icon: null,
@@ -214,7 +136,7 @@
                         "onCreate.renderRowTemplate" : {
                             this: "{that}.container",
                             method: "append",
-                            args: "{settingRow}.options.markups.row"
+                            args: "{settingRow}.options.markup.row"
                         },
                         "onCreate.onRowTemplateRendered" : {
                             func: "{settingRow}.events.onRowTemplateRendered.fire",
@@ -236,7 +158,7 @@
                         "onCreate.renderWidgetTemplate": {
                             this: "{that}.dom.widget",
                             method: "append",
-                            args: "{settingRow}.options.markups.widget"
+                            args: "{settingRow}.options.markup.widget"
                         },
                         "onCreate.onWidgetTemplateRendered": {
                             func: "{settingRow}.events.onWidgetTemplateRendered.fire",
@@ -261,7 +183,7 @@
                         widget: {
                             type: "{settingRow}.options.widgetGrade",
                             container: "{setting}.dom.widget",
-                            options: "@expand:gpii.app.settings.settingRow.getWidgetOptions({settingRow}.options.widgetGrade, {settingRow}.model)"
+                            options: "{settingRow}.options.widgetOptions"
                         }
                     },
                     listeners: {
@@ -281,103 +203,231 @@
         }
     });
 
-    fluid.registerNamespace("gpii.app.settings.settingsVisualizer");
+    fluid.registerNamespace("gpii.pcp.settingsVisualizer");
 
-    gpii.app.settings.settingsVisualizer.getRowContainerClass = function (markups, containerIndex) {
-        return "." + fluid.stringTemplate(markups.containerClassPrefix, { id: containerIndex });
+    gpii.pcp.settingsVisualizer.getRowContainerClass = function (markup, containerIndex) {
+        return "." + fluid.stringTemplate(markup.containerClassPrefix, { id: containerIndex });
     };
 
-    gpii.app.settings.settingsVisualizer.getRowContainerMarkup = function (markups, containerIndex) {
+    gpii.pcp.settingsVisualizer.getRowContainerMarkup = function (markup, containerIndex) {
         // Remove the "." prefix
-        var containerClass = gpii.app.settings.settingsVisualizer.getRowContainerClass(markups, containerIndex).substring(1);
-        return fluid.stringTemplate(markups.container, { containerClass: containerClass });
+        var containerClass = gpii.pcp.settingsVisualizer.getRowContainerClass(markup, containerIndex).substring(1);
+        return fluid.stringTemplate(markup.container, { containerClass: containerClass });
     };
 
-    gpii.app.settings.settingsVisualizer.getWidgetMarkup = function (resources, widgetGrade) {
+    gpii.pcp.settingsVisualizer.getWidgetMarkup = function (resources, widgetGrade) {
         //TODO improve; use markup if any
         return resources[widgetGrade] && resources[widgetGrade].resourceText;
     };
 
-    /**
-     * Returns the widget grade matching the given GPII setting scheme type.
-     *
-     * @param that {Object} A fluid component containing `widgets` option, e.g. `settingsVisualizer`
-     * @param type {String} GPII setting scheme type
-     * @returns {String} The widget to be used
-     */
-    gpii.app.settings.settingsVisualizer.getWidgetGrade = function (that, type) {
-        var widgetPrefix = that.options.widgets.gradePrefix,
-            widgetGrade,
-            widgetGradesToTypes = that.options.widgets.typesToGrades;
-
-        if (!widgetGradesToTypes) {
-            console.log("`widgetGradesToTypes` missing - Widget grades to types not supplied.");
-        }
-
-        widgetGrade = widgetGradesToTypes[type];
-        if (!widgetGrade) {
-            console.log("Widget " + type + " is not supported.");
-        }
-
-        return widgetPrefix + "." + widgetGrade;
-    };
-
     // TODO simplify - probably do this sort of mapping somewhere up the chain?
-    gpii.app.settings.settingsVisualizer.getRequiredResources = function (settingsVisualizer, settings) {
-        function appendWidgetResources(resources, settings, settingsVisualizer) {
-            var widgetGrades = settings
-                .map(function (setting) { return setting.type; })
-                .filter(function uniq(setting, idx, settings) { return settings.indexOf(setting) === idx; })
-                .map(
-                    // receives the GPII setting type
-                    gpii.app.settings.settingsVisualizer.getWidgetGrade.bind(null, settingsVisualizer)
-                );
+    gpii.pcp.settingsVisualizer.getRequiredResources = function (rowTemplate, exemplars) {
 
-            widgetGrades.forEach(function (widgetGrade) {
-                var template = fluid.defaults(widgetGrade).template;
-                resources[widgetGrade] = template;
+        function appendWidgetResources(resources, exemplars) {
+            exemplars.forEach(function (exemplar) {
+                resources[exemplar.options.widgetGrade] = exemplar.options.template;
             });
         }
 
         // TODO remove this ugliness
         var resources = {
-            rowTemplate:  fluid.defaults("gpii.app.settings.settingRow").template
+            rowTemplate:  rowTemplate
         };
 
-        appendWidgetResources(resources, settings, settingsVisualizer);
+        appendWidgetResources(resources, exemplars);
 
         return resources;
     };
 
 
     /**
+     * TODO
+     */
+    fluid.defaults("gpii.pcp.exemplar", {
+        gradeNames: "fluid.component",
+        mergePolicy: {
+            widgetOptions: "noexpand"
+        },
+        template: null,
+        widgetGrade: null,
+        schemeType: null,
+        widgetOptions: {
+            // TODO doc
+        }
+    });
+    // TODO add options
+
+    fluid.defaults("gpii.pcp.multipicker", {
+        gradeNames: "gpii.pcp.exemplar",
+        // TODO ?make members?
+        template: "multipicker.html",
+        widgetGrade: "gpii.pcp.widgets.multipicker",
+        schemeType: "array",
+        widgetOptions: {
+            // TODO extract to invoker in exemplar? - accepts the model holder
+            model: {
+                values: "{settingRow}.model.values",
+                names: "{settingRow}.model.values",
+                value: "{settingRow}.model.value"
+            },
+            attrs: {
+                name: "{settingRow}.model.path"
+            }
+        }
+    });
+
+    fluid.defaults("gpii.pcp.switch", {
+        gradeNames: "gpii.pcp.exemplar",
+        template: "switch.html",
+        widgetGrade: "gpii.pcp.widgets.switch",
+        schemeType: "boolean",
+        widgetOptions: {
+            model: {
+                enabled: "{settingRow}.model.value"
+            },
+            attrs: {
+                name: "{settingRow}.model.path"
+            }
+        }
+    });
+
+    fluid.defaults("gpii.pcp.dropdown", {
+        gradeNames: "gpii.pcp.exemplar",
+        template: "dropdown.html",
+        widgetGrade: "gpii.pcp.widgets.dropdown",
+        schemeType: "string",
+        widgetOptions: {
+            model: {
+                optionNames: "{settingRow}.model.values",
+                optionList: "{settingRow}.model.values",
+                selection: "{settingRow}.model.value"
+            }
+        }
+    });
+
+    fluid.defaults("gpii.pcp.slider", {
+        gradeNames: "gpii.pcp.exemplar",
+        template: "slider.html",
+        widgetGrade: "gpii.pcp.widgets.slider",
+        schemeType: "number",
+        widgetOptions: {
+            model: {
+                value: "{settingRow}.model.value",
+                step: "{settingRow}.model.divisibleBy",
+                range: {
+                    min: "{settingRow}.model.min",
+                    max: "{settingRow}.model.max"
+                }
+            }
+        }
+    });
+
+    fluid.defaults("gpii.pcp.stepper", {
+        gradeNames: "gpii.pcp.exemplar",
+        template: "stepper.html",
+        widgetGrade: "gpii.pcp.widgets.stepper",
+        schemeType: "numberStep",
+        widgetOptions: {
+            model: {
+                value: "{settingRow}.model.value",
+                step: "{settingRow}.model.divisibleBy",
+                range: {
+                    min: "{settingRow}.model.min",
+                    max: "{settingRow}.model.max"
+                }
+            }
+        }
+    });
+
+    fluid.defaults("gpii.pcp.textfield", {
+        gradeNames: "gpii.pcp.exemplar",
+        template: "textfield.html",
+        widgetGrade: "gpii.pcp.widgets.textfield",
+        schemeType: "text",
+        widgetOptions: {
+            model: {
+                value: "{settingRow}.model.value"
+            }
+        }
+    });
+
+    fluid.defaults("gpii.pcp.radioToggle", {
+        gradeNames: "gpii.pcp.exemplar",
+        template: "radioToggle.html",
+        widgetGrade: "gpii.pcp.widgets.radioToggle",
+        schemeType: "radio",
+        widgetOptions: {
+            model: {
+                enabled: "{settingRow}.model.value"
+            },
+            attrs: {
+                name: "{settingRow}.model.path"
+            }
+        }
+    });
+
+    /**
+     * Represents an container for all exemplars for widgets
+     * Should be used as immutable objects
+     */
+    fluid.defaults("gpii.pcp.widgetExemplars", {
+        gradeNames: "fluid.component",
+        components: {
+            multipicker: {
+                type: "gpii.pcp.multipicker"
+            },
+            switch: {
+                type: "gpii.pcp.switch"
+            },
+            dropdown: {
+                type: "gpii.pcp.dropdown"
+            },
+            slider: {
+                type: "gpii.pcp.slider"
+            },
+            stepper: {
+                type: "gpii.pcp.stepper"
+            },
+            textfield: {
+                type: "gpii.pcp.textfield"
+            },
+            radioToggle: {
+                type: "gpii.pcp.radioToggle"
+            }
+        }
+    });
+
+    gpii.pcp.widgetExemplars.getExemplarsList = function (exemplars) {
+        return fluid.values(exemplars)
+            .filter(fluid.isComponent);
+    };
+
+    gpii.pcp.widgetExemplars.getMatchingExemplar = function (exemplarsList, schemeType) {
+        // TODO see if inline is possible (fluid api)
+        return exemplarsList.find(function matchType(exemplar) { return exemplar.options.schemeType === schemeType; });
+    };
+
+    /**
      * Responsible for visualizing the list of user settings.
      * Behaviour:
      *  - Loads templates for the setting row and widget that is to be used
-     *  - Once templates are loaded, dynamicaly creates and supplies container for a `settingRow` element, for every user setting
+     *  - Once templates are loaded, dynamically creates and supplies container for a `settingRow` element, for every user setting
      * Expects: list of settings
      */
-    fluid.defaults("gpii.app.settings.settingsVisualizer", {
+    fluid.defaults("gpii.pcp.settingsVisualizer", {
         gradeNames: "fluid.viewComponent",
         model: {
-            // TODO modelRelay - transform received settings with 
             //  pcp specific data (widgets)
             settings: []
         },
-        widgets: {
-            // Represents a map for GPII settings schema type to PCP widget grade to be used
-            typesToGrades: {
-                array: "multipicker",
-                boolean: "switch",
-                string: "dropDown",
-                number: "slider",
-                numberStep: "stepper",
-                text: "textfield",
-                radio: "radioToggle"
-            },
-            gradePrefix: "gpii.app.settings.widgets"
+        members: {
+            // TODO move elsewhere
+            // TODO
+            // keyToExemplar: "@expand:gpii.pcp.indexExemplars({that > exemplar}.components)",
+            exemplarsList: "@expand:gpii.pcp.widgetExemplars.getExemplarsList({that}.options.exemplars)"
         },
-        markups: {
+        rowTemplate: "settingRow.html",
+        markup: {
             container: "<div class=\"%containerClass\"></div>",
             containerClassPrefix: "flc-settingListRow-%id"
         },
@@ -385,7 +435,8 @@
             resourcesLoader: {
                 type: "fluid.resourceLoader",
                 options: {
-                    resources: "@expand:gpii.app.settings.settingsVisualizer.getRequiredResources({settingsVisualizer}, {settingsVisualizer}.model.settings)",
+                    // TODO settingRow component
+                    resources: "@expand:gpii.pcp.settingsVisualizer.getRequiredResources({settingsVisualizer}.options.rowTemplate, {settingsVisualizer}.exemplarsList)",
                     listeners: {
                         onResourcesLoaded: {
                             func: "{settingsVisualizer}.events.onTemplatesLoaded.fire"
@@ -393,46 +444,49 @@
                     }
                 }
             },
-            // TODO
+            // TODO extract as grade
             // Represents the list of the settings component
             settingsLoader: {
                 type: "fluid.component",
                 createOnEvent: "onTemplatesLoaded",
-                //TODO Is this the best approach - component wrapper only to postpone initialization of dynamic components?
                 options: {
                     dynamicComponents: {
-                        settingVisulizer: {
+                        // TODO better name
+                        settingRow: {
                             sources: "{settingsVisualizer}.model.settings",
-                            type: "gpii.app.settings.settingRow",
+                            type: "gpii.pcp.settingRow",
                             // TODO extract to a function?
                             options: {
                                 containerIndex: "{sourcePath}",
-                                source: "{source}",
-                                widgetGrade: "@expand:gpii.app.settings.settingsVisualizer.getWidgetGrade({settingsVisualizer}, {that}.model.type)",
-                                markups: {
+                                setting: "{source}",
+                                exemplar: "@expand:gpii.pcp.widgetExemplars.getMatchingExemplar({settingsVisualizer}.exemplarsList, {that}.options.setting.type)",
+                                widgetGrade: "{that}.options.exemplar.options.widgetGrade",
+                                widgetOptions: "{that}.options.exemplar.options.widgetOptions",
+                                markup: {
                                     row: "{resourcesLoader}.resources.rowTemplate.resourceText",
                                     widget: {
                                         expander: {
-                                            funcName: "gpii.app.settings.settingsVisualizer.getWidgetMarkup",
+                                            // TODO have some widget to template relation
+                                            funcName: "gpii.pcp.settingsVisualizer.getWidgetMarkup",
                                             args: ["{resourcesLoader}.resources", "{that}.options.widgetGrade"]
                                         }
                                     }
                                 },
-                                model: "{that}.options.source",
+                                model: "{that}.options.setting",
                                 modelListeners: {
                                     value: {
-                                        funcName: "gpii.app.settings.updateSetting",
+                                        funcName: "gpii.pcp.updateSetting",
                                         args: ["{that}.model.path", "{change}.value"],
                                         excludeSource: "init"
                                     }
                                 },
                                 // TODO return container instead of string?
-                                rowContainer: "@expand:gpii.app.settings.settingsVisualizer.getRowContainerClass({settingsVisualizer}.options.markups, {that}.options.containerIndex)",
+                                rowContainer: "@expand:gpii.pcp.settingsVisualizer.getRowContainerClass({settingsVisualizer}.options.markup, {that}.options.containerIndex)",
                                 listeners: {
                                     "onCreate.createContainer": {
                                         "this": "{settingsVisualizer}.container",
                                         method: "append",
-                                        args: "@expand:gpii.app.settings.settingsVisualizer.getRowContainerMarkup({settingsVisualizer}.options.markups, {that}.options.containerIndex)"
+                                        args: "@expand:gpii.pcp.settingsVisualizer.getRowContainerMarkup({settingsVisualizer}.options.markup, {that}.options.containerIndex)"
                                     },
                                     "onCreate.onContainerCreated": {
                                         funcName: "{that}.events.onContainerCreated.fire",
@@ -453,7 +507,7 @@
     /**
      * TODO
      */
-    fluid.defaults("gpii.app.settings.header", {
+    fluid.defaults("gpii.pcp.header", {
         gradeNames: ["fluid.viewComponent"],
         selectors: {
             preferenceSet: ".flc-prefSetPicker",
@@ -466,7 +520,7 @@
         },
         components: {
             preferenceSets: {
-                type: "gpii.app.settings.settingRow",
+                type: "gpii.pcp.settingRow",
                 container: "{header}.dom.preferenceSet",
                 options: {
                     model: {
@@ -492,7 +546,7 @@
      * TODO support redrawing of settings
      * currently only single update of available setting is supported
      */
-    fluid.defaults("gpii.app.settings.mainWindow", {
+    fluid.defaults("gpii.pcp.mainWindow", {
         gradeNames: ["fluid.viewComponent"],
         model: {
             preferenceSets: null,
@@ -505,22 +559,26 @@
         },
         components: {
             header: {
-                type: "gpii.app.settings.header",
+                type: "gpii.pcp.header",
                 container: "{that}.dom.header"
                 // TODO send options
             },
+            exemplars: {
+                type: "gpii.pcp.widgetExemplars"
+            },
             settingsVisualizer: {
-                type: "gpii.app.settings.settingsVisualizer",
+                type: "gpii.pcp.settingsVisualizer",
                 container: "{that}.dom.settingsList",
                 createOnEvent: "onAvailableSettngsReceived",
                 options: {
+                    exemplars: "{exemplars}",
                     model: {
                         settings: "{mainWindow}.model.availableSettings"
                     }
                 }
             },
             keyOutBtn: {
-                type: "gpii.app.settings.widgets.button",
+                type: "gpii.pcp.widgets.button",
                 container: "{that}.dom.keyOutBtn",
                 options: {
                     label: "Key Out",
@@ -535,7 +593,7 @@
         },
         listeners: {
             "onCreate.addCommunicationChannel": {
-                funcName: "gpii.app.settings.addCommunicationChannel",
+                funcName: "gpii.pcp.addCommunicationChannel",
                 args: ["{that}"]
             }
         },
@@ -548,8 +606,8 @@
                 changePath: "availableSettings",
                 value: "{arguments}.0"
             },
-            "close": "gpii.app.settings.closeSettingsWindow()",
-            "keyOut": "gpii.app.settings.keyOut()"
+            "close": "gpii.pcp.closeSettingsWindow()",
+            "keyOut": "gpii.pcp.keyOut()"
         },
         events: {
             onAvailableSettngsReceived: null
@@ -558,8 +616,8 @@
     });
 
     $(function () {
-        var main = gpii.app.settings.mainWindow("#flc-body");
-        //        var x = gpii.app.settings.settingsVisualizer("#flc-settingsVisualizer");
+        var main = gpii.pcp.mainWindow("#flc-body");
+        //        var x = gpii.pcp.settingsVisualizer("#flc-settingsVisualizer");
         //console.log(x);
         // XXX Debuging
         console.log(main);

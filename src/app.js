@@ -277,12 +277,9 @@ gpii.app.makeSettingsWindow = function () {
     var settingsWindow = new BrowserWindow({
         width: 500,
         height: 600,
-        show: false,
         frame: false,
         fullscreenable: false,
         resizable: false,
-        alwaysOnTop: true,
-        skipTaskbar: true,
         x: screenSize.width - 500,
         y: screenSize.height - 600
     });
@@ -290,6 +287,7 @@ gpii.app.makeSettingsWindow = function () {
         dirName: __dirname
     });
     settingsWindow.loadURL(url);
+    settingsWindow.webContents.openDevTools();
 
     // settingsWindow.on("blur", function () {
     //     settingsWindow.hide();
