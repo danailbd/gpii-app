@@ -101,145 +101,7 @@
         ipcRenderer.send("closeSettingsWindow");
     };
 
-    fluid.registerNamespace("gpii.pcp.settingRow");
-
-    /**
-     * Handles a signle row of the visualized list of settings.
-     * Responsible for injecting the markup required for the row itself,
-     * and the widget that is to be used (based on the setting type).
-     * Expects to be supplied: widget grade, model data
-     */
-    fluid.defaults("gpii.pcp.settingRow", {
-        // TODO make viewComponent to use container
-        gradeNames: ["fluid.modelComponent"],
-        model: {
-            values: [],
-            icon: null,
-            title: null,
-            // TODO add as tooltip?
-            description: null,
-            // XXX probably not needed
-            value: null // can be string/array/boolean
-        },
-        events: {
-            onContainerCreated: null,
-            onRowTemplateRendered: null,
-            onWidgetTemplateRendered: null
-        },
-        components: {
-            renderRowTemplate: {
-                type: "fluid.viewComponent",
-                container: "{settingRow}.options.rowContainer",
-                createOnEvent: "onContainerCreated",
-                options: {
-                    listeners: {
-                        "onCreate.renderRowTemplate" : {
-                            this: "{that}.container",
-                            method: "append",
-                            args: "{settingRow}.options.markup.row"
-                        },
-                        "onCreate.onRowTemplateRendered" : {
-                            func: "{settingRow}.events.onRowTemplateRendered.fire",
-                            priority: "after:renderRowTemplate"
-                        }
-                    }
-                }
-            },
-            renderWidgetTemplate: {
-                type: "fluid.viewComponent",
-                container: "{settingRow}.options.rowContainer",
-                createOnEvent: "onRowTemplateRendered",
-                options: {
-                    selectors: {
-                        // Add the widget template under the dedicated widget container
-                        widget: ".flc-widget"
-                    },
-                    listeners: {
-                        "onCreate.renderWidgetTemplate": {
-                            this: "{that}.dom.widget",
-                            method: "append",
-                            args: "{settingRow}.options.markup.widget"
-                        },
-                        "onCreate.onWidgetTemplateRendered": {
-                            func: "{settingRow}.events.onWidgetTemplateRendered.fire",
-                            priority: "after:renderWidgetTemplate"
-                        }
-                    }
-                }
-            },
-            setting: {
-                type: "fluid.viewComponent",
-                container: "{settingRow}.options.rowContainer",
-                createOnEvent: "onWidgetTemplateRendered",
-                options: {
-                    selectors: {
-                        icon: ".flc-icon",
-                        // TODO supply usage of description
-                        //descriptions: ".flc-description",
-                        title: ".flc-title",
-                        widget: ".flc-widget"
-                    },
-                    components: {
-                        widget: {
-                            type: "{settingRow}.options.widgetGrade",
-                            container: "{setting}.dom.widget",
-                            options: "{settingRow}.options.widgetOptions"
-                        }
-                    },
-                    listeners: {
-                        "onCreate.setIcon": {
-                            "this": "{that}.dom.icon",
-                            method: "attr",
-                            args: ["src", "{settingRow}.model.icon"]
-                        },
-                        "onCreate.setTitle": {
-                            "this": "{that}.dom.title",
-                            method: "append",
-                            args: "{settingRow}.model.title"
-                        }
-                    }
-                }
-            }
-        }
-    });
-
-    fluid.registerNamespace("gpii.pcp.settingsVisualizer");
-
-    gpii.pcp.settingsVisualizer.getRowContainerClass = function (markup, containerIndex) {
-        return "." + fluid.stringTemplate(markup.containerClassPrefix, { id: containerIndex });
-    };
-
-    gpii.pcp.settingsVisualizer.getRowContainerMarkup = function (markup, containerIndex) {
-        // Remove the "." prefix
-        var containerClass = gpii.pcp.settingsVisualizer.getRowContainerClass(markup, containerIndex).substring(1);
-        return fluid.stringTemplate(markup.container, { containerClass: containerClass });
-    };
-
-    gpii.pcp.settingsVisualizer.getWidgetMarkup = function (resources, widgetGrade) {
-        //TODO improve; use markup if any
-        return resources[widgetGrade] && resources[widgetGrade].resourceText;
-    };
-
-    // TODO simplify - probably do this sort of mapping somewhere up the chain?
-    gpii.pcp.settingsVisualizer.getRequiredResources = function (rowTemplate, exemplars) {
-
-        function appendWidgetResources(resources, exemplars) {
-            exemplars.forEach(function (exemplar) {
-                resources[exemplar.options.widgetGrade] = exemplar.options.template;
-            });
-        }
-
-        // TODO remove this ugliness
-        var resources = {
-            rowTemplate:  rowTemplate
-        };
-
-        appendWidgetResources(resources, exemplars);
-
-        return resources;
-    };
-
-
+    
     /**
      * TODO
      */
@@ -266,12 +128,12 @@
         widgetOptions: {
             // TODO extract to invoker in exemplar? - accepts the model holder
             model: {
-                values: "{settingRow}.model.values",
-                names: "{settingRow}.model.values",
-                value: "{settingRow}.model.value"
+                values: "{singleSettingPresenter}.model.values",
+                names: "{singleSettingPresenter}.model.values",
+                value: "{singleSettingPresenter}.model.value"
             },
             attrs: {
-                name: "{settingRow}.model.path"
+                name: "{singleSettingPresenter}.model.path"
             }
         }
     });
@@ -283,10 +145,10 @@
         schemeType: "boolean",
         widgetOptions: {
             model: {
-                enabled: "{settingRow}.model.value"
+                enabled: "{singleSettingPresenter}.model.value"
             },
             attrs: {
-                name: "{settingRow}.model.path"
+                name: "{singleSettingPresenter}.model.path"
             }
         }
     });
@@ -298,9 +160,9 @@
         schemeType: "string",
         widgetOptions: {
             model: {
-                optionNames: "{settingRow}.model.values",
-                optionList: "{settingRow}.model.values",
-                selection: "{settingRow}.model.value"
+                optionNames: "{singleSettingPresenter}.model.values",
+                optionList: "{singleSettingPresenter}.model.values",
+                selection: "{singleSettingPresenter}.model.value"
             }
         }
     });
@@ -312,11 +174,11 @@
         schemeType: "number",
         widgetOptions: {
             model: {
-                value: "{settingRow}.model.value",
-                step: "{settingRow}.model.divisibleBy",
+                value: "{singleSettingPresenter}.model.value",
+                step: "{singleSettingPresenter}.model.divisibleBy",
                 range: {
-                    min: "{settingRow}.model.min",
-                    max: "{settingRow}.model.max"
+                    min: "{singleSettingPresenter}.model.min",
+                    max: "{singleSettingPresenter}.model.max"
                 }
             }
         }
@@ -329,11 +191,11 @@
         schemeType: "numberStep",
         widgetOptions: {
             model: {
-                value: "{settingRow}.model.value",
-                step: "{settingRow}.model.divisibleBy",
+                value: "{singleSettingPresenter}.model.value",
+                step: "{singleSettingPresenter}.model.divisibleBy",
                 range: {
-                    min: "{settingRow}.model.min",
-                    max: "{settingRow}.model.max"
+                    min: "{singleSettingPresenter}.model.min",
+                    max: "{singleSettingPresenter}.model.max"
                 }
             }
         }
@@ -346,7 +208,7 @@
         schemeType: "text",
         widgetOptions: {
             model: {
-                value: "{settingRow}.model.value"
+                value: "{singleSettingPresenter}.model.value"
             }
         }
     });
@@ -358,13 +220,28 @@
         schemeType: "radio",
         widgetOptions: {
             model: {
-                enabled: "{settingRow}.model.value"
+                enabled: "{singleSettingPresenter}.model.value"
             },
             attrs: {
-                name: "{settingRow}.model.path"
+                name: "{singleSettingPresenter}.model.path"
             }
         }
     });
+
+    fluid.registerNamespace("gpii.pcp.widgetExemplars");
+
+    // TODO change namespace?
+    gpii.pcp.widgetExemplars.getExemplarsList = function (exemplars) {
+        return fluid.values(exemplars)
+            .filter(fluid.isComponent);
+    };
+
+    fluid.registerNamespace("gpii.pcp.settingsPanel.settingsVisualizer");
+
+    gpii.pcp.settingsPanel.settingsVisualizer.getWidgetConfig = function (exemplarsList, schemeType) {
+        // TODO see if inline is possible (fluid api)
+        return exemplarsList.find(function matchType(exemplar) { return exemplar.options.schemeType === schemeType; });
+    };
 
     /**
      * Represents an container for all exemplars for widgets
@@ -397,105 +274,317 @@
         }
     });
 
-    gpii.pcp.widgetExemplars.getExemplarsList = function (exemplars) {
-        return fluid.values(exemplars)
-            .filter(fluid.isComponent);
-    };
 
-    gpii.pcp.widgetExemplars.getMatchingExemplar = function (exemplarsList, schemeType) {
-        // TODO see if inline is possible (fluid api)
-        return exemplarsList.find(function matchType(exemplar) { return exemplar.options.schemeType === schemeType; });
-    };
+    fluid.registerNamespace("gpii.pcp.settingsVisualizer");
 
-    /**
-     * Responsible for visualizing the list of user settings.
-     * Behaviour:
-     *  - Loads templates for the setting row and widget that is to be used
-     *  - Once templates are loaded, dynamically creates and supplies container for a `settingRow` element, for every user setting
-     * Expects: list of settings
+    /*
+     * TODO FIX NAMESPACE
      */
-    fluid.defaults("gpii.pcp.settingsVisualizer", {
+    // TODO deprecate?
+    gpii.pcp.settingsVisualizer.getRowContainerClass = function (markup, containerIndex) {
+        return "." + fluid.stringTemplate(markup.containerClassPrefix, { id: containerIndex });
+    };
+
+    gpii.pcp.settingsVisualizer.getRowContainerMarkup = function (markup, containerIndex) {
+        // Remove the "." prefix
+        var containerClass = gpii.pcp.settingsVisualizer.getRowContainerClass(markup, containerIndex).substring(1);
+        return fluid.stringTemplate(markup.container, { containerClass: containerClass });
+    };
+
+    gpii.pcp.settingsVisualizer.getWidgetMarkup = function (resources, widgetGrade) {
+        //TODO improve; use markup if any
+        return resources[widgetGrade] && resources[widgetGrade].resourceText;
+    };
+
+
+    fluid.defaults("gpii.pcp.settingsPanel.settingsVisualizer.singleSettingPresenter", {
         gradeNames: "fluid.viewComponent",
+        selectors: {
+            icon: ".flc-icon",
+            title: ".flc-title",
+            widget: ".flc-widget"
+        },
         model: {
-            //  pcp specific data (widgets)
-            settings: []
+            // Setting properties: values, value,...
         },
-        members: {
-            // TODO move elsewhere
-            // TODO
-            // keyToExemplar: "@expand:gpii.pcp.indexExemplars({that > exemplar}.components)",
-            exemplarsList: "@expand:gpii.pcp.widgetExemplars.getExemplarsList({that}.options.exemplars)"
+        widgetConfig: {},
+
+        components: {
+            widget: {
+                type: "{that}.options.widgetConfig.options.widgetGrade",
+                container: "{that}.dom.widget",
+                options: "{singleSettingPresenter}.options.widgetConfig.options.widgetOptions"
+            }
         },
-        rowTemplate: "settingRow.html",
+        listeners: {
+            "onCreate.setIcon": {
+                this: "{that}.dom.icon",
+                method: "attr",
+                args: ["src", "{that}.model.icon"]
+            },
+            "onCreate.setTitle": {
+                this: "{that}.dom.title",
+                method: "append",
+                args: "{that}.model.title"
+            }
+        }
+    });
+
+    gpii.pcp.getContainerLastChild = function (container) {
+        return container.children().last();
+    };
+
+    fluid.defaults("gpii.pcp.settingsPanel.settingsVisualizer.singleSettingRenderer", {
+        gradeNames: "fluid.viewComponent",
+
+        model: {
+            settingContainer: null
+        },
+
         markup: {
-            container: "<div class=\"%containerClass\"></div>",
-            containerClassPrefix: "flc-settingListRow-%id"
+            container: null,
+            setting: null,
+            widget: null
+        },
+        events: {
+            onSettingContainerRendered: null,
+            onSettingMarkupRendered: null,
+            onWidgetMarkupRendered: null
         },
         components: {
-            resourcesLoader: {
-                type: "fluid.resourceLoader",
+            renderSettingContainer: {
+                type: "fluid.viewComponent",
+                container: "{that}.container",
                 options: {
-                    // TODO settingRow component
-                    resources: "@expand:gpii.pcp.settingsVisualizer.getRequiredResources({settingsVisualizer}.options.rowTemplate, {settingsVisualizer}.exemplarsList)",
+                    // TODO extract as component -> container renderer?
                     listeners: {
-                        onResourcesLoaded: {
-                            func: "{settingsVisualizer}.events.onTemplatesLoaded.fire"
+                        // TODO check with funcName
+                        "onCreate.render": {
+                            this: "{that}.container",
+                            method: "append",
+                            args: ["{singleSettingRenderer}.options.markup.container"]
+                        },
+                        "onCreate.updateContainer": {
+                            funcName: "{singleSettingRenderer}.setContainer",
+                            // TODO test
+                            args: "@expand:gpii.pcp.getContainerLastChild({that}.container)",
+                            priority: "after:render"
+                        },
+                        "onCreate.notify": {
+                            funcName: "{singleSettingRenderer}.events.onSettingContainerRendered.fire",
+                            // Get the newly created container
+                            priority: "after:updateContainer"
                         }
                     }
                 }
             },
-            // TODO extract as grade
-            // Represents the list of the settings component
-            settingsLoader: {
-                type: "fluid.component",
-                createOnEvent: "onTemplatesLoaded",
+            /**
+             * Renders the setting markup inside the dedicated container
+             */
+            renderSettingMarkup: {
+                type: "fluid.viewComponent",
+                container: "{that}.model.settingContainer",
+                createOnEvent: "onSettingContainerRendered",
                 options: {
-                    dynamicComponents: {
-                        // TODO better name
-                        settingRow: {
-                            sources: "{settingsVisualizer}.model.settings",
-                            type: "gpii.pcp.settingRow",
-                            // TODO extract to a function?
+                    widgetContainerClass: ".flc-widget",
+                    listeners: {
+                        "onCreate.render": {
+                            this: "{that}.container",
+                            method: "append",
+                            args: "{singleSettingRenderer}.options.markup.setting"
+                        },
+                        "onCreate.notify": {
+                            funcName: "{singleSettingRenderer}.events.onSettingMarkupRendered.fire",
+                            // XXX get the widget container
+                            // Should match single element
+                            args: "@expand:$({that}.options.widgetContainerClass, {that}.container)",
+                            priority: "after:render"
+                        }
+                    }
+                }
+            },
+            renderWidgetMarkup: {
+                type: "fluid.viewComponent",
+                // the widget container
+                container: "{arguments}.0",
+                createOnEvent: "onSettingMarkupRendered",
+                options: {
+                    listeners: {
+                        "onCreate.render": {
+                            this: "{that}.container",
+                            method: "append",
+                            args: "{singleSettingRenderer}.options.markup.widget"
+                        },
+                        "onCreate.notify": {
+                            funcName: "{singleSettingRenderer}.events.onWidgetMarkupRendered.fire",
+                            priority: "after:render"
+                        }
+                    }
+                }
+            }
+        },
+        invokers: {
+            setContainer: {
+                changePath: "settingContainer",
+                value: "{arguments}.0"
+            }
+        }
+    });
+
+
+    // TODO
+    // * get created container
+    // * extract to grade - rendered
+    // * rename functions
+    // * remove unneeded - getClass ?
+    // * doc
+    fluid.defaults("gpii.pcp.settingsPanel.settingsVisualizer", {
+        gradeNames: "fluid.viewComponent",
+        exemplarsList: [],
+        resources: null,
+        // TODO {M} it should contain all needed markup (squash with resources)
+        // general settings markup
+        // Contains general template for settings
+        markup: {
+            container: "<div class=\"%containerClass\"></div>",
+            containerClassPrefix: "flc-settingListRow-%id"
+        },
+        model: {
+            settings: null
+        },
+        dynamicComponents: {
+            // TODO extract to a grade?
+            singleSettingVisualizer: {
+                sources: "{settingsVisualizer}.model.settings",
+                type: "fluid.viewComponent",
+                container: "{that}.container",
+                options: {
+                    setting: "{source}",
+
+                    widgetConfig: "@expand:gpii.pcp.settingsPanel.settingsVisualizer.getWidgetConfig({settingsVisualizer}.options.exemplarsList, {that}.options.setting.type)",
+
+                    containerIndex: "{sourcePath}",
+                    // used only by the render
+                    // contains template related for the current setting row
+                    markup: {
+                        container: "@expand:gpii.pcp.settingsVisualizer.getRowContainerMarkup({settingsVisualizer}.options.markup, {that}.options.containerIndex)",
+                        // TODO {M}
+                        setting: "{settingsVisualizer}.options.resources.setting.resourceText", // markup.setting",
+                        widget: "@expand:gpii.pcp.settingsVisualizer.getWidgetMarkup({settingsVisualizer}.options.resources, {that}.options.widgetConfig.options.widgetGrade)"
+                    },
+
+                    events: {
+                        // XXX not quite valid as the widget component also renders
+                        onSingleSettingRendered: null
+                    },
+
+                    components: {
+                        singleSettingRenderer: {
+                            type: "gpii.pcp.settingsPanel.settingsVisualizer.singleSettingRenderer",
+                            container: "{that}.container",
+
                             options: {
-                                containerIndex: "{sourcePath}",
-                                setting: "{source}",
-                                exemplar: "@expand:gpii.pcp.widgetExemplars.getMatchingExemplar({settingsVisualizer}.exemplarsList, {that}.options.setting.type)",
-                                widgetGrade: "{that}.options.exemplar.options.widgetGrade",
-                                widgetOptions: "{that}.options.exemplar.options.widgetOptions",
-                                markup: {
-                                    row: "{resourcesLoader}.resources.rowTemplate.resourceText",
-                                    widget: {
-                                        expander: {
-                                            // TODO have some widget to template relation
-                                            funcName: "gpii.pcp.settingsVisualizer.getWidgetMarkup",
-                                            args: ["{resourcesLoader}.resources", "{that}.options.widgetGrade"]
-                                        }
+                                markup: "{singleSettingVisualizer}.options.markup",
+                                listeners: {
+                                    "onWidgetMarkupRendered.notify": {
+                                        funcName: "{singleSettingVisualizer}.events.onSingleSettingRendered.fire",
+                                        // pass the created container
+                                        args: "{that}.model.settingContainer"
                                     }
-                                },
-                                model: "{that}.options.setting",
+                                }
+                            }
+                        },
+                        singleSettingPresenter: {
+                            type: "gpii.pcp.settingsPanel.settingsVisualizer.singleSettingPresenter",
+                            createOnEvent: "onSingleSettingRendered",
+                            container: "{arguments}.0",
+                            options: {
+                                widgetConfig: "{singleSettingVisualizer}.options.widgetConfig",
+                                model: "{singleSettingVisualizer}.options.setting",
+
                                 modelListeners: {
                                     value: {
                                         funcName: "gpii.pcp.updateSetting",
                                         args: ["{that}.model.path", "{change}.value"],
                                         excludeSource: "init"
                                     }
-                                },
-                                // TODO return container instead of string?
-                                rowContainer: "@expand:gpii.pcp.settingsVisualizer.getRowContainerClass({settingsVisualizer}.options.markup, {that}.options.containerIndex)",
-                                listeners: {
-                                    "onCreate.createContainer": {
-                                        "this": "{settingsVisualizer}.container",
-                                        method: "append",
-                                        args: "@expand:gpii.pcp.settingsVisualizer.getRowContainerMarkup({settingsVisualizer}.options.markup, {that}.options.containerIndex)"
-                                    },
-                                    "onCreate.onContainerCreated": {
-                                        funcName: "{that}.events.onContainerCreated.fire",
-                                        priority: "after:createContainer"
-                                    }
                                 }
                             }
                         }
                     }
+                }
+            }
+        }
+    });
+
+
+    fluid.registerNamespace("gpii.pcp.settingsPanel");
+
+
+    // TODO simplify - probably do this sort of mapping somewhere up the chain?
+    gpii.pcp.settingsPanel.getRequiredResources = function (rowTemplate, exemplars) {
+        function appendWidgetResources(resources, exemplars) {
+            exemplars.forEach(function (exemplar) {
+                resources[exemplar.options.widgetGrade] = exemplar.options.template;
+            });
+        }
+
+        // TODO remove this ugliness
+        var resources = {
+            setting:  rowTemplate
+        };
+
+        appendWidgetResources(resources, exemplars);
+
+        return resources;
+    };
+
+
+    /**
+     * TODO check
+     * Responsible for visualizing the list of user settings.
+     * Behaviour:
+     *  - Loads templates for the setting row and widget that is to be used
+     *  - Once templates are loaded, dynamically creates and supplies container for a `settingRow` element, for every user setting
+     * Expects: list of settings
+     */
+    fluid.defaults("gpii.pcp.settingsPanel", {
+        gradeNames: "fluid.viewComponent",
+        model: {
+            //  pcp specific data (widgets)
+            settings: []
+        },
+        members: {
+            exemplarsList: "@expand:gpii.pcp.widgetExemplars.getExemplarsList({that}.options.exemplars)"
+        },
+        // TODO find better place/ name
+        rowTemplate: "settingRow.html",
+
+        components: {
+            resourcesLoader: {
+                type: "fluid.resourceLoader",
+                options: {
+                    // TODO settingRow component
+                    resources: "@expand:gpii.pcp.settingsPanel.getRequiredResources({settingsPanel}.options.rowTemplate, {settingsPanel}.exemplarsList)",
+                    listeners: {
+                        onResourcesLoaded: "{settingsPanel}.events.onTemplatesLoaded"
+                    }
+                }
+            },
+            // TODO extract as grade
+            // Represents the list of the settings component
+            settingsVisualizer: {
+                type: "gpii.pcp.settingsPanel.settingsVisualizer",
+                createOnEvent: "onTemplatesLoaded",
+                container: "{that}.container",
+                options: {
+                    exemplarsList: "{settingsPanel}.exemplarsList",
+                    resources: "{resourcesLoader}.resources",
+                    model: {
+                        settings: "{settingsPanel}.model.settings"
+                    }
+                    
+                    //TODO markup: "@expand: getLoadedMarkup"
                 }
             }
         },
@@ -518,19 +607,19 @@
             activePreferenceSet: "GPII Default",
             icon: "../icons/gear-cloud-black.png"
         },
-        components: {
-            preferenceSets: {
-                type: "gpii.pcp.settingRow",
-                container: "{header}.dom.preferenceSet",
-                options: {
-                    model: {
-                        option: "{header}.model.preferenceSets",
-                        //TODO TEST ONLY - include in the option
-                        icon: "{header}.model.icon"
-                    }
-                }
-            }
-        },
+//      components: {
+//            preferenceSets: {
+//                type: "gpii.pcp.settingRow",
+//                container: "{header}.dom.preferenceSet",
+//                options: {
+//                    model: {
+//                        option: "{header}.model.preferenceSets",
+//                        //TODO TEST ONLY - include in the option
+//                        icon: "{header}.model.icon"
+//                    }
+//                }
+//            }
+//        },
         listeners: {
             "onCreate.initCloseBtn": {
                 "this": "{that}.dom.closeBtn",
@@ -566,8 +655,8 @@
             exemplars: {
                 type: "gpii.pcp.widgetExemplars"
             },
-            settingsVisualizer: {
-                type: "gpii.pcp.settingsVisualizer",
+            settingsPanel: {
+                type: "gpii.pcp.settingsPanel",
                 container: "{that}.dom.settingsList",
                 createOnEvent: "onAvailableSettngsReceived",
                 options: {
@@ -617,9 +706,16 @@
 
     $(function () {
         var main = gpii.pcp.mainWindow("#flc-body");
-        //        var x = gpii.pcp.settingsVisualizer("#flc-settingsVisualizer");
+        console.log(main.settingsPanel);
+        console.log(main.settingsPanel.settingsVisualizer);
+        //var renderer = gpii.pcp.settingsPanel.settingsVisualizer.singleSettingRenderer("#flc-body");
+        //console.log(renderer);
+        //var renderer = gpii.pcp.settingsPanel.settingsVisualizer.singleSettingPresenter("#flc-body");
+        //        var x = gpii.pcp.settingsPanel("#flc-settingsPanel");
         //console.log(x);
         // XXX Debuging
-        console.log(main);
+        //
+        // .last
+        // .getElementsByClass
     });
 })();
