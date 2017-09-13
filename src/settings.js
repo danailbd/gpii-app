@@ -101,7 +101,7 @@
         ipcRenderer.send("closeSettingsWindow");
     };
 
-    
+
     /**
      * TODO
      */
@@ -432,9 +432,63 @@
     });
 
 
+    fluid.defaults("gpii.pcp.settingsPanel.settingsVisualizer.singleSettingVisualizer",  {
+        gradeNames: "fluid.viewComponent",
+
+        setting: null,
+        widgetConfig: null,
+        markup: {},
+
+        events: {
+            // XXX not quite valid as the widget component also renders
+            onSingleSettingRendered: null
+        },
+        components: {
+            singleSettingRenderer: {
+                type: "gpii.pcp.settingsPanel.settingsVisualizer.singleSettingRenderer",
+                container: "{that}.container",
+
+                options: {
+                    // TODO matches wrong item
+                    markup: "{singleSettingVisualizer}.options.markup",
+                    listeners: {
+                        "onWidgetMarkupRendered.notify": {
+                            funcName: "{singleSettingVisualizer}.events.onSingleSettingRendered.fire",
+                            // pass the created container
+                            args: "{that}.model.settingContainer"
+                        }
+                    }
+                }
+            },
+            singleSettingPresenter: {
+                type: "gpii.pcp.settingsPanel.settingsVisualizer.singleSettingPresenter",
+                createOnEvent: "onSingleSettingRendered",
+                container: "{arguments}.0",
+                options: {
+                    widgetConfig: "{singleSettingVisualizer}.options.widgetConfig",
+                    model: "{singleSettingVisualizer}.options.setting",
+
+                    modelListeners: {
+                        value: {
+                            funcName: "gpii.pcp.updateSetting",
+                            args: ["{that}.model.path", "{change}.value"],
+                            excludeSource: "init"
+                        }
+                    }
+                }
+            }
+        }
+    });
+
+
+    gpii.pcp.settingsPanel.settingsVisualizer.updateSettingPresentations = function (that, settings) {
+        // TODO improve
+        settings.forEach(function (setting, settingIndex) {
+            that.events.onSettingUpdated.fire(settingIndex, setting);
+        });
+    };
+
     // TODO
-    // * get created container
-    // * extract to grade - rendered
     // * rename functions
     // * remove unneeded - getClass ?
     // * doc
@@ -452,65 +506,38 @@
         model: {
             settings: null
         },
+        events: {
+            onSettingUpdated: null
+        },
+        modelListeners: {
+            settings: {
+                func: "{that}.updateSettingPresentations",
+                args: ["{that}", "{that}.model.settings"]
+            }
+        },
+        invokers: {
+            updateSettingPresentations: {
+                funcName: "gpii.pcp.settingsPanel.settingsVisualizer.updateSettingPresentations"
+            }
+        },
         dynamicComponents: {
-            // TODO extract to a grade?
             singleSettingVisualizer: {
-                sources: "{settingsVisualizer}.model.settings",
-                type: "fluid.viewComponent",
+                type: "gpii.pcp.settingsPanel.settingsVisualizer.singleSettingVisualizer",
                 container: "{that}.container",
+                createOnEvent: "onSettingUpdated",
                 options: {
-                    setting: "{source}",
+                    settingIndex: "{arguments}.0",
+                    setting: "{arguments}.1",
 
                     widgetConfig: "@expand:gpii.pcp.settingsPanel.settingsVisualizer.getWidgetConfig({settingsVisualizer}.options.exemplarsList, {that}.options.setting.type)",
 
-                    containerIndex: "{sourcePath}",
                     // used only by the render
                     // contains template related for the current setting row
                     markup: {
-                        container: "@expand:gpii.pcp.settingsVisualizer.getRowContainerMarkup({settingsVisualizer}.options.markup, {that}.options.containerIndex)",
+                        container: "@expand:gpii.pcp.settingsVisualizer.getRowContainerMarkup({settingsVisualizer}.options.markup, {that}.options.settingIndex)",
                         // TODO {M}
                         setting: "{settingsVisualizer}.options.resources.setting.resourceText", // markup.setting",
                         widget: "@expand:gpii.pcp.settingsVisualizer.getWidgetMarkup({settingsVisualizer}.options.resources, {that}.options.widgetConfig.options.widgetGrade)"
-                    },
-
-                    events: {
-                        // XXX not quite valid as the widget component also renders
-                        onSingleSettingRendered: null
-                    },
-
-                    components: {
-                        singleSettingRenderer: {
-                            type: "gpii.pcp.settingsPanel.settingsVisualizer.singleSettingRenderer",
-                            container: "{that}.container",
-
-                            options: {
-                                markup: "{singleSettingVisualizer}.options.markup",
-                                listeners: {
-                                    "onWidgetMarkupRendered.notify": {
-                                        funcName: "{singleSettingVisualizer}.events.onSingleSettingRendered.fire",
-                                        // pass the created container
-                                        args: "{that}.model.settingContainer"
-                                    }
-                                }
-                            }
-                        },
-                        singleSettingPresenter: {
-                            type: "gpii.pcp.settingsPanel.settingsVisualizer.singleSettingPresenter",
-                            createOnEvent: "onSingleSettingRendered",
-                            container: "{arguments}.0",
-                            options: {
-                                widgetConfig: "{singleSettingVisualizer}.options.widgetConfig",
-                                model: "{singleSettingVisualizer}.options.setting",
-
-                                modelListeners: {
-                                    value: {
-                                        funcName: "gpii.pcp.updateSetting",
-                                        args: ["{that}.model.path", "{change}.value"],
-                                        excludeSource: "init"
-                                    }
-                                }
-                            }
-                        }
                     }
                 }
             }
@@ -583,7 +610,7 @@
                     model: {
                         settings: "{settingsPanel}.model.settings"
                     }
-                    
+
                     //TODO markup: "@expand: getLoadedMarkup"
                 }
             }
