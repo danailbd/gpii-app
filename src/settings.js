@@ -142,12 +142,12 @@
         schemeType: "array",
         widgetOptions: {
             model: {
-                values: "{singleSettingPresenter}.model.values",
-                names: "{singleSettingPresenter}.model.values",
-                value: "{singleSettingPresenter}.model.value"
+                values: "{settingPresenter}.model.values",
+                names: "{settingPresenter}.model.values",
+                value: "{settingPresenter}.model.value"
             },
             attrs: {
-                name: "{singleSettingPresenter}.model.path"
+                name: "{settingPresenter}.model.path"
             }
         }
     });
@@ -159,10 +159,10 @@
         schemeType: "boolean",
         widgetOptions: {
             model: {
-                enabled: "{singleSettingPresenter}.model.value"
+                enabled: "{settingPresenter}.model.value"
             },
             attrs: {
-                name: "{singleSettingPresenter}.model.path"
+                name: "{settingPresenter}.model.path"
             }
         }
     });
@@ -174,9 +174,9 @@
         schemeType: "string",
         widgetOptions: {
             model: {
-                optionNames: "{singleSettingPresenter}.model.values",
-                optionList: "{singleSettingPresenter}.model.values",
-                selection: "{singleSettingPresenter}.model.value"
+                optionNames: "{settingPresenter}.model.values",
+                optionList: "{settingPresenter}.model.values",
+                selection: "{settingPresenter}.model.value"
             }
         }
     });
@@ -188,11 +188,11 @@
         schemeType: "number",
         widgetOptions: {
             model: {
-                value: "{singleSettingPresenter}.model.value",
-                step: "{singleSettingPresenter}.model.divisibleBy",
+                value: "{settingPresenter}.model.value",
+                step: "{settingPresenter}.model.divisibleBy",
                 range: {
-                    min: "{singleSettingPresenter}.model.min",
-                    max: "{singleSettingPresenter}.model.max"
+                    min: "{settingPresenter}.model.min",
+                    max: "{settingPresenter}.model.max"
                 }
             }
         }
@@ -205,11 +205,11 @@
         schemeType: "numberStep",
         widgetOptions: {
             model: {
-                value: "{singleSettingPresenter}.model.value",
-                step: "{singleSettingPresenter}.model.divisibleBy",
+                value: "{settingPresenter}.model.value",
+                step: "{settingPresenter}.model.divisibleBy",
                 range: {
-                    min: "{singleSettingPresenter}.model.min",
-                    max: "{singleSettingPresenter}.model.max"
+                    min: "{settingPresenter}.model.min",
+                    max: "{settingPresenter}.model.max"
                 }
             }
         }
@@ -222,7 +222,7 @@
         schemeType: "text",
         widgetOptions: {
             model: {
-                value: "{singleSettingPresenter}.model.value"
+                value: "{settingPresenter}.model.value"
             }
         }
     });
@@ -234,18 +234,26 @@
         schemeType: "radio",
         widgetOptions: {
             model: {
-                enabled: "{singleSettingPresenter}.model.value"
+                enabled: "{settingPresenter}.model.value"
             },
             attrs: {
-                name: "{singleSettingPresenter}.model.path"
+                name: "{settingPresenter}.model.path"
             }
         }
     });
 
 
+    fluid.registerNamespace("gpii.pcp.widgetExemplars");
+
+    gpii.pcp.widgetExemplars.getExemplarBySchemeType = function (widgetExemplars, schemeType) {
+        return fluid.values(widgetExemplars)
+            .filter(fluid.isComponent)
+            .find(function matchType(exemplar) { return exemplar.options.schemeType === schemeType; });
+    };
+
     /**
      * Represents an container for all exemplars for widgets
-     * Should be used as immutable objects
+     * N.B. Sub components should be used as immutable objects!
      */
     fluid.defaults("gpii.pcp.widgetExemplars", {
         gradeNames: "fluid.component",
@@ -271,11 +279,21 @@
             radioToggle: {
                 type: "gpii.pcp.exemplar.radioToggle"
             }
+        },
+        invokers: {
+            getExemplarBySchemeType: {
+                funcName: "gpii.pcp.widgetExemplars.getExemplarBySchemeType",
+                args: ["{that}", "{arguments}.0"]
+            }
         }
     });
 
 
-    fluid.defaults("gpii.pcp.singleSettingPresenter", {
+    /**
+     * Creates the binding with the already rendered DOM elements.
+     * Expects: widget configuration and model
+     */
+    fluid.defaults("gpii.pcp.settingPresenter", {
         gradeNames: "fluid.viewComponent",
         selectors: {
             icon: ".flc-icon",
@@ -283,15 +301,21 @@
             widget: ".flc-widget"
         },
         model: {
-            // Setting properties: values, value,...
+            icon: null,
+            title: null,
+            values: null,
+            value: null
         },
-        widgetConfig: {},
+        widgetConfig: {
+            widgetOptions: null,
+            grade: null
+        },
 
         components: {
             widget: {
                 type: "{that}.options.widgetConfig.options.grade",
                 container: "{that}.dom.widget",
-                options: "{singleSettingPresenter}.options.widgetConfig.options.widgetOptions"
+                options: "{settingPresenter}.options.widgetConfig.options.widgetOptions"
             }
         },
         listeners: {
@@ -308,17 +332,26 @@
         }
     });
 
-    fluid.defaults("gpii.pcp.singleSettingRenderer", {
+    /**
+     * Renders all related markup for a setting:
+     * - container;
+     * - setting markup;
+     * - widget markup
+     * Expects: markup
+     * Saves the newly created setting outer container internally
+     */
+    fluid.defaults("gpii.pcp.settingRenderer", {
         gradeNames: "fluid.viewComponent",
-
-        model: {
-            settingContainer: null
-        },
 
         markup: {
             container: null,
             setting: null,
             widget: null
+        },
+
+        model: {
+            // Save the container created
+            settingContainer: null
         },
         events: {
             onSettingContainerRendered: null,
@@ -326,26 +359,28 @@
             onWidgetMarkupRendered: null
         },
         components: {
+            /*
+             * Render the outer most container for the setting
+             */
             renderSettingContainer: {
                 type: "fluid.viewComponent",
                 container: "{that}.container",
                 options: {
                     // TODO extract as component -> container renderer?
                     listeners: {
-                        // TODO check with funcName
                         "onCreate.render": {
                             this: "{that}.container",
                             method: "append",
-                            args: ["{singleSettingRenderer}.options.markup.container"]
+                            args: ["{settingRenderer}.options.markup.container"]
                         },
                         "onCreate.updateContainer": {
-                            funcName: "{singleSettingRenderer}.setContainer",
+                            funcName: "{settingRenderer}.setContainer",
                             // TODO test
                             args: "@expand:gpii.pcp.getContainerLastChild({that}.container)",
                             priority: "after:render"
                         },
                         "onCreate.notify": {
-                            funcName: "{singleSettingRenderer}.events.onSettingContainerRendered.fire",
+                            funcName: "{settingRenderer}.events.onSettingContainerRendered.fire",
                             // Get the newly created container
                             priority: "after:updateContainer"
                         }
@@ -365,10 +400,10 @@
                         "onCreate.render": {
                             this: "{that}.container",
                             method: "append",
-                            args: "{singleSettingRenderer}.options.markup.setting"
+                            args: "{settingRenderer}.options.markup.setting"
                         },
                         "onCreate.notify": {
-                            funcName: "{singleSettingRenderer}.events.onSettingMarkupRendered.fire",
+                            funcName: "{settingRenderer}.events.onSettingMarkupRendered.fire",
                             // XXX get the widget container
                             // Should match single element
                             args: "@expand:$({that}.options.widgetContainerClass, {that}.container)",
@@ -377,6 +412,9 @@
                     }
                 }
             },
+            /*
+             * Render widget related markup
+             */
             renderWidgetMarkup: {
                 type: "fluid.viewComponent",
                 // the widget container
@@ -387,10 +425,10 @@
                         "onCreate.render": {
                             this: "{that}.container",
                             method: "append",
-                            args: "{singleSettingRenderer}.options.markup.widget"
+                            args: "{settingRenderer}.options.markup.widget"
                         },
                         "onCreate.notify": {
-                            funcName: "{singleSettingRenderer}.events.onWidgetMarkupRendered.fire",
+                            funcName: "{settingRenderer}.events.onWidgetMarkupRendered.fire",
                             priority: "after:render"
                         }
                     }
@@ -414,12 +452,12 @@
         markup: {},
 
         events: {
-            // XXX not quite valid as the widget component also renders
-            onSingleSettingRendered: null
+            // XXX not quite valid as the widget component (in settingPresenter) also renders
+            onSettingRendered: null
         },
         components: {
-            singleSettingRenderer: {
-                type: "gpii.pcp.singleSettingRenderer",
+            settingRenderer: {
+                type: "gpii.pcp.settingRenderer",
                 container: "{that}.container",
 
                 options: {
@@ -427,16 +465,16 @@
                     markup: "{settingVisualizer}.options.markup",
                     listeners: {
                         "onWidgetMarkupRendered.notify": {
-                            funcName: "{settingVisualizer}.events.onSingleSettingRendered.fire",
+                            funcName: "{settingVisualizer}.events.onSettingRendered.fire",
                             // pass the created container
                             args: "{that}.model.settingContainer"
                         }
                     }
                 }
             },
-            singleSettingPresenter: {
-                type: "gpii.pcp.singleSettingPresenter",
-                createOnEvent: "onSingleSettingRendered",
+            settingPresenter: {
+                type: "gpii.pcp.settingPresenter",
+                createOnEvent: "onSettingRendered",
                 container: "{arguments}.0",
                 options: {
                     widgetConfig: "{settingVisualizer}.options.widgetConfig",
@@ -457,10 +495,6 @@
 
     fluid.registerNamespace("gpii.pcp.settingsVisualizer");
 
-    gpii.pcp.settingsVisualizer.getWidgetConfig = function (widgetExemplarsList, schemeType) {
-        // TODO see if inline is possible (fluid api)
-        return widgetExemplarsList.find(function matchType(exemplar) { return exemplar.options.schemeType === schemeType; });
-    };
 
     gpii.pcp.settingsVisualizer.getSettingContainerMarkup = function (markup, containerIndex) {
         // Remove the "." prefix
@@ -468,9 +502,8 @@
         return fluid.stringTemplate(markup.container, { containerClass: containerClass });
     };
 
-    gpii.pcp.settingsVisualizer.getWidgetMarkup = function (resources, widgetGrade) {
-        //TODO improve; use markup if any
-        return resources[widgetGrade] && resources[widgetGrade].resourceText;
+    gpii.pcp.settingsVisualizer.getWidgetMarkup = function (markup, widgetGrade) {
+        return markup[widgetGrade];
     };
 
 
@@ -481,22 +514,26 @@
         });
     };
 
-    // TODO
-    // * doc
+    /*
+     * With markup given, visualizes  of the list of settings passed - rendering and binding of each.
+     *   - settings list;
+     *   - widgetExemplars containing widget related options;
+     *   - markup
+     */
     fluid.defaults("gpii.pcp.settingsVisualizer", {
         gradeNames: "fluid.viewComponent",
-        widgetExemplarsList: [],
-        resources: null,
-        // TODO {M} it should contain all needed markup (squash with resources)
-        markup: {},
-        // general settings markup
-        // Contains general template for settings
+
+        model: {
+            settings: null
+        },
+        widgetExemplars: [],
+        markup: {
+            setting: null,
+            // per widget exemplar property
+        },
         dynamicContainerMarkup: {
             container: "<div class=\"%containerClass\"></div>",
             containerClassPrefix: "flc-settingListRow-%id"
-        },
-        model: {
-            settings: null
         },
         events: {
             onSettingCreated: null
@@ -521,12 +558,11 @@
                     settingIndex: "{arguments}.0",
                     setting: "{arguments}.1",
 
-                    widgetConfig: "@expand:gpii.pcp.settingsVisualizer.getWidgetConfig({settingsVisualizer}.options.widgetExemplarsList, {that}.options.setting.type)",
+                    widgetConfig: "@expand:{settingsVisualizer}.options.widgetExemplars.getExemplarBySchemeType({that}.options.setting.type)",
                     markup: {
                         container: "@expand:gpii.pcp.settingsVisualizer.getSettingContainerMarkup({settingsVisualizer}.options.dynamicContainerMarkup, {that}.options.settingIndex)",
-                        // TODO {M}
-                        setting: "{settingsVisualizer}.options.resources.setting.resourceText", // markup.setting",
-                        widget: "@expand:gpii.pcp.settingsVisualizer.getWidgetMarkup({settingsVisualizer}.options.resources, {that}.options.widgetConfig.options.grade)"
+                        setting: "{settingsVisualizer}.options.markup.setting", // markup.setting",
+                        widget: "@expand:gpii.pcp.settingsVisualizer.getWidgetMarkup({settingsVisualizer}.options.markup, {that}.options.widgetConfig.options.grade)"
                     }
                 }
             }
@@ -541,35 +577,38 @@
             .filter(fluid.isComponent);
     };
 
+    gpii.pcp.settingsPanel.flattenResources = function (resources) {
+        return fluid.keys(resources)
+            .reduce(function (markupMap, resourceKey) {
+                markupMap[resourceKey] = resources[resourceKey].resourceText;
+                return markupMap;
+            }, {});
+    };
+
     gpii.pcp.settingsPanel.getRequiredResources = function (settingExemplar, widgetExemplarsList) {
-        function appendWidgetResources(resources, exemplars) {
-            exemplars.forEach(function (exemplar) {
-                resources[exemplar.options.grade] = exemplar.options.template;
-            });
+        function getWidgetResources(exemplars) {
+            return exemplars.reduce(function (markup, exemplar) {
+                markup[exemplar.options.grade] = exemplar.options.template;
+                return markup;
+            }, {});
         }
 
-        // TODO remove this ugliness
-        var resources = {
+        var settingsVisualizerMarkup = {
             setting:  settingExemplar.options.template
         };
+        var widgetsMarkup = getWidgetResources(widgetExemplarsList);
 
-        appendWidgetResources(resources, widgetExemplarsList);
-
-        return resources;
+        return Object.assign(settingsVisualizerMarkup, widgetsMarkup);
     };
 
     /**
-     * TODO check
-     * Responsible for visualizing the list of user settings.
-     * Behaviour:
-     *  - Loads templates for the setting row and widget that is to be used
-     *  - Once templates are loaded, dynamically creates and supplies container for a `settingRow` element, for every user setting
+     * The top most component for representation of list of settings.
+     * Responsible for fetching all related templates, and visualization of settings
      * Expects: list of settings
      */
     fluid.defaults("gpii.pcp.settingsPanel", {
         gradeNames: "fluid.viewComponent",
         model: {
-            //  pcp specific data (widgets)
             settings: []
         },
 
@@ -593,7 +632,6 @@
             resourcesLoader: {
                 type: "fluid.resourceLoader",
                 options: {
-                    // TODO settingRow component
                     resources: "@expand:gpii.pcp.settingsPanel.getRequiredResources({settingsExemplars}.settingsVisualizerExemplar, {settingsExemplars}.widgetExemplarsList)",
                     listeners: {
                         onResourcesLoaded: "{settingsPanel}.events.onTemplatesLoaded"
@@ -606,13 +644,11 @@
                 createOnEvent: "onTemplatesLoaded",
                 container: "{that}.container",
                 options: {
-                    widgetExemplarsList: "{settingsExemplars}.widgetExemplarsList",
-                    resources: "{resourcesLoader}.resources",
+                    widgetExemplars: "{settingsExemplars}.widgetExemplars",
+                    markup: "@expand:gpii.pcp.settingsPanel.flattenResources({resourcesLoader}.resources)",
                     model: {
                         settings: "{settingsPanel}.model.settings"
                     }
-
-                    //TODO markup: "@expand: getLoadedMarkup"
                 }
             }
         },
@@ -685,7 +721,6 @@
                 container: "{that}.dom.settingsList",
                 createOnEvent: "onAvailableSettngsReceived",
                 options: {
-                    widgetExemplars: "{widgetExemplars}",
                     model: {
                         settings: "{mainWindow}.model.availableSettings"
                     }
@@ -733,9 +768,9 @@
         var main = gpii.pcp.mainWindow("#flc-body");
         console.log(main.settingsPanel);
         console.log(main.settingsPanel.settingsVisualizer);
-        //var renderer = gpii.pcp.settingsPanel.settingsVisualizer.singleSettingRenderer("#flc-body");
+        //var renderer = gpii.pcp.settingsPanel.settingsVisualizer.settingRenderer("#flc-body");
         //console.log(renderer);
-        //var renderer = gpii.pcp.settingsPanel.settingsVisualizer.singleSettingPresenter("#flc-body");
+        //var renderer = gpii.pcp.settingsPanel.settingsVisualizer.settingPresenter("#flc-body");
         //        var x = gpii.pcp.settingsPanel("#flc-settingsPanel");
         //console.log(x);
         // XXX Debuging
