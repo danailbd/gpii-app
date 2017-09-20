@@ -1,0 +1,15 @@
+.fl-radioToggleLabel {
+    cursor: pointer;
+}
+
+.fl-radioToggleLabel + .fl-radioToggleLabel {
+    margin-left: 10px;
+}
+
+.flc-multipickerItem {
+    display: block;
+}
+
+.flc-multipickerItem {
+	cursor: pointer;
+}

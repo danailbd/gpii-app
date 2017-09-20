@@ -12,15 +12,17 @@ https://github.com/GPII/universal/blob/master/LICENSE.txt
 */
 "use strict";
 
+var electron = require("electron");
 var fluid = require("infusion");
 var gpii = fluid.registerNamespace("gpii");
-var electron = require("electron");
-var Menu = electron.Menu;
-var Tray = electron.Tray;
-var BrowserWindow = electron.BrowserWindow;
-
 var path = require("path");
 var request = require("request");
+
+var BrowserWindow = electron.BrowserWindow,
+    Menu = electron.Menu,
+    Tray = electron.Tray,
+    globalShortcut = electron.globalShortcut,
+    ipcMain = electron.ipcMain;
 require("./networkCheck.js");
 
 /*
@@ -47,11 +49,17 @@ fluid.defaults("gpii.app", {
                 args: ["{that}"]
             },
             createOnEvent: "onGPIIReady"
+        },
+        settingsWindow: {
+            expander: {
+                funcName: "gpii.app.makeSettingsWindow"
+            },
+            createOnEvent: "onGPIIReady"
         }
     },
     components: {
         menu: {
-            type: "gpii.app.menuInApp",
+            type: "gpii.app.menuInAppDev",
             createOnEvent: "onGPIIReady"
         },
         networkCheck: { // Network check component to meet GPII-2349
@@ -85,6 +93,14 @@ fluid.defaults("gpii.app", {
             "this": "{that}.tray",
             method: "setToolTip",
             args: ["{that}.options.labels.tooltip"]
+        },
+        "onCreate.addPcpShortcut": {
+            listener: "{that}.addPcpShortcut",
+            args: ["{that}", "{that}.settingsWindow", "{that}.tray"]
+        },
+        "onCreate.addCommunicationChannel": {
+            listener: "{that}.addCommunicationChannel",
+            args: ["{that}"]
         }
     },
     invokers: {
@@ -99,6 +115,16 @@ fluid.defaults("gpii.app", {
         keyOut: {
             funcName: "gpii.app.keyOut",
             args: ["{arguments}.0"]
+        },
+        openSettings: {
+            funcName: "gpii.app.openSettings",
+            args: ["{that}.model.keyedInUserToken", "{arguments}.0"]
+        },
+        addPcpShortcut: {
+            funcName: "gpii.app.addPcpShortcut"
+        },
+        addCommunicationChannel: {
+            funcName: "gpii.app.addCommunicationChannel"
         },
         exit: {
             funcName: "gpii.app.exit",
@@ -153,7 +179,7 @@ gpii.app.makeWaitDialog = function () {
 
 /**
   * Refreshes the task tray menu for the GPII Application using the menu in the model
-  * @param tray {Object} An Electron 'Tray' object.
+  * @param tray {Object} An Electron "Tray" object.
   * @param menuTemplate {Array} A nested array that is the menu template for the GPII Application.
   * @param events {Object} An object containing the events that may be fired by items in the menu.
   */
@@ -221,6 +247,76 @@ gpii.app.exit = function (that) {
     } else {
         gpii.app.performQuit();
     }
+};
+
+gpii.app.addCommunicationChannel = function (that) {
+    ipcMain.on("closeSettingsWindow", function () {
+        that.settingsWindow.hide();
+    });
+
+    ipcMain.on("keyOut", function () {
+        that.settingsWindow.hide();
+        that.keyOut(that.model.keyedInUserToken);
+    });
+
+    ipcMain.on("updateSetting", function (event, arg) {
+        var message = fluid.stringTemplate("Updating setting with path \"%path\" to %value", {
+            path: arg.path,
+            value: arg.value
+        });
+        console.log(message);
+    });
+};
+
+/**
+ * Creates an Electron BrowserWindow which is to be used for settings management
+ */
+gpii.app.makeSettingsWindow = function () {
+    var screenSize = electron.screen.getPrimaryDisplay().workAreaSize;
+    // TODO Make window size relative to the screen size
+    var settingsWindow = new BrowserWindow({
+        width: 500,
+        height: 600,
+        frame: false,
+        fullscreenable: false,
+        resizable: false,
+        x: screenSize.width - 500,
+        y: screenSize.height - 600
+    });
+    var url = fluid.stringTemplate("file://%dirName/html/settings.html", {
+        dirName: __dirname
+    });
+    settingsWindow.loadURL(url);
+    settingsWindow.webContents.openDevTools();
+
+    // settingsWindow.on("blur", function () {
+    //     settingsWindow.hide();
+    // });
+
+    return settingsWindow;
+};
+
+/**
+ * Shows the passed Electron `BrowserWindow`
+ *
+ * @param keyedInUserToken {String} An user token.
+ * @param settingsWindow {Object} An Electron `BrowserWindow`.
+ */
+gpii.app.openSettings = function (keyedInUserToken, settingsWindow) {
+    if (!keyedInUserToken || settingsWindow.isVisible()) {
+        return;
+    }
+
+    settingsWindow.show();
+    settingsWindow.focus();
+
+    settingsWindow.webContents.send("message", "Example message. Can be of any type.");
+};
+
+gpii.app.addPcpShortcut = function (that, settingsWindow, tray) {
+    globalShortcut.register("CommandOrControl+Alt+P", function () {
+        that.openSettings(settingsWindow, tray);
+    });
 };
 
 /**
@@ -381,6 +477,11 @@ fluid.defaults("gpii.app.menuInApp", {
         // onExit
         "onExit.performExit": {
             listener: "{app}.exit"
+        },
+
+        "onSettings.performSettings": {
+            listener: "{app}.openSettings",
+            args: ["{app}.settingsWindow", "{app}.tray"]
         }
     }
 });
@@ -464,12 +565,20 @@ fluid.defaults("gpii.app.menu", {
             },
             priority: "after:userName"
         },
+        "openSettings": {
+            target: "openSettings",
+            singleTransform: {
+                type: "fluid.transforms.free",
+                func: "gpii.app.menu.getOpenSettings",
+                args: ["{that}.model.keyedInUserToken", "{that}.model.userName", "{that}.options.menuLabels.settings"]
+            }
+        },
         "menuTemplate:": {
             target: "menuTemplate",
             singleTransform: {
                 type: "fluid.transforms.free",
                 func: "gpii.app.menu.generateMenuTemplate",
-                args: ["{that}.model.keyedInUser", "{that}.model.keyOut", "{that}.options.snapsets", "{that}.options.exit"]
+                args: ["{that}.model.openSettings", "{that}.model.keyedInUser", "{that}.model.keyOut", "{that}.options.snapsets", "{that}.options.exit"]
             },
             priority: "last"
         }
@@ -479,6 +588,7 @@ fluid.defaults("gpii.app.menu", {
         click: "onExit"
     },
     menuLabels: {
+        settings: "Open Settings",
         keyedIn: "Keyed in with %userTokenName",    // string template
         keyOut: "Key out %userTokenName",           // string template
         notKeyedIn: "Not keyed in",
@@ -488,7 +598,8 @@ fluid.defaults("gpii.app.menu", {
     events: {
         onKeyIn: null,
         onKeyOut: null,
-        onExit: null
+        onExit: null,
+        onSettings: null
     }
 });
 
@@ -527,6 +638,20 @@ gpii.app.menu.getKeyOut = function (keyedInUserToken, name, keyOutStrTemp) {
     return keyOut;
 };
 
+gpii.app.menu.getOpenSettings = function (keyedInUserToken, name, openSettingsStr) {
+    var openSettings = null;
+
+    if (keyedInUserToken) {
+        openSettings = {
+            label: openSettingsStr,
+            click: "onSettings",
+            token: keyedInUserToken
+        };
+    }
+
+    return openSettings;
+};
+
 /**
   * Creates a JSON representation of a menu.
   * @param {Object} An object containing a menu item template.
@@ -544,7 +669,7 @@ gpii.app.menu.generateMenuTemplate = function (/* all the items in the menu */) 
 };
 
 /**
-  * Takes a JSON array that represents a menu template and expands the 'click' entries into functions
+  * Takes a JSON array that represents a menu template and expands the "click" entries into functions
   * that fire the appropriate event.
   * @param events {Object} An object that contains the events that might be fired from an item in the menu.
   * @param menuTemplate {Array} A JSON array that represents a menu template
