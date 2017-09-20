@@ -124,7 +124,9 @@
         grade: null,
         schemeType: null,
         widgetOptions: {
-            // TODO doc
+            // proper model bindings and options
+            model: null,
+            attrs: {}
         }
     });
 
@@ -375,7 +377,6 @@
                         },
                         "onCreate.updateContainer": {
                             funcName: "{settingRenderer}.setContainer",
-                            // TODO test
                             args: "@expand:gpii.pcp.getContainerLastChild({that}.container)",
                             priority: "after:render"
                         },
@@ -404,8 +405,10 @@
                         },
                         "onCreate.notify": {
                             funcName: "{settingRenderer}.events.onSettingMarkupRendered.fire",
-                            // XXX get the widget container
-                            // Should match single element
+                            /*
+                             * Get the widget container.
+                             * Should match single element (jquery returns an array of matches)
+                             */
                             args: "@expand:$({that}.options.widgetContainerClass, {that}.container)",
                             priority: "after:render"
                         }
@@ -444,15 +447,23 @@
     });
 
 
+    /**
+     * Handles visualization of single setting.
+     * Expects: markup for the all containers and the widget; widgetConfig needed for the setting; the setting
+     */
     fluid.defaults("gpii.pcp.settingVisualizer",  {
         gradeNames: "fluid.viewComponent",
 
         setting: null,
         widgetConfig: null,
-        markup: {},
+        markup: {
+            container: null,
+            setting: null,
+            widget: null
+        },
 
         events: {
-            // XXX not quite valid as the widget component (in settingPresenter) also renders
+            // XXX not quite valid naming as the widget component (in settingPresenter) also renders
             onSettingRendered: null
         },
         components: {
@@ -461,12 +472,11 @@
                 container: "{that}.container",
 
                 options: {
-                    // TODO matches wrong item
                     markup: "{settingVisualizer}.options.markup",
                     listeners: {
                         "onWidgetMarkupRendered.notify": {
                             funcName: "{settingVisualizer}.events.onSettingRendered.fire",
-                            // pass the created container
+                            // pass the created by the subcomponent container
                             args: "{that}.model.settingContainer"
                         }
                     }
@@ -496,14 +506,28 @@
     fluid.registerNamespace("gpii.pcp.settingsVisualizer");
 
 
-    gpii.pcp.settingsVisualizer.getSettingContainerMarkup = function (markup, containerIndex) {
+    /**
+     * Constructs the markup for the indexed container - sets proper index.
+     *
+     * @param markup {Object}
+     * @param markup.containerClassPrefix {String} The class prefix for the indexed container.
+     *   Should have a `id` interpolated expression.
+     * @param markup.container {String} The markup which is to be interpolated with the container index.
+     *   Should have a `containerClass` interpolated expression.
+     * @param containerIndex {Number} The index for the container
+     * @returns {String}
+     */
+    gpii.pcp.settingsVisualizer.getIndexedContainerMarkup = function (markup, containerIndex) {
         // Remove the "." prefix
         var containerClass = fluid.stringTemplate(markup.containerClassPrefix, { id: containerIndex });
         return fluid.stringTemplate(markup.container, { containerClass: containerClass });
     };
 
-    gpii.pcp.settingsVisualizer.getWidgetMarkup = function (markup, widgetGrade) {
-        return markup[widgetGrade];
+    /**
+     * Simple getter for the property that supports complex keys containing '.' (dots).
+     */
+    gpii.pcp.getProperty = function (obj, property) {
+        return obj && obj[property];
     };
 
 
@@ -515,7 +539,8 @@
     };
 
     /*
-     * With markup given, visualizes  of the list of settings passed - rendering and binding of each.
+     * With markup given, visualizes the list of settings passed - rendering and binding of each.
+     * Expects:
      *   - settings list;
      *   - widgetExemplars containing widget related options;
      *   - markup
@@ -560,9 +585,9 @@
 
                     widgetConfig: "@expand:{settingsVisualizer}.options.widgetExemplars.getExemplarBySchemeType({that}.options.setting.type)",
                     markup: {
-                        container: "@expand:gpii.pcp.settingsVisualizer.getSettingContainerMarkup({settingsVisualizer}.options.dynamicContainerMarkup, {that}.options.settingIndex)",
+                        container: "@expand:gpii.pcp.settingsVisualizer.getIndexedContainerMarkup({settingsVisualizer}.options.dynamicContainerMarkup, {that}.options.settingIndex)",
                         setting: "{settingsVisualizer}.options.markup.setting", // markup.setting",
-                        widget: "@expand:gpii.pcp.settingsVisualizer.getWidgetMarkup({settingsVisualizer}.options.markup, {that}.options.widgetConfig.options.grade)"
+                        widget: "@expand:gpii.pcp.getProperty({settingsVisualizer}.options.markup, {that}.options.widgetConfig.options.grade)"
                     }
                 }
             }
@@ -577,6 +602,12 @@
             .filter(fluid.isComponent);
     };
 
+    /**
+     * Simplifies the `fluid.resourcesLoader`'s resource object, to supply only the fetched data.
+     *
+     * @param resources {Object} The `fluid.resourceLoader`'s `resource` object after fetch.
+     * @returns {Object} Object with properties like: `{resourceKey}: {resourceText}`
+     */
     gpii.pcp.settingsPanel.flattenResources = function (resources) {
         return fluid.keys(resources)
             .reduce(function (markupMap, resourceKey) {
@@ -585,7 +616,14 @@
             }, {});
     };
 
-    gpii.pcp.settingsPanel.getRequiredResources = function (settingExemplar, widgetExemplarsList) {
+    /**
+     * Resources that are to be fetched - settings inner container and widgets'.
+     *
+     * @param settingExemplar {Object} A 'gpii.pcp.exemplar.settingsVisualizer' object.
+     *   Note: it has a fixed key.
+     * @param widgetExemplarsList {Object[]} The list of `gpii.pcp.exemplar`-s
+     */
+    gpii.pcp.settingsPanel.getResourcesToFetch = function (settingExemplar, widgetExemplarsList) {
         function getWidgetResources(exemplars) {
             return exemplars.reduce(function (markup, exemplar) {
                 markup[exemplar.options.grade] = exemplar.options.template;
@@ -632,7 +670,7 @@
             resourcesLoader: {
                 type: "fluid.resourceLoader",
                 options: {
-                    resources: "@expand:gpii.pcp.settingsPanel.getRequiredResources({settingsExemplars}.settingsVisualizerExemplar, {settingsExemplars}.widgetExemplarsList)",
+                    resources: "@expand:gpii.pcp.settingsPanel.getResourcesToFetch({settingsExemplars}.settingsVisualizerExemplar, {settingsExemplars}.widgetExemplarsList)",
                     listeners: {
                         onResourcesLoaded: "{settingsPanel}.events.onTemplatesLoaded"
                     }
