@@ -126,19 +126,43 @@
         }
     };
 
+    /**
+     * A function which is executed while the user is dragging the
+     * thumb of a slider.
+     * @param that {Component} An instance of a slider component.
+     * @param container {Object} The jQuery object representing the
+     * slider input.
+     */
+    gpii.pcp.widgets.onSlide = function (that, container) {
+        var value = container.val();
+        that.applier.change("stringValue", value, null, "slide");
+    };
+
     fluid.defaults("gpii.pcp.widgets.slider", {
         gradeNames: ["fluid.textfieldSlider"],
         components: {
             slider: {
                 options: {
                     listeners: {
-                        // XXX: This is needed in order not to update the model too frequently.
-                        // However, the value of the textfield is not updated until the slider
-                        // is released which may not be desired. Need to create a wrapper which
-                        // will update the textfield as the slider is moved and to propagate
-                        // model changes only when the slider is released.
                         "onCreate.bindSlideEvt": {
-                            funcName: "gpii.pcp.widgets.noop"
+                            "this": "{that}.container",
+                            "method": "on",
+                            "args": ["input", "{that}.onSlide"]
+                        },
+                        "onCreate.bindRangeChangeEvt": {
+                            "this": "{that}.container",
+                            "method": "on",
+                            "args": ["change", "{that}.onSlideEnd"]
+                        }
+                    },
+                    invokers: {
+                        onSlide: {
+                            funcName: "gpii.pcp.widgets.onSlide",
+                            args: ["{that}", "{that}.container"]
+                        },
+                        onSlideEnd: {
+                            changePath: "number",
+                            value: "{that}.model.value"
                         }
                     }
                 }
@@ -146,9 +170,35 @@
         }
     });
 
+    /**
+     * The `stepper` has two important model properties: `number` and
+     * `value`. `number` is the actual value that this input represents.
+     * `value` represents a temporary state which may not always be the
+     * same as `number` (e.g. while the user is dragging the thumb of the
+     * slider, `value` changes continuously while `number` changes only
+     * when the user releases the thumb). This means that `number` should
+     * be used if changes to the actual model value should be observed from
+     * outer components.
+     */
     fluid.defaults("gpii.pcp.widgets.stepper", {
         gradeNames: ["fluid.textfieldStepper"],
         scale: 1,
+        modelRelay: {
+            "value": {
+                target: "value",
+                singleTransform: {
+                    type: "fluid.transforms.identity",
+                    input: "{that}.model.number"
+                }
+            }
+        },
+        modelListeners: {
+            "value": {
+                changePath: "number",
+                value: "{change}.value",
+                excludeSource: ["init", "slide"]
+            }
+        },
         components: {
             slider: {
                 type: "gpii.pcp.widgets.slider",
@@ -159,6 +209,11 @@
                     selectors: {
                         textfield: ".flc-textfieldStepper-field"
                     }
+                }
+            },
+            textfield: {
+                options: {
+                    model: "{stepper}.model"
                 }
             }
         }
