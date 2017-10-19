@@ -22,7 +22,8 @@ var BrowserWindow = electron.BrowserWindow,
     Menu = electron.Menu,
     Tray = electron.Tray,
     globalShortcut = electron.globalShortcut,
-    ipcMain = electron.ipcMain;
+    ipcMain = electron.ipcMain,
+    systemPreferences = electron.systemPreferences;
 var ws = require("ws");
 require("./networkCheck.js");
 
@@ -474,6 +475,14 @@ gpii.app.extractPreferencesData = function (message) {
  * @param pcp {Object} The `gpii.app.pcp` instance
  */
 gpii.app.registerPCPListener = function (socket, gpiiConnector, pcp) {
+    pcp.pcpWindow.once("ready-to-show", function () {
+        pcp.notifyPCPWindow("accentColorChanged", systemPreferences.getAccentColor());
+    });
+
+    systemPreferences.on("accent-color-changed", function (event, accentColor) {
+        pcp.notifyPCPWindow("accentColorChanged", accentColor);
+    });
+
     socket.on("message", function (rawData) {
         var data = JSON.parse(rawData),
             operation = data.type,

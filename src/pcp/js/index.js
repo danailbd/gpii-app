@@ -7,6 +7,11 @@
 
     fluid.registerNamespace("gpii.pcp");
 
+    gpii.pcp.setThemeColors = function (accentColor) {
+        var mainColor = "#" + accentColor.slice(0, 6);
+        $("#theme-colors").text(":root{ --main-color: " + mainColor + "; }");
+    };
+
     /**
      * Registers callbacks to be invoked whenever the main electron
      * process sends a corresponding message.
@@ -23,6 +28,10 @@
 
         ipcRenderer.on("keyOut", function (event, preferences) {
             that.updatePreferences(preferences);
+        });
+
+        ipcRenderer.on("accentColorChanged", function (event, accentColor) {
+            gpii.pcp.setThemeColors(accentColor);
         });
     };
 
