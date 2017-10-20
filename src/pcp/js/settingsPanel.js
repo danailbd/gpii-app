@@ -328,7 +328,7 @@
                     settingIndex: "{arguments}.0",
                     setting: "{arguments}.1",
 
-                    widgetConfig: "@expand:{settingsVisualizer}.options.widgetExemplars.getExemplarBySchemeType({that}.options.setting.type)",
+                    widgetConfig: "@expand:{settingsVisualizer}.options.widgetExemplars.getExemplarBySchemaType({that}.options.setting.type)",
                     markup: {
                         container: "@expand:gpii.pcp.settingsVisualizer.getIndexedContainerMarkup({settingsVisualizer}.options.dynamicContainerMarkup, {that}.options.settingIndex)",
                         setting: "{settingsVisualizer}.options.markup.setting", // markup.setting",

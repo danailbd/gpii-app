@@ -352,36 +352,38 @@ gpii.app.pcp.notifyPCPWindow = function (pcpWindow, messageChannel, message) {
 };
 
 /**
+* Get the position of `Electron` `BrowserWindows`
+* @param {Number} width The current width of the window
+* @param {Number} height The current height of the window
+* @return {{x: Number, y: Number}}
+*/
+gpii.app.getWindowPosition = function (width, height) {
+    var screenSize = electron.screen.getPrimaryDisplay().workAreaSize;
+    return {
+        x: screenSize.width - width,
+        y: screenSize.height - height
+    };
+};
+
+
+/**
  * Creates an Electron `BrowserWindow` that is to be used as the PCP window
  *
- * @param width {Number} The desired width of the window
- * @param height {Number} The desired height of the window
+ * @param {Object} windowOptions Raw options to be passed to the `BrowserWindow`
+ * @param {Object} position Position for the `Electron` `BrowserWindow`
  * @returns {Object} The created Electron `BrowserWindow`
  */
-gpii.app.pcp.makePCPWindow = function (width, height) {
-    var screenSize = electron.screen.getPrimaryDisplay().workAreaSize;
+gpii.app.pcp.makePCPWindow = function (windowOptions, position) {
     // TODO Make window size relative to the screen size
-    var pcpWindow = new BrowserWindow({
-        width: width,
-        height: height,
-        show: false,
-        frame: false,
-        fullscreenable: false,
-        resizable: false,
-        alwaysOnTop: true,
-        skipTaskbar: true,
-        x: screenSize.width - width,
-        y: screenSize.height - height,
-        backgroundColor: "transparent"
-    });
+    var pcpWindow = new BrowserWindow(windowOptions);
+
+    pcpWindow.setPosition(position.x, position.y);
 
     pcpWindow.on("blur", function () {
         pcpWindow.hide();
     });
 
-    var url = fluid.stringTemplate("file://%dirName/pcp/index.html", {
-        dirName: __dirname
-    });
+    var url = fluid.stringTemplate("file://%gpii-app/src/pcp/index.html", fluid.module.terms());
     pcpWindow.loadURL(url);
 
     return pcpWindow;
@@ -624,14 +626,24 @@ fluid.defaults("gpii.app.pcp", {
      */
     attrs: {
         width: 500,
-        height: 600
+        height: 600,
+        show: false,
+        frame: false,
+        fullscreenable: false,
+        resizable: false,
+        alwaysOnTop: true,
+        skipTaskbar: true,
+        backgroundColor: "transparent",
     },
 
     members: {
         pcpWindow: {
             expander: {
                 funcName: "gpii.app.pcp.makePCPWindow",
-                args: ["{that}.options.attrs.width", "{that}.options.attrs.height"]
+                args: [
+                    "{that}.options.attrs",
+                    "@expand:{that}.getWindowPosition()"
+                ]
             }
         }
     },
@@ -653,6 +665,10 @@ fluid.defaults("gpii.app.pcp", {
         notifyPCPWindow: {
             funcName: "gpii.app.pcp.notifyPCPWindow",
             args: ["{that}.pcpWindow", "{arguments}.0", "{arguments}.1"]
+        },
+        getWindowPosition: {
+            funcName: "gpii.app.getWindowPosition",
+            args: ["{that}.options.attrs.width", "{that}.options.attrs.height"]
         }
     }
 });
@@ -772,12 +788,23 @@ gpii.app.getTrayTooltip = function (preferences, defaultTooltip) {
     return activePreferenceSet ? activePreferenceSet.name : defaultTooltip;
 };
 
+
 /**
  * Component that contains an Electron Dialog.
  */
 
 fluid.defaults("gpii.app.dialog", {
     gradeNames: "fluid.modelComponent",
+
+    attrs: {
+        width: 800,
+        height: 600,
+        show: false,
+        frame: false,
+        transparent: true,
+        alwaysOnTop: true,
+        skipTaskBar: true
+    },
     model: {
         showDialog: false,
         dialogMinDisplayTime: 2000, // minimum time to display dialog to user in ms
@@ -787,7 +814,11 @@ fluid.defaults("gpii.app.dialog", {
     members: {
         dialog: {
             expander: {
-                funcName: "gpii.app.makeWaitDialog"
+                funcName: "gpii.app.makeWaitDialog",
+                args: [
+                    "{that}.options.attrs",
+                    "@expand:{that}.getWindowPosition()"
+                ]
             }
         }
     },
@@ -799,6 +830,15 @@ fluid.defaults("gpii.app.dialog", {
     },
     listeners: {
         "onDestroy.clearTimers": "gpii.app.clearTimers({that})"
+    }, 
+    invokers: {
+        getWindowPosition: {
+            funcName: "gpii.app.getWindowPosition",
+            args: [
+                "{that}.options.attrs.width", 
+                "{that}.options.attrs.height" 
+            ]
+        }
     }
 });
 
@@ -811,22 +851,11 @@ gpii.app.clearTimers = function (that) {
  * Creates a dialog. This is done up front to avoid the delay from creating a new
  * dialog every time a new message should be displayed.
  */
-gpii.app.makeWaitDialog = function () {
-    var screenSize = electron.screen.getPrimaryDisplay().workAreaSize;
+gpii.app.makeWaitDialog = function (windowOptions, position) {
+    var dialog = new BrowserWindow(windowOptions);
+    dialog.setPosition(position.x, position.y);
 
-    var dialog = new BrowserWindow({
-        show: false,
-        frame: false,
-        transparent: true,
-        alwaysOnTop: true,
-        skipTaskBar: true,
-        x: screenSize.width - 900, // because the default width is 800
-        y: screenSize.height - 600 // because the default height is 600
-    });
-
-    var url = fluid.stringTemplate("file://%dirName/pcp/html/message.html", {
-        dirName: __dirname
-    });
+    var url = fluid.stringTemplate("file://%gpii-app/src/pcp/html/message.html", fluid.module.terms());
     dialog.loadURL(url);
     return dialog;
 };
