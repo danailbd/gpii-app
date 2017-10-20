@@ -45,19 +45,19 @@ require("electron").app.on("ready", gpii.app.electronAppListener);
  * Responsible for creation and housekeeping of the connection to the PCP Channel WebSocket
  */
 fluid.defaults("gpii.app.gpiiConnector", {
-    gradeNames: "fluid.modelComponent",
+    gradeNames: "fluid.component",
 
     // Configuration regarding the socket connection
     config: {
         gpiiWSUrl: "ws://localhost:8081/pcpChannel"
     },
 
-    model: {
+    members: {
         socket: "@expand:gpii.app.createGPIIConnection({that}.options.config)"
     },
 
     events: {
-        onPreferencesUpdate: null
+        onPreferencesUpdated: null
     },
 
     listeners: {
@@ -69,18 +69,18 @@ fluid.defaults("gpii.app.gpiiConnector", {
     invokers: {
         registerPCPListener: {
             funcName: "gpii.app.registerPCPListener",
-            args: ["{that}.model.socket", "{that}", "{arguments}.0"]
+            args: ["{that}.socket", "{that}", "{arguments}.0"]
         },
         updateSetting: {
             funcName: "gpii.app.gpiiConnector.updateSetting",
-            args: ["{that}.model.socket", "{arguments}.0"]
+            args: ["{that}.socket", "{arguments}.0"]
         },
         updateActivePrefSet: {
             funcName: "gpii.app.gpiiConnector.updateActivePrefSet",
-            args: ["{that}.model.socket", "{arguments}.0"]
+            args: ["{that}.socket", "{arguments}.0"]
         },
         closeConnection: {
-            this: "{that}.model.socket",
+            this: "{that}.socket",
             method: "close",
             // for ref https://developer.mozilla.org/en-US/docs/Web/API/CloseEvent#Status_codes
             args: [1000]
@@ -110,7 +110,7 @@ gpii.app.gpiiConnector.updateSetting = function (socket, setting) {
 /**
  * Send active set change request to GPII.
  *
- * @param socket {Object} The already connected WebSocket instance
+ * @param socket {ws} The already connected `ws`(`WebSocket`) instance
  * @param newPrefSet {String} The id of the new preference set
  */
 gpii.app.gpiiConnector.updateActivePrefSet = function (socket, newPrefSet) {
@@ -136,13 +136,14 @@ fluid.defaults("gpii.app", {
             activeSet: null
         }
     },
+    // prerequisites
     components: {
         gpiiConnector: {
             type: "gpii.app.gpiiConnector",
-            createOnEvent: "onPrequisitesReady",
+            createOnEvent: "onPrerequisitesReady",
             options: {
                 listeners: {
-                    "onPreferencesUpdate.updateSets": {
+                    "onPreferencesUpdated.updateSets": {
                         listener: "{app}.updatePreferences",
                         args: "{arguments}.0"
                     }
@@ -151,7 +152,7 @@ fluid.defaults("gpii.app", {
         },
         pcp: {
             type: "gpii.app.pcp",
-            createOnEvent: "onPrequisitesReady",
+            createOnEvent: "onPrerequisitesReady",
             options: {
                 model: {
                     keyedInUserToken: "{app}.model.keyedInUserToken"
@@ -167,7 +168,7 @@ fluid.defaults("gpii.app", {
         },
         tray: {
             type: "gpii.app.tray",
-            createOnEvent: "onPrequisitesReady",
+            createOnEvent: "onPrerequisitesReady",
             options: {
                 model: {
                     keyedInUserToken: "{gpii.app}.model.keyedInUserToken"
@@ -178,7 +179,7 @@ fluid.defaults("gpii.app", {
         },
         dialog: {
             type: "gpii.app.dialog",
-            createOnEvent: "onPrequisitesReady",
+            createOnEvent: "onPrerequisitesReady",
             options: {
                 model: {
                     showDialog: "{gpii.app}.model.showDialog"
@@ -190,7 +191,7 @@ fluid.defaults("gpii.app", {
         }
     },
     events: {
-        onPrequisitesReady: {
+        onPrerequisitesReady: {
             events: {
                 onGPIIReady: "onGPIIReady",
                 onAppReady: "onAppReady"
@@ -486,7 +487,7 @@ gpii.app.registerPCPListener = function (socket, gpiiConnector, pcp) {
                  * "Keyed in" data has been received
                  */
                 preferences = gpii.app.extractPreferencesData(data);
-                gpiiConnector.events.onPreferencesUpdate.fire(preferences);
+                gpiiConnector.events.onPreferencesUpdated.fire(preferences);
                 pcp.notifyPCPWindow("keyIn", preferences);
             } else {
                 /*
@@ -501,7 +502,7 @@ gpii.app.registerPCPListener = function (socket, gpiiConnector, pcp) {
             }
         } else if (operation === "DELETE") {
             preferences = gpii.app.extractPreferencesData(data);
-            gpiiConnector.events.onPreferencesUpdate.fire(preferences);
+            gpiiConnector.events.onPreferencesUpdated.fire(preferences);
             pcp.notifyPCPWindow("keyOut", preferences);
         }
     });
@@ -1138,11 +1139,26 @@ gpii.app.menu.getUserName = function (userToken) {
     return name;
 };
 
+
+/**
+*  Object representing options for a `Electron` `ContextMenu` item.
+ * @typedef {Object} ElectronMenuItem
+ * @property {String} label The label that will be visualized in the menu
+ * @property {String} enabled Whether the menu item is enabled
+ * @property {String} [type] The type of the menu item
+ * @property {String} [click] The event that is fired when the menu item is clicked
+ * @property {Object} [args] The arguments to be passed to the click handler
+ *               Currently in use
+ * @property {String} [args.token] The user token
+ * @property {String} [args.path] The path of the setting
+ */
+
 /**
   * Generates an object that represents the menu item for keying in.
   * @param keyedInUserToken {String} The user token that is currently keyed in.
   * @param name {String} The name of the user who is keyed in.
   * @param keyedInStrTemp {String} The string template for the label when a user is keyed in.
+  * @return {ElectronMenuItem}
   */
 gpii.app.menu.getKeyedInUser = function (keyedInUserToken, name, keyedInStrTemp) {
     var keyedInUser = null;
@@ -1164,6 +1180,7 @@ gpii.app.menu.getKeyedInUser = function (keyedInUserToken, name, keyedInStrTemp)
   * if there is a keyed in user.
   * @param notKeyedInStr {String} The string to be displayed when a user is not
   * keyed in.
+  * @return {ElectronMenuItem}
   */
 gpii.app.menu.getKeyOut = function (keyedInUserToken, keyOutStr, notKeyedInStr) {
     var keyOut;
@@ -1193,8 +1210,7 @@ gpii.app.menu.getKeyOut = function (keyedInUserToken, keyOutStr, notKeyedInStr) 
  * context menu of a {Tray} object.
  * @param preferenceSets {Array} An array of all preference sets for the user.
  * @param activeSet {String} The path of the currently active preference set.
- * @return An array representing the menu items related to a user's
- * preference set.
+ * @return {ElectronMenuItem[]}
  */
 gpii.app.menu.getPreferenceSetsMenuItems = function (preferenceSets, activeSet) {
     var preferenceSetsLabels,
@@ -1224,7 +1240,7 @@ gpii.app.menu.getPreferenceSetsMenuItems = function (preferenceSets, activeSet) 
   * Generates an object that represents the menu items for opening the settings panel
   * @param keyedInUserToken {String} The user token that is currently keyed in.
   * @param openSettingsStr {String} The string to be displayed for the open setting panel menu item.
-  * @returns {Object}
+  * @returns {ElectronMenuItem}
   */
 gpii.app.menu.getShowPCP = function (keyedInUserToken, openSettingsStr) {
     return {
