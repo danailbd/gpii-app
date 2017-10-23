@@ -17,6 +17,7 @@ var fluid = require("infusion");
 var gpii = fluid.registerNamespace("gpii");
 var path = require("path");
 var request = require("request");
+var os = require("os");
 
 var BrowserWindow = electron.BrowserWindow,
     Menu = electron.Menu,
@@ -467,6 +468,36 @@ gpii.app.extractPreferencesData = function (message) {
     };
 };
 
+/**
+ * Returns whether the underlying OS is Windows 10 or not.
+ * @return {Boolean} `true` if the underlying OS is Windows 10 or
+ * `false` otherwise.
+ */
+gpii.app.isWin10OS = function () {
+    var osRelease = os.release(),
+        delimiter = osRelease.indexOf("."),
+        majorVersion = osRelease.slice(0, delimiter);
+    return majorVersion === "10";
+};
+
+/**
+ * This function takes care of notifying the PCP window whenever the
+ * user changes the accent color of the OS theme. Available only if
+ * the application is used on Windows 10.
+ * @param pcp {Object} The `gpii.app.pcp` instance
+ */
+gpii.app.registerAccentColorListener = function (pcp) {
+    if (gpii.app.isWin10OS()) {
+        pcp.pcpWindow.once("ready-to-show", function () {
+            pcp.notifyPCPWindow("accentColorChanged", systemPreferences.getAccentColor());
+        });
+
+        systemPreferences.on("accent-color-changed", function (event, accentColor) {
+            pcp.notifyPCPWindow("accentColorChanged", accentColor);
+        });
+    }
+};
+
 
 /**
  * Register listeners for messages from the GPII socket connection.
@@ -475,13 +506,7 @@ gpii.app.extractPreferencesData = function (message) {
  * @param pcp {Object} The `gpii.app.pcp` instance
  */
 gpii.app.registerPCPListener = function (socket, gpiiConnector, pcp) {
-    pcp.pcpWindow.once("ready-to-show", function () {
-        pcp.notifyPCPWindow("accentColorChanged", systemPreferences.getAccentColor());
-    });
-
-    systemPreferences.on("accent-color-changed", function (event, accentColor) {
-        pcp.notifyPCPWindow("accentColorChanged", accentColor);
-    });
+    gpii.app.registerAccentColorListener(pcp);
 
     socket.on("message", function (rawData) {
         var data = JSON.parse(rawData),
