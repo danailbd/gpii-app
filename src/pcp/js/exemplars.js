@@ -20,7 +20,8 @@
         schemaType: null,
         widgetOptions: {
             // proper model bindings and options
-            model: null
+            model: null,
+            // attrs: null
         }
     });
 
@@ -38,10 +39,13 @@
         schemaType: "array",
         widgetOptions: {
             model: {
-                path: "{settingPresenter}.model.path",
                 values: "{settingPresenter}.model.values",
                 names: "{settingPresenter}.model.values",
                 value: "{settingPresenter}.model.value"
+            },
+            attrs: {
+                "aria-labelledby": "{settingPresenter}.model.path",
+                name: "{settingPresenter}.model.path"
             }
         }
     });
@@ -53,10 +57,12 @@
         schemaType: "boolean",
         widgetOptions: {
             model: {
-                path: "{settingPresenter}.model.path",
                 name: "{settingPresenter}.model.path",
                 title: "{settingPresenter}.model.title",
                 enabled: "{settingPresenter}.model.value"
+            },
+            attrs: {
+                "aria-labelledby": "{settingPresenter}.model.path"
             }
         }
     });
@@ -68,10 +74,12 @@
         schemaType: "string",
         widgetOptions: {
             model: {
-                path: "{settingPresenter}.model.path",
                 optionNames: "{settingPresenter}.model.values",
                 optionList: "{settingPresenter}.model.values",
                 selection: "{settingPresenter}.model.value"
+            },
+            attrs: {
+                "aria-labelledby": "{settingPresenter}.model.path"
             }
         }
     });
@@ -83,13 +91,15 @@
         schemaType: "number",
         widgetOptions: {
             model: {
-                path: "{settingPresenter}.model.path",
                 number: "{settingPresenter}.model.value",
                 step: "{settingPresenter}.model.divisibleBy",
                 range: {
                     min: "{settingPresenter}.model.min",
                     max: "{settingPresenter}.model.max"
                 }
+            },
+            attrs: {
+                "aria-labelledby": "{settingPresenter}.model.path"
             }
         }
     });
@@ -101,8 +111,10 @@
         schemaType: "text",
         widgetOptions: {
             model: {
-                path: "{settingPresenter}.model.path",
                 value: "{settingPresenter}.model.value"
+            },
+            attrs: {
+                "aria-labelledby": "{settingPresenter}.model.path"
             }
         }
     });
