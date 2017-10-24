@@ -7,11 +7,6 @@
 
     fluid.registerNamespace("gpii.pcp");
 
-    gpii.pcp.setThemeColors = function (accentColor) {
-        var mainColor = "#" + accentColor.slice(0, 6);
-        $("#theme-colors").text(":root{ --main-color: " + mainColor + "; }");
-    };
-
     /**
      * Registers callbacks to be invoked whenever the main electron
      * process sends a corresponding message.
@@ -31,7 +26,9 @@
         });
 
         ipcRenderer.on("accentColorChanged", function (event, accentColor) {
-            gpii.pcp.setThemeColors(accentColor);
+            var mainColor = "#" + accentColor.slice(0, 6),
+                theme = ":root{ --main-color: " + mainColor + "; }";
+            that.updateTheme(theme);
         });
     };
 
@@ -364,6 +361,7 @@
             }
         },
         selectors: {
+            theme: "#flc-theme",
             header: "#flc-settingsHeader",
             settingsList: "#flc-settingsList",
             footer: "#flc-settingsFooter"
@@ -415,6 +413,11 @@
                 changePath: "preferences",
                 value: "{arguments}.0",
                 source: "outer"
+            },
+            "updateTheme": {
+                "this": "{that}.dom.theme",
+                method: "text",
+                args: ["{arguments}.0"]
             },
             "close": "gpii.pcp.closeSettingsWindow()"
         },

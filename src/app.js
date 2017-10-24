@@ -488,6 +488,10 @@ gpii.app.isWin10OS = function () {
  */
 gpii.app.registerAccentColorListener = function (pcp) {
     if (gpii.app.isWin10OS()) {
+        // Notify the `BrowserWindow` about the current accent color
+        // only when it is ready to show. Otherwise, the change may
+        // not be propagated. The "accent-color-changed" event does
+        // not fire initially.
         pcp.pcpWindow.once("ready-to-show", function () {
             pcp.notifyPCPWindow("accentColorChanged", systemPreferences.getAccentColor());
         });
@@ -506,8 +510,6 @@ gpii.app.registerAccentColorListener = function (pcp) {
  * @param pcp {Object} The `gpii.app.pcp` instance
  */
 gpii.app.registerPCPListener = function (socket, gpiiConnector, pcp) {
-    gpii.app.registerAccentColorListener(pcp);
-
     socket.on("message", function (rawData) {
         var data = JSON.parse(rawData),
             operation = data.type,
@@ -672,6 +674,10 @@ fluid.defaults("gpii.app.pcp", {
         "onCreate.initPCPWindowIPC": {
             listener: "gpii.app.initPCPWindowIPC",
             args: ["{app}", "{that}", "{gpiiConnector}"]
+        },
+        "onCreate.registerAccentColorListener": {
+            listener: "gpii.app.registerAccentColorListener",
+            args: ["{that}"]
         }
     },
     invokers: {
