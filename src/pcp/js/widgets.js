@@ -26,10 +26,6 @@ https://github.com/fluid-project/infusion/raw/master/Infusion-LICENSE.txt
 
     fluid.registerNamespace("gpii.pcp.widgets");
 
-    gpii.pcp.widgets.noop = function () {
-        // A function that does nothing.
-    };
-
     /**
      * XXX currently, we abuse a misbehavior of expanding the `model` options, even if there's been expansion
      * Manual expansion of the attrs is needed, as this "misbehaviour" only applies for the `model`
@@ -117,7 +113,7 @@ https://github.com/fluid-project/infusion/raw/master/Infusion-LICENSE.txt
         },
         invokers: {
             onClick: {
-                funcName: "gpii.pcp.noop"
+                funcName: "fluid.notImplemented"
             }
         }
     });

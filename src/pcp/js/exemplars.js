@@ -75,8 +75,8 @@ https://github.com/fluid-project/infusion/raw/master/Infusion-LICENSE.txt
         schemaType: "array",
         widgetOptions: {
             model: {
-                values: "{settingPresenter}.model.values",
-                names: "{settingPresenter}.model.values",
+                values: "{settingPresenter}.model.schema.enum",
+                names: "{settingPresenter}.model.schema.enum",
                 value: "{settingPresenter}.model.value"
             },
             rawAttrs: {
@@ -94,7 +94,6 @@ https://github.com/fluid-project/infusion/raw/master/Infusion-LICENSE.txt
         widgetOptions: {
             model: {
                 name: "{settingPresenter}.model.path",
-                title: "{settingPresenter}.model.title",
                 enabled: "{settingPresenter}.model.value"
             },
             rawAttrs: {
@@ -110,8 +109,8 @@ https://github.com/fluid-project/infusion/raw/master/Infusion-LICENSE.txt
         schemaType: "string",
         widgetOptions: {
             model: {
-                optionNames: "{settingPresenter}.model.values",
-                optionList: "{settingPresenter}.model.values",
+                optionNames: "{settingPresenter}.model.schema.enum",
+                optionList: "{settingPresenter}.model.schema.enum",
                 selection: "{settingPresenter}.model.value"
             },
             rawAttrs: {
@@ -128,10 +127,10 @@ https://github.com/fluid-project/infusion/raw/master/Infusion-LICENSE.txt
         widgetOptions: {
             model: {
                 number: "{settingPresenter}.model.value",
-                step: "{settingPresenter}.model.divisibleBy",
+                step: "{settingPresenter}.model.schema.divisibleBy",
                 range: {
-                    min: "{settingPresenter}.model.min",
-                    max: "{settingPresenter}.model.max"
+                    min: "{settingPresenter}.model.schema.min",
+                    max: "{settingPresenter}.model.schema.max"
                 }
             },
             rawAttrs: {

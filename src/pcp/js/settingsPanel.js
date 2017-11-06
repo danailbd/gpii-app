@@ -69,9 +69,8 @@ https://github.com/fluid-project/infusion/raw/master/Infusion-LICENSE.txt
             path: null,
             icon: null,
             solutionName: null,
-            title: null,
-            values: null,
-            value: null
+            value: null,
+            schema: null
         },
         widgetConfig: {
             widgetOptions: null,
@@ -116,7 +115,7 @@ https://github.com/fluid-project/infusion/raw/master/Infusion-LICENSE.txt
             "onCreate.setTitle": {
                 this: "{that}.dom.title",
                 method: "text",
-                args: "{that}.model.title"
+                args: "{that}.model.schema.title"
             },
             "onCreate.setLabelId": {
                 this: "{that}.dom.titleLabel",
@@ -401,7 +400,7 @@ https://github.com/fluid-project/infusion/raw/master/Infusion-LICENSE.txt
                         onSettingUpdated: "{settingsPanel}.events.onSettingUpdated"
                     },
 
-                    widgetConfig: "@expand:{settingsVisualizer}.options.widgetExemplars.getExemplarBySchemaType({that}.options.setting.type)",
+                    widgetConfig: "@expand:{settingsVisualizer}.options.widgetExemplars.getExemplarBySchemaType({that}.options.setting.schema.type)",
                     markup: {
                         container: "@expand:gpii.pcp.settingsVisualizer.getIndexedContainerMarkup({settingsVisualizer}.options.dynamicContainerMarkup, {that}.options.settingIndex)",
                         setting: "{settingsVisualizer}.options.markup.setting", // markup.setting",

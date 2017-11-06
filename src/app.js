@@ -473,24 +473,16 @@ gpii.app.pcp.hidePCPWindow = function (pcpWindow) {
  * @return {Object} The view model for the setting.
  */
 gpii.app.createSettingModel = function (key, settingDescriptor) {
-    var schema = settingDescriptor.schema;
-
     return {
         path: key,
         value: settingDescriptor.value,
         solutionName: settingDescriptor.solutionName,
 
-        title: schema.title,
-        description: schema.description,
         icon: "../icons/gear-cloud-white.png",
         dynamicity: "none", // "none", "application" or "os"
         isPersisted: false,
 
-        type: schema.type,
-        min: schema.min,
-        max: schema.max,
-        divisibleBy: schema.divisibleBy,
-        values: schema["enum"]
+        schema: settingDescriptor.schema
     };
 };
 
