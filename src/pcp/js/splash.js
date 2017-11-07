@@ -13,10 +13,22 @@ https://github.com/fluid-project/infusion/raw/master/Infusion-LICENSE.txt
 
 "use strict";
 (function (fluid) {
-    var gpii = fluid.registerNamespace("gpii");
     fluid.registerNamespace("gpii.pcp");
 
-    $(function () {
-        gpii.pcp.mainWindow("#flc-body");
+    fluid.defaults("gpii.pcp.splash", {
+        gradeNames: "fluid.viewComponent",
+        selectors: {
+            splash: ".flc-splash"
+        },
+        invokers: {
+            show: {
+                this: "{that}.dom.splash",
+                method: "show"
+            },
+            hide: {
+                this: "{that}.dom.splash",
+                method: "hide"
+            }
+        }
     });
 })(fluid);
