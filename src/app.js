@@ -17,18 +17,15 @@ var fluid = require("infusion");
 var gpii = fluid.registerNamespace("gpii");
 var path = require("path");
 var request = require("request");
-var os = require("os");
 
-var BrowserWindow = electron.BrowserWindow,
-    ipcMain = electron.ipcMain,
-    systemPreferences = electron.systemPreferences;
+var BrowserWindow = electron.BrowserWindow;
 var ws = require("ws");
 require("./networkCheck.js");
 
 
 require("./menu.js"); // menuInApp, menuInAppDev
 require("./tray.js");
-//require("./psp.js");
+require("./psp.js");
 //require("./gpiiConnector.js");
 
 /**
@@ -345,116 +342,6 @@ gpii.app.exit = function (that) {
     }
 };
 
-fluid.registerNamespace("gpii.app.pcp");
-
-/**
- * Sends a message to the given window
- *
- * @param pcpWindow {Object} An Electron `BrowserWindow` object
- * @param messageChannel {String} The channel to which the message to be sent
- * @param message {String}
- */
-gpii.app.pcp.notifyPCPWindow = function (pcpWindow, messageChannel, message) {
-    if (pcpWindow) {
-        pcpWindow.webContents.send(messageChannel, message);
-    }
-};
-
-/**
-* Get the position of `Electron` `BrowserWindows`
-* @param {Number} width The current width of the window
-* @param {Number} height The current height of the window
-* @return {{x: Number, y: Number}}
-*/
-gpii.app.getWindowPosition = function (width, height) {
-    var screenSize = electron.screen.getPrimaryDisplay().workAreaSize;
-    return {
-        x: screenSize.width - width,
-        y: screenSize.height - height
-    };
-};
-
-
-/**
- * Creates an Electron `BrowserWindow` that is to be used as the PCP window
- *
- * @param {Object} windowOptions Raw options to be passed to the `BrowserWindow`
- * @returns {Object} The created Electron `BrowserWindow`
- */
-gpii.app.pcp.makePCPWindow = function (windowOptions) {
-    // TODO Make window size relative to the screen size
-    var pcpWindow = new BrowserWindow(windowOptions);
-
-    var url = fluid.stringTemplate("file://%gpii-app/src/pcp/index.html", fluid.module.terms());
-    pcpWindow.loadURL(url);
-
-    gpii.app.pcp.hidePCPWindow(pcpWindow);
-
-    return pcpWindow;
-};
-
-/**
- * A function which should be called to init various listeners related to
- * the PCP window.
- * @param pcp {Object} The `gpii.app.pcp` instance
- */
-gpii.app.initPCPWindowListeners = function (pcp) {
-    var pcpWindow = pcp.pcpWindow;
-    pcpWindow.on("blur", function () {
-        pcp.hide();
-    });
-
-    electron.screen.on("display-metrics-changed", function (event, display, changedMetrics) {
-        if (changedMetrics.indexOf("workArea") > -1) {
-            var windowSize = pcpWindow.getSize(),
-                contentHeight = windowSize[1];
-            pcp.resize(contentHeight, true);
-        }
-    });
-};
-
-/**
- * This function checks whether the PCP window is shown.
- * @param pcpWindow {Object} An Electron `BrowserWindow`
- * @return {Boolean} `true` if the PCP window is shown and `false` otherwise.
- */
-gpii.app.pcp.isPCPWindowShown = function (pcpWindow) {
-    var position = pcpWindow.getPosition(),
-        x = position[0],
-        y = position[1];
-    return x >= 0 && y >= 0;
-};
-
-/**
- * Shows the PCP window in the lower part of the primary display and focuses it.
- * Actually, the PCP window is always shown but it may be positioned off the screen.
- * This is a workaround for the flickering issue observed when the content displayed in
- * the PCP window changes. (Electron does not rerender web pages when the
- * `BrowserWindow` is hidden).
- * @param pcpWindow {Object} An Electron `BrowserWindow`.
- */
-gpii.app.pcp.showPCPWindow = function (pcpWindow) {
-    var screenSize = electron.screen.getPrimaryDisplay().workAreaSize,
-        windowSize = pcpWindow.getSize(),
-        windowX = screenSize.width - windowSize[0],
-        windowY = screenSize.height - windowSize[1];
-    pcpWindow.setPosition(windowX, windowY);
-    pcpWindow.focus();
-};
-
-/**
- * Hides the PCP window by moving it to a non-visible part of the screen. This function
- * in conjunction with `gpii.app.pcp.showPCPWindow` help avoid the flickering issue when
- * the content of the PCP window changes.
- * @param pcpWindow {Object} An Electron `BrowserWindow`.
- */
-gpii.app.pcp.hidePCPWindow = function (pcpWindow) {
-    var windowSize = pcpWindow.getSize(),
-        width = windowSize[0],
-        height = windowSize[1];
-    pcpWindow.setPosition(-width, -height);
-};
-
 /**
  * Creates a setting view model to be used in the settings window.
  * @param key {String} The name of the setting. Must be unique as
@@ -514,44 +401,6 @@ gpii.app.extractPreferencesData = function (message) {
 };
 
 /**
- * Returns whether the underlying OS is Windows 10 or not.
- * @return {Boolean} `true` if the underlying OS is Windows 10 or
- * `false` otherwise.
- */
-gpii.app.isWin10OS = function () {
-    var osRelease = os.release(),
-        delimiter = osRelease.indexOf("."),
-        majorVersion = osRelease.slice(0, delimiter);
-    return majorVersion === "10";
-};
-
-/**
- * This function takes care of notifying the PCP window whenever the
- * user changes the accent color of the OS theme. Available only if
- * the application is used on Windows 10.
- * @param pcp {Object} The `gpii.app.pcp` instance
- */
-gpii.app.registerAccentColorListener = function (pcp) {
-    if (gpii.app.isWin10OS()) {
-        // Ideally when the PCP window is created, it should be notified about
-        // the current accent color. Possible events which can be used for this
-        // purpose are "ready-to-show" or "show". However, as the window is drawn
-        // off screen, registering the listeners will happen after the corresponding
-        // event has been fired. That is why the PCP window should be notified every
-        // time it is focused (only the first time is insufficient because showing
-        // the window (even off screen) automatically focuses it).
-        pcp.pcpWindow.on("focus", function () {
-            pcp.notifyPCPWindow("accentColorChanged", systemPreferences.getAccentColor());
-        });
-
-        systemPreferences.on("accent-color-changed", function (event, accentColor) {
-            pcp.notifyPCPWindow("accentColorChanged", accentColor);
-        });
-    }
-};
-
-
-/**
  * Register listeners for messages from the GPII socket connection.
  * @param socket {Object} The connected gpii socket
  * @param gpiiConnector {Object} The `gpii.app.gpiiConnector` instance
@@ -597,37 +446,6 @@ gpii.app.registerPCPListener = function (socket, gpiiConnector, pcp) {
  */
 gpii.app.createGPIIConnection = function (config) {
     return new ws(config.gpiiWSUrl); // eslint-disable-line new-cap
-};
-
-
-/**
- * Initialises the connection between the Electron process and
- * the PCP's `BrowserWindow` instance
- *
- * @param pcp {Object} A `gpii.app.pcp` instance
- * @param gpiiConnector {Object} A `gpii.app.gpiiConnector` instance
- */
-gpii.app.initPCPWindowIPC = function (app, pcp, gpiiConnector) {
-    ipcMain.on("closePCP", function () {
-        pcp.hide();
-    });
-
-    ipcMain.on("keyOut", function () {
-        pcp.hide();
-        app.keyOut();
-    });
-
-    ipcMain.on("updateSetting", function (event, arg) {
-        gpiiConnector.updateSetting(arg);
-    });
-
-    ipcMain.on("updateActivePreferenceSet", function (event, arg) {
-        gpiiConnector.updateActivePrefSet(arg.value);
-    });
-
-    ipcMain.on("contentHeightChanged", function (event, contentHeight) {
-        pcp.resize(contentHeight);
-    });
 };
 
 /**
@@ -703,109 +521,6 @@ fluid.onUncaughtException.addListener(function (err) {
     }
 }, "gpii.app", "last");
 
-/**
- * Resizes the PCP window and positions it appropriately based on the new height
- * of its content. Makes sure that the window is no higher than the available
- * height of the work area in the primary display. The window will not be resized
- * if its current height is the same as the new height. This behaviour can be
- * overridden using the `forceResize` parameter.
- * @param pcp {Object} A `gpii.app.pcp` instance.
- * @param contentHeight {Number} The new height of the BrowserWindow's content.
- * @param minHeight {Number} The minimum height which the BrowserWindow must have.
- * @param forceResize {Boolean} Whether to resize the window even if the current
- * height of the `BrowserWindow` is the same as the new one. Useful when screen
- * DPI is changed as a result of the application of a user's preferences.
- */
-gpii.app.pcp.resize = function (pcp, contentHeight, minHeight, forceResize) {
-    var pcpWindow = pcp.pcpWindow,
-        wasShown = pcp.isShown(),
-        screenSize = electron.screen.getPrimaryDisplay().workAreaSize,
-        windowSize = pcpWindow.getSize(),
-        windowWidth = windowSize[0],
-        initialHeight = windowSize[1],
-        windowHeight = Math.min(screenSize.height, Math.max(contentHeight, minHeight));
-
-    if (initialHeight === windowHeight && !forceResize) {
-        return;
-    }
-
-    pcpWindow.setSize(windowWidth, windowHeight);
-
-    if (wasShown) {
-        pcp.show();
-    }
-};
-
-/**
- * Handles logic for the PCP window.
- * Creates an Electron `BrowserWindow` and manages it
- */
-fluid.defaults("gpii.app.pcp", {
-    gradeNames: "fluid.modelComponent",
-
-    model:  {
-        keyedInUserToken: null
-    },
-
-    /*
-     * Raw options to be passed to the Electron `BrowserWindow` that is created.
-     */
-    attrs: {
-        width: 500,
-        height: 600,
-        show: true,
-        frame: false,
-        fullscreenable: false,
-        resizable: false,
-        alwaysOnTop: true,
-        skipTaskbar: true,
-        backgroundColor: "transparent"
-    },
-
-    members: {
-        pcpWindow: "@expand:gpii.app.pcp.makePCPWindow({that}.options.attrs)"
-    },
-    listeners: {
-        "onCreate.initPCPWindowIPC": {
-            listener: "gpii.app.initPCPWindowIPC",
-            args: ["{app}", "{that}", "{gpiiConnector}"]
-        },
-        "onCreate.registerAccentColorListener": {
-            listener: "gpii.app.registerAccentColorListener",
-            args: ["{that}"]
-        },
-        "onCreate.initPCPWindowListeners": {
-            listener: "gpii.app.initPCPWindowListeners",
-            args: ["{that}"]
-        }
-    },
-    invokers: {
-        show: {
-            funcName: "gpii.app.pcp.showPCPWindow",
-            args: ["{that}.pcpWindow"]
-        },
-        hide: {
-            funcName: "gpii.app.pcp.hidePCPWindow",
-            args: ["{that}.pcpWindow"]
-        },
-        isShown: {
-            funcName: "gpii.app.pcp.isPCPWindowShown",
-            args: ["{that}.pcpWindow"]
-        },
-        notifyPCPWindow: {
-            funcName: "gpii.app.pcp.notifyPCPWindow",
-            args: ["{that}.pcpWindow", "{arguments}.0", "{arguments}.1"]
-        },
-        getWindowPosition: {
-            funcName: "gpii.app.getWindowPosition",
-            args: ["{that}.options.attrs.width", "{that}.options.attrs.height"]
-        },
-        resize: {
-            funcName: "gpii.app.pcp.resize",
-            args: ["{that}", "{arguments}.0", "{that}.options.attrs.height", "{arguments}.1"]
-        }
-    }
-});
 
 
 /**
