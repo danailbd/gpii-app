@@ -3,11 +3,14 @@
 Copyright 2013-2017 OCAD University
 
 
-Licensed under the Educational Community License (ECL), Version 2.0 or the New BSD license. You may not use this file except in compliance with one these Licenses.
+Licensed under the Educational Community License (ECL), Version 2.0 or the New
+BSD license. You may not use this file except in compliance with one these
+Licenses.
 
 
 
-You may obtain a copy of the ECL 2.0 License and BSD License at https://github.com/fluid-project/infusion/raw/master/Infusion-LICENSE.txt
+You may obtain a copy of the ECL 2.0 License and BSD License at
+https://github.com/fluid-project/infusion/raw/master/Infusion-LICENSE.txt
 
 */
 
@@ -21,36 +24,42 @@ You may obtain a copy of the ECL 2.0 License and BSD License at https://github.c
 
 
     /**
-     * Represents an "exemplar" (configuration) for a component.
+     * Represents an "exemplar" (configuration) for a somehow dynamic component.
      * A good place to keep a *related template resource* path.
      */
     fluid.defaults("gpii.pcp.exemplar", {
         gradeNames: "fluid.component",
+        /*
+         * We want to be able to pass unexpanded IoC expressions, which to be
+         * processed by the user of the exemplar
+         */
         mergePolicy: {
             widgetOptions: "noexpand"
         },
 
-        resourceDir: "./html", // a "home" dir for the resources
-        resourceName: null,    // should be altered
-        template: {
+        grade: null,            // the grade of the dynamic component as string
+
+        resourceDir:  "./html", // a "home" dir for the desired resources
+        resourceName: null,     // filename of the resource;
+        template: {             // the whole resource path
             expander: {
                 funcName: "fluid.stringTemplate",
                 args: [
                     "%resourceDir/%resourceName",
                     {
-                        resourceDir: "{that}.options.resourceDir",
+                        resourceDir:  "{that}.options.resourceDir",
                         resourceName: "{that}.options.resourceName"
                     }
                 ]
             }
         },
-
-        grade: null,
-        schemaType: null,
-        widgetOptions: {
-            // proper model bindings and options
-            model: null
-            // rawAttrs: null
+        /*
+         * Options regarding Widget Exemplars.
+         */
+        schemaType: null,       // schema type of the widget;
+        widgetOptions: {        // options for the widget
+            model: null         // model binding options   (IoC string)
+            // rawAttrs: null   // computed widget options (IoC string)
         }
     });
 
