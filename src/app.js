@@ -747,6 +747,7 @@ gpii.app.pcp.resize = function (pcp, contentHeight, minHeight, forceResize) {
 
 /**
  * Handles logic for the PCP window.
+ * Creates an Electron `BrowserWindow` and manages it
  */
 fluid.defaults("gpii.app.pcp", {
     gradeNames: "fluid.modelComponent",
@@ -756,8 +757,7 @@ fluid.defaults("gpii.app.pcp", {
     },
 
     /*
-     * Options to be passed to the Electron `BrowserWindow`.
-     * Only not reserved options can be altered. See `reservedAttrs`.
+     * Raw options to be passed to the Electron `BrowserWindow` that is created.
      */
     attrs: {
         width: 500,
