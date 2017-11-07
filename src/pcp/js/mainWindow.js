@@ -23,16 +23,8 @@ https://github.com/fluid-project/infusion/raw/master/Infusion-LICENSE.txt
      * @param that {Component} An instance of mainWindow.
      */
     gpii.pcp.addCommunicationChannel = function (that) {
-        ipcRenderer.on("keyIn", function (event, preferences) {
-            that.updatePreferences(preferences);
-        });
-
         ipcRenderer.on("updateSetting", function (event, settingData) {
             that.updateSetting(settingData.path, settingData.value);
-        });
-
-        ipcRenderer.on("keyOut", function (event, preferences) {
-            that.updatePreferences(preferences);
         });
 
         ipcRenderer.on("accentColorChanged", function (event, accentColor) {
@@ -70,13 +62,6 @@ https://github.com/fluid-project/infusion/raw/master/Infusion-LICENSE.txt
     };
 
     /**
-     * Notifies the main electron process that the user must be keyed out.
-     */
-    gpii.pcp.keyOut = function () {
-        ipcRenderer.send("keyOut");
-    };
-
-    /**
      * A function which should be called when the PCP window needs to be
      * closed. It simply notifies the main electron process for this.
      */
@@ -108,7 +93,7 @@ https://github.com/fluid-project/infusion/raw/master/Infusion-LICENSE.txt
      * @param splash {Object} The splash component
      * @param sets {Object[]} The current preference sets
      */
-    gpii.pcp.splash.toggleSplashWindow = function (splash, sets) {
+    gpii.pcp.toggleSplashWindow = function (splash, sets) {
         if (sets && sets.length > 0) {
             splash.hide();
         } else {
@@ -164,7 +149,7 @@ https://github.com/fluid-project/infusion/raw/master/Infusion-LICENSE.txt
                 options: {
                     listeners: {
                         "{mainWindow}.events.onPreferencesUpdated": {
-                            funcName: "gpii.pcp.splash.toggleSplashWindow",
+                            funcName: "gpii.pcp.toggleSplashWindow",
                             args: ["{that}", "{mainWindow}.model.preferences.sets"]
                         }
                     }
@@ -206,8 +191,8 @@ https://github.com/fluid-project/infusion/raw/master/Infusion-LICENSE.txt
                 type: "gpii.pcp.footer",
                 container: "{that}.dom.footer",
                 options: {
-                    listeners: {
-                        onKeyOutClicked: "{mainWindow}.keyOut"
+                    events: {
+                        onKeyOutClicked: "{mainWindow}.events.onKeyOutClicked"
                     }
                 }
             },
@@ -262,14 +247,15 @@ https://github.com/fluid-project/infusion/raw/master/Infusion-LICENSE.txt
                     "{that}.dom.settingsList"
                 ]
             },
-            "close": "gpii.pcp.closeSettingsWindow()",
-            "keyOut": "gpii.pcp.keyOut()"
+            "close": "gpii.pcp.closeSettingsWindow()"
         },
         events: {
             onPreferencesUpdated: null,
 
             onSettingAltered: null, // the setting was altered by the user
-            onSettingUpdated: null  // setting update is present from the API
+            onSettingUpdated: null,  // setting update is present from the API
+
+            onKeyOutClicked: null
         }
     });
 })(fluid);
