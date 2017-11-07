@@ -29,8 +29,8 @@ https://github.com/fluid-project/infusion/raw/master/Infusion-LICENSE.txt
 
     /**
      * Utility function for retrieving the last sub-element of a container
-     * @param container {Object} The jQuery container object
-     * @returns {Object} A jQuery container object
+     * @param container {jQuery} The jQuery container object
+     * @returns {jQuery} A jQuery container object
      */
     gpii.pcp.utils.getContainerLastChild = function (container) {
         return container.children().last();
@@ -38,7 +38,7 @@ https://github.com/fluid-project/infusion/raw/master/Infusion-LICENSE.txt
 
     /**
      * A simple wrapper for the remove function
-     * @param container {Object} A jQuery object
+     * @param container {jQuery} A jQuery object
      */
     gpii.pcp.utils.removeContainer = function (container) {
         if (container) {
@@ -98,7 +98,7 @@ https://github.com/fluid-project/infusion/raw/master/Infusion-LICENSE.txt
             }, {
                 funcName: "{that}.events.onSettingAltered.fire",
                 args: ["{that}.model.path", "{change}.value"],
-                excludeSource: ["init", "outer"]
+                excludeSource: ["init", "pcp.mainWindow"]
             }]
         },
         listeners: {
@@ -141,7 +141,7 @@ https://github.com/fluid-project/infusion/raw/master/Infusion-LICENSE.txt
      */
     gpii.pcp.settingPresenter.updateModelIfNeeded = function (that, path, newValue) {
         if (path === that.model.path) {
-            that.applier.change("value", newValue, null, "outer");
+            that.applier.change("value", newValue, null, "pcp.mainWindow");
         }
     };
 
@@ -150,8 +150,9 @@ https://github.com/fluid-project/infusion/raw/master/Infusion-LICENSE.txt
      * changes a setting which is not dynamic.
      * @param dynamicity {String} The type of dynamicity for the current setting. Can
      * be "none", "application" or "os".
-     * @param restartIcon {Object} A jQuery object representing the restart icon.
-     * @param styles {Object}
+     * @param restartIcon {jQuery} A jQuery object representing the restart icon.
+     * @param styles {Object} An object containing classes to be applied to the restart
+     * icon depending on the setting's dynamicity.
      */
     gpii.pcp.settingPresenter.showRestartIcon = function (dynamicity, restartIcon, styles) {
         if (dynamicity === "application" || dynamicity === "os") {
@@ -166,7 +167,7 @@ https://github.com/fluid-project/infusion/raw/master/Infusion-LICENSE.txt
      * A method responsible for showing a memory icon if the setting will be persisted
      * after a user has changed it.
      * @param isPersisted {Boolean} Whether the current setting will be persisted or not.
-     * @param memoryIcon {Object} A jQuery object representing the memory icon.
+     * @param memoryIcon {jQuery} A jQuery object representing the memory icon.
      */
     gpii.pcp.settingPresenter.showMemoryIcon = function (isPersisted, memoryIcon) {
         if (isPersisted) {
@@ -256,7 +257,7 @@ https://github.com/fluid-project/infusion/raw/master/Infusion-LICENSE.txt
                             funcName: "{settingRenderer}.events.onSettingMarkupRendered.fire",
                             /*
                              * Get the widget container.
-                             * Should match single element (jquery returns an array of matches)
+                             * Should match single element (jQuery returns an array of matches)
                              */
                             args: "@expand:$({that}.options.widgetContainerClass, {that}.container)",
                             priority: "after:render"

@@ -33,7 +33,7 @@ https://github.com/fluid-project/infusion/raw/master/Infusion-LICENSE.txt
     fluid.defaults("gpii.pcp.widgets.attrsExpander", {
         gradeName: "fluid.component",
 
-        // in case property is not passed, ensure 
+        // in case property is not passed, ensure
         // it has won't affect the merged `attrs` property
         rawAttrs: {},
 
@@ -153,7 +153,7 @@ https://github.com/fluid-project/infusion/raw/master/Infusion-LICENSE.txt
      * A function which is executed while the user is dragging the
      * thumb of a slider.
      * @param that {Component} An instance of a slider component.
-     * @param container {Object} The jQuery object representing the
+     * @param container {jQuery} The jQuery object representing the
      * slider input.
      */
     gpii.pcp.widgets.onSlide = function (that, container) {

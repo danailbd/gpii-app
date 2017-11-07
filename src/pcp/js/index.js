@@ -100,10 +100,10 @@ https://github.com/fluid-project/infusion/raw/master/Infusion-LICENSE.txt
      * assuming that the settings panel is displayed fully, without the need for it
      * to scroll (i.e. if there is enough vertical space for the whole document),
      * changes.
-     * @param mainWindow {Object} A jQuery object representing the mainWindow.
-     * @param content {Object} A jQuery object representing the content of the
+     * @param mainWindow {jQuery} A jQuery object representing the mainWindow.
+     * @param content {jQuery} A jQuery object representing the content of the
      * document between the header and footer. This container is scrollable.
-     * @param settingsList {Object} A jQuery object representing the container in
+     * @param settingsList {jQuery} A jQuery object representing the container in
      * which the various widgets will have their containers inserted.
      */
     gpii.pcp.onContentHeightChanged = function (mainWindow, content, settingsList) {
@@ -145,10 +145,10 @@ https://github.com/fluid-project/infusion/raw/master/Infusion-LICENSE.txt
      * Updates the DOM elements corresponding to the header component whenever new
      * preferences are received.
      * @param preferenceSets {Array} An array containing the new preferece sets.
-     * @param preferenceSetPickerElem {Object} A jQuery object corresponding to the
+     * @param preferenceSetPickerElem {jQuery} A jQuery object corresponding to the
      * preference set dropdown (in case there are multiple preference sets, it should
      * be shown, otherwise it should be hidden).
-     * @param activePreferenceSetElem {Object} A jQuery object corresponding to the
+     * @param activePreferenceSetElem {jQuery} A jQuery object corresponding to the
      * preference set label (in case there is a single preference set it should be
      * show, otherwise it should be hidden).
      */
@@ -166,7 +166,7 @@ https://github.com/fluid-project/infusion/raw/master/Infusion-LICENSE.txt
      * A listener which is invoked whenever the preference set picker component is
      * destroyed. This function simply removes all options for the dropdown (actually
      * represented as a <select> element) from the DOM.
-     * @param container {Object} A jQuery object representing the parent container
+     * @param container {jQuery} A jQuery object representing the parent container
      * of the preference set picker.
      */
     gpii.pcp.onPreferenceSetPickerDestroy = function (container) {
@@ -177,7 +177,7 @@ https://github.com/fluid-project/infusion/raw/master/Infusion-LICENSE.txt
      * Updates the passed DOM element to contain the name of the active preference
      * set. If there is no currently active preference set (e.g. if there is no
      * keyed-in user), nothing should be displayed.
-     * @param activeSetElement {Object} A jQuery object representing the DOM element
+     * @param activeSetElement {jQuery} A jQuery object representing the DOM element
      * whose text is to be updated.
      * @param preferences {Object} An object containing all preference set, as well
      * as information about the currently active preference set.
@@ -216,7 +216,7 @@ https://github.com/fluid-project/infusion/raw/master/Infusion-LICENSE.txt
             "preferences.activeSet": [{
                 funcName: "gpii.pcp.updateActivePreferenceSet",
                 args: ["{change}.value"],
-                excludeSource: ["init", "outer"],
+                excludeSource: ["init", "pcp.mainWindow"],
                 namespace: "notifyMainProcess"
             },{
                 funcName: "gpii.pcp.updateActiveSetElement",
@@ -451,7 +451,7 @@ https://github.com/fluid-project/infusion/raw/master/Infusion-LICENSE.txt
             "updatePreferences": {
                 changePath: "preferences",
                 value: "{arguments}.0",
-                source: "outer"
+                source: "pcp.mainWindow"
             },
             "updateSetting": {
                 // TODO just fire because... (redrawing)

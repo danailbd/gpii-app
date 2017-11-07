@@ -772,14 +772,7 @@ fluid.defaults("gpii.app.pcp", {
     },
 
     members: {
-        pcpWindow: {
-            expander: {
-                funcName: "gpii.app.pcp.makePCPWindow",
-                args: [
-                    "{that}.options.attrs"
-                ]
-            }
-        }
+        pcpWindow: "@expand:gpii.app.pcp.makePCPWindow({that}.options.attrs)"
     },
     listeners: {
         "onCreate.initPCPWindowIPC": {
@@ -1453,14 +1446,12 @@ gpii.app.menu.getShowPCP = function (keyedInUserToken, openSettingsStr) {
   * There should be one object per menu item in the order they should appear in the mneu.
   */
 gpii.app.menu.generateMenuTemplate = function (/* all the items in the menu */) {
-    var menuTemplate = [];
-    fluid.each(arguments, function (item) {
+    var menuTemplate = [],
+        menuItems = fluid.flatten(fluid.makeArray(arguments));
+
+    fluid.each(menuItems, function (item) {
         if (item) {
-            if (Array.isArray(item)) {
-                menuTemplate = menuTemplate.concat(item);
-            } else {
-                menuTemplate.push(item);
-            }
+            menuTemplate.push(item);
         }
     });
 
