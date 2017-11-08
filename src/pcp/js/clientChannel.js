@@ -1,12 +1,12 @@
-/*
-Copyright 2013-2017 OCAD University
+/*!
+Copyright 2017 Raising the Floor - International
 
-Licensed under the Educational Community License (ECL), Version 2.0 or the New
-BSD license. You may not use this file except in compliance with one these
-Licenses.
-
-You may obtain a copy of the ECL 2.0 License and BSD License at
-https://github.com/fluid-project/infusion/raw/master/Infusion-LICENSE.txt
+Licensed under the New BSD license. You may not use this file except in
+compliance with this License.
+The research leading to these results has received funding from the European Union's
+Seventh Framework Programme (FP7/2007-2013) under grant agreement no. 289016.
+You may obtain a copy of the License at
+https://github.com/GPII/universal/blob/master/LICENSE.txt
 */
 
 /* global fluid */
