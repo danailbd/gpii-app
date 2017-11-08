@@ -13,76 +13,24 @@ https://github.com/fluid-project/infusion/raw/master/Infusion-LICENSE.txt
 
 "use strict";
 (function (fluid) {
-    var gpii = fluid.registerNamespace("gpii"),
-        ipcRenderer = require("electron").ipcRenderer;
+    var gpii = fluid.registerNamespace("gpii");
     fluid.registerNamespace("gpii.pcp");
-
-    /**
-     * Registers callbacks to be invoked whenever the main electron
-     * process sends a corresponding message.
-     * @param that {Component} An instance of mainWindow.
-     */
-    gpii.pcp.addCommunicationChannel = function (that) {
-        ipcRenderer.on("updateSetting", function (event, settingData) {
-            that.updateSetting(settingData.path, settingData.value);
-        });
-
-        ipcRenderer.on("accentColorChanged", function (event, accentColor) {
-            var mainColor = "#" + accentColor.slice(0, 6),
-                theme = ":root{ --main-color: " + mainColor + "; }";
-            that.updateTheme(theme);
-        });
-    };
-
-    /**
-     * A function which should be called whenever a settings is updated
-     * as a result of a user's input. Its purpose is to notify the main
-     * electron process for the change.
-     * @param path {String} The path of the updated setting.
-     * @param value {Any} The new, updated value for the setting. Can be
-     * of different type depending on the setting.
-     */
-    gpii.pcp.notifySettingUpdate = function (path, value) {
-        ipcRenderer.send("updateSetting", {
-            path: path,
-            value: value
-        });
-    };
-
-    /**
-     * A function which should be called when the active preference set
-     * has been changed as a result of a user's input. It will notify
-     * the main electron process for the change.
-     * @param value {String} The path of the new active preference set.
-     */
-    gpii.pcp.updateActivePreferenceSet = function (value) {
-        ipcRenderer.send("updateActivePreferenceSet", {
-            value: value
-        });
-    };
-
-    /**
-     * A function which should be called when the PCP window needs to be
-     * closed. It simply notifies the main electron process for this.
-     */
-    gpii.pcp.closeSettingsWindow = function () {
-        ipcRenderer.send("closePCP");
-    };
 
     /**
      * A function which should be called whenever the total height of the document
      * assuming that the settings panel is displayed fully, without the need for it
      * to scroll (i.e. if there is enough vertical space for the whole document),
      * changes.
-     * @param mainWindow {jQuery} A jQuery object representing the mainWindow.
+     * @param mainWindow {Component} An instance of mainWindow.
+     * @param container {jQuery} A jQuery object representing the mainWindow container.
      * @param content {jQuery} A jQuery object representing the content of the
      * document between the header and footer. This container is scrollable.
      * @param settingsList {jQuery} A jQuery object representing the container in
      * which the various widgets will have their containers inserted.
      */
-    gpii.pcp.onContentHeightChanged = function (mainWindow, content, settingsList) {
-        var height = mainWindow.outerHeight(true) - content.height() + settingsList.height();
-        ipcRenderer.send("contentHeightChanged", height);
+    gpii.pcp.onContentHeightChanged = function (mainWindow, container, content, settingsList) {
+        var height = container.outerHeight(true) - content.height() + settingsList.height();
+        mainWindow.events.onContentHeightChanged.fire(height);
     };
 
     /**
@@ -99,6 +47,20 @@ https://github.com/fluid-project/infusion/raw/master/Infusion-LICENSE.txt
         } else {
             splash.show();
         }
+    };
+
+    /**
+     * Updates the "theme" of the PSP `BrowserWindow`. Currently, the
+     * theme consists simply of a definition of a `--main-color` variable
+     * which is used for styling various widgets within the application.
+     * @param theme {jQuery} The `style` tag which houses the application
+     * theme definitions.
+     * @param accentColor {String} The accent color used in the user's OS.
+     */
+    gpii.pcp.updateTheme = function (theme, accentColor) {
+        var mainColor = "#" + accentColor.slice(0, 6),
+            themeRules = ":root{ --main-color: " + mainColor + "; }";
+        theme.text(themeRules);
     };
 
     /**
@@ -166,10 +128,11 @@ https://github.com/fluid-project/infusion/raw/master/Infusion-LICENSE.txt
                         }
                     },
                     events: {
-                        onPreferencesUpdated: "{mainWindow}.events.onPreferencesUpdated"
+                        onPreferencesUpdated: "{mainWindow}.events.onPreferencesUpdated",
+                        onActivePreferenceSetAltered: "{mainWindow}.events.onActivePreferenceSetAltered"
                     },
                     listeners: {
-                        "onCloseClicked": "{mainWindow}.close"
+                        "onCloseClicked": "{mainWindow}.events.onCloseClicked"
                     }
                 }
             },
@@ -209,17 +172,6 @@ https://github.com/fluid-project/infusion/raw/master/Infusion-LICENSE.txt
         modelListeners: {
             "preferences": "{that}.events.onPreferencesUpdated"
         },
-        listeners: {
-            "onCreate.addCommunicationChannel": {
-                funcName: "gpii.pcp.addCommunicationChannel",
-                args: ["{that}"]
-            },
-
-            "onSettingAltered.notifyIPC": {
-                funcName: "gpii.pcp.notifySettingUpdate",
-                args: ["{arguments}.0", "{arguments}.1"]
-            }
-        },
         invokers: {
             "updatePreferences": {
                 changePath: "preferences",
@@ -235,19 +187,13 @@ https://github.com/fluid-project/infusion/raw/master/Infusion-LICENSE.txt
                 ]
             },
             "updateTheme": {
-                "this": "{that}.dom.theme",
-                method: "text",
-                args: ["{arguments}.0"]
+                funcName: "gpii.pcp.updateTheme",
+                args: ["{that}.dom.theme", "{arguments}.0"]
             },
             "onContentHeightChanged": {
                 funcName: "gpii.pcp.onContentHeightChanged",
-                args: [
-                    "{that}.container",
-                    "{that}.dom.content",
-                    "{that}.dom.settingsList"
-                ]
-            },
-            "close": "gpii.pcp.closeSettingsWindow()"
+                args: ["{that}", "{that}.container", "{that}.dom.content", "{that}.dom.settingsList"]
+            }
         },
         events: {
             onPreferencesUpdated: null,
@@ -255,7 +201,10 @@ https://github.com/fluid-project/infusion/raw/master/Infusion-LICENSE.txt
             onSettingAltered: null, // the setting was altered by the user
             onSettingUpdated: null,  // setting update is present from the API
 
-            onKeyOutClicked: null
+            onCloseClicked: null,
+            onKeyOutClicked: null,
+            onActivePreferenceSetAltered: null,
+            onContentHeightChanged: null
         }
     });
 })(fluid);

@@ -30,18 +30,17 @@ https://github.com/fluid-project/infusion/raw/master/Infusion-LICENSE.txt
         },
         events: {
             onPreferencesUpdated: null,
-            onCloseClicked: null
+            onCloseClicked: null,
+            onActivePreferenceSetAltered: null
         },
         modelListeners: {
             "preferences.activeSet": [{
-                funcName: "gpii.pcp.updateActivePreferenceSet",
+                funcName: "{that}.events.onActivePreferenceSetAltered.fire",
                 args: ["{change}.value"],
-                excludeSource: ["init", "pcp.mainWindow"],
-                namespace: "notifyMainProcess"
+                excludeSource: ["init", "pcp.mainWindow"]
             },{
                 funcName: "gpii.pcp.updateActiveSetElement",
-                args: ["{that}.dom.activePreferenceSet", "{that}.model.preferences"],
-                namespace: "updateElement"
+                args: ["{that}.dom.activePreferenceSet", "{that}.model.preferences"]
             }]
         },
         components: {
