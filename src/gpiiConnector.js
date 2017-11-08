@@ -15,7 +15,8 @@ https://github.com/GPII/universal/blob/master/LICENSE.txt
 var fluid = require("infusion");
 var gpii  = fluid.registerNamespace("gpii");
 
-var ws = require("ws");
+var ws    = require("ws");
+
 /**
  * Responsible for creation and housekeeping of the connection to the PCP Channel WebSocket
  */

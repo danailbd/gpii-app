@@ -16,11 +16,12 @@ var fluid    = require("infusion");
 var gpii     = fluid.registerNamespace("gpii");
 
 var electron = require("electron");
-var os = require("os");
 
-var BrowserWindow = electron.BrowserWindow,
-    ipcMain = electron.ipcMain,
+var BrowserWindow     = electron.BrowserWindow,
+    ipcMain           = electron.ipcMain,
     systemPreferences = electron.systemPreferences;
+
+require("./utils.js");
 
 /**
  * Handles logic for the PCP window.
@@ -57,7 +58,7 @@ fluid.defaults("gpii.app.pcp", {
             args: ["{app}", "{that}", "{gpiiConnector}"]
         },
         "onCreate.registerAccentColorListener": {
-            listener: "gpii.app.registerAccentColorListener",
+            listener: "gpii.app.pcp.registerAccentColorListener",
             args: ["{that}"]
         },
         "onCreate.initPCPWindowListeners": {
@@ -235,21 +236,6 @@ gpii.app.pcp.notifyPCPWindow = function (pcpWindow, messageChannel, message) {
 };
 
 /**
-* Get the position of `Electron` `BrowserWindows`
-* @param {Number} width The current width of the window
-* @param {Number} height The current height of the window
-* @return {{x: Number, y: Number}}
-*/
-gpii.app.getWindowPosition = function (width, height) {
-    var screenSize = electron.screen.getPrimaryDisplay().workAreaSize;
-    return {
-        x: screenSize.width - width,
-        y: screenSize.height - height
-    };
-};
-
-
-/**
  * Creates an Electron `BrowserWindow` that is to be used as the PCP window
  *
  * @param {Object} windowOptions Raw options to be passed to the `BrowserWindow`
@@ -268,24 +254,12 @@ gpii.app.pcp.makePCPWindow = function (windowOptions) {
 };
 
 /**
- * Returns whether the underlying OS is Windows 10 or not.
- * @return {Boolean} `true` if the underlying OS is Windows 10 or
- * `false` otherwise.
- */
-gpii.app.isWin10OS = function () {
-    var osRelease = os.release(),
-        delimiter = osRelease.indexOf("."),
-        majorVersion = osRelease.slice(0, delimiter);
-    return majorVersion === "10";
-};
-
-/**
  * This function takes care of notifying the PCP window whenever the
  * user changes the accent color of the OS theme. Available only if
  * the application is used on Windows 10.
  * @param pcp {Object} The `gpii.app.pcp` instance
  */
-gpii.app.registerAccentColorListener = function (pcp) {
+gpii.app.pcp.registerAccentColorListener = function (pcp) {
     if (gpii.app.isWin10OS()) {
         // Ideally when the PCP window is created, it should be notified about
         // the current accent color. Possible events which can be used for this
