@@ -13,9 +13,9 @@ https://github.com/GPII/universal/blob/master/LICENSE.txt
 "use strict";
 
 var os       = require("os");
-var fluid = require("infusion");
-
+var fluid    = require("infusion");
 var electron = require("electron");
+
 var app = fluid.registerNamespace("gpii.app");
 
 

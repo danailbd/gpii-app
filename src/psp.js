@@ -13,13 +13,12 @@ https://github.com/GPII/universal/blob/master/LICENSE.txt
 "use strict";
 
 var fluid    = require("infusion");
-var gpii     = fluid.registerNamespace("gpii");
-
 var electron = require("electron");
 
 var BrowserWindow     = electron.BrowserWindow,
     ipcMain           = electron.ipcMain,
     systemPreferences = electron.systemPreferences;
+var gpii     = fluid.registerNamespace("gpii");
 
 require("./utils.js");
 

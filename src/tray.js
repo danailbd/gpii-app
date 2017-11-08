@@ -12,14 +12,13 @@ https://github.com/GPII/universal/blob/master/LICENSE.txt
 */
 "use strict";
 
-var fluid          = require("infusion");
-var gpii           = fluid.registerNamespace("gpii");
+var fluid    = require("infusion");
+var path     = require("path");
+var electron = require("electron");
 
-var path           = require("path");
-
-var electron       = require("electron"),
-    Tray           = electron.Tray,
+var Tray           = electron.Tray,
     globalShortcut = electron.globalShortcut;
+var gpii           = fluid.registerNamespace("gpii");
 
 /**
  * Component that contains an Electron Tray.

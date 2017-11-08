@@ -13,10 +13,9 @@ https://github.com/GPII/universal/blob/master/LICENSE.txt
 "use strict";
 
 var fluid = require("infusion");
-var gpii  = fluid.registerNamespace("gpii");
-
 var Menu  = require("electron").Menu;
 
+var gpii  = fluid.registerNamespace("gpii");
 
 /*
  ** Configuration for using the menu in the app.
