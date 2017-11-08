@@ -119,6 +119,7 @@ gpii.app.gpiiConnector.registerPCPListener = function (socket, gpiiConnector) {
              */
             var settingPath = path[path.length - 2],
                 settingValue = data.value;
+
             gpiiConnector.events.onSettingUpdated.fire({
                 path: settingPath,
                 value: settingValue
@@ -157,11 +158,12 @@ gpii.app.createSettingModel = function (key, settingDescriptor) {
         value: settingDescriptor.value,
         solutionName: settingDescriptor.solutionName,
 
+        schema: settingDescriptor.schema,
+
+        // XXX hardcoded as they're not currently supported by the API (pcpChannel)
         icon: "../icons/gear-cloud-white.png",
         dynamicity: "none", // "none", "application" or "os"
-        isPersisted: false,
-
-        schema: settingDescriptor.schema
+        isPersisted: false
     };
 };
 
@@ -200,5 +202,3 @@ gpii.app.extractPreferencesData = function (message) {
         settings: settings
     };
 };
-
-

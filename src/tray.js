@@ -134,5 +134,3 @@ gpii.app.getTrayTooltip = function (preferences, defaultTooltip) {
     );
     return activePreferenceSet ? activePreferenceSet.name : defaultTooltip;
 };
-
-

@@ -437,5 +437,3 @@ gpii.app.menu.expandMenuTemplate = function (menuTemplate, events) {
 
     return menuTemplate;
 };
-
-

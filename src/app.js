@@ -21,7 +21,7 @@ var request = require("request");
 require("./gpiiConnector.js");
 require("./menu.js"); // menuInApp, menuInAppDev
 require("./tray.js");
-require("./psp.js");
+require("./pcp.js");
 require("./waitDialog.js");
 
 require("./networkCheck.js");
@@ -68,24 +68,45 @@ fluid.defaults("gpii.app", {
         gpiiConnector: {
             type: "gpii.app.gpiiConnector",
             createOnEvent: "onPrerequisitesReady",
+            priority: "after:pcp",
             options: {
                 listeners: {
                     "onPreferencesUpdated.updateSets": {
                         listener: "{app}.updatePreferences",
                         args: "{arguments}.0"
+                    }
+                }
+            }
+        },
+        /*
+         * A helper component used as mediator for handling communication
+         * between the PCP and gpiiConnector components.
+         */
+        pcpMediator: {
+            type: "fluid.component",
+            createOnEvent: "onPrerequisitesReady",
+            priority: "after:gpiiConnector",
+            options: {
+                listeners: {
+                    "{pcp}.events.onSettingAltered": {
+                        listener: "{gpiiConnector}.updateSetting",
+                        args: ["{arguments}.0"]
+                    },
+                    "{pcp}.events.onActivePreferenceSetAltered": {
+                        listener: "{gpiiConnector}.updateActivePrefSet",
+                        args: ["{arguments}.0"]
                     },
 
-                    "onPreferencesUpdated.notifyPcp": {
-                        funcName: "{pcp}.notifyPCPWindow",
+                    "{gpiiConnector}.events.onPreferencesUpdated": {
+                        listener: "{pcp}.notifyPCPWindow",
                         args: ["keyIn", "{arguments}.0"]
                     },
-                    "onSettingUpdated.notifyPcp": {
-                        funcName: "{pcp}.notifyPCPWindow",
+                    "{gpiiConnector}.events.onSettingUpdated": {
+                        listener: "{pcp}.notifyPCPWindow",
                         args: ["updateSetting", "{arguments}.0"]
                     }
                 }
-            },
-            priority: "after:pcp"
+            }
         },
         tray: {
             type: "gpii.app.tray",

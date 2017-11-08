@@ -145,4 +145,3 @@ gpii.app.dialog.dismissWaitDialog = function (that) {
         that.dialog.hide();
     }
 };
-

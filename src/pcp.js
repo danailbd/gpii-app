@@ -18,7 +18,7 @@ var electron = require("electron");
 var BrowserWindow     = electron.BrowserWindow,
     ipcMain           = electron.ipcMain,
     systemPreferences = electron.systemPreferences;
-var gpii     = fluid.registerNamespace("gpii");
+var gpii              = fluid.registerNamespace("gpii");
 
 require("./utils.js");
 
@@ -50,6 +50,10 @@ fluid.defaults("gpii.app.pcp", {
 
     members: {
         pcpWindow: "@expand:gpii.app.pcp.makePCPWindow({that}.options.attrs)"
+    },
+    events: {
+        onSettingAltered: null,
+        onActivePreferenceSetAltered: null
     },
     listeners: {
         "onCreate.initPCPWindowIPC": {
@@ -148,10 +152,8 @@ gpii.app.pcp.initPCPWindowListeners = function (pcp) {
  * the PCP's `BrowserWindow` instance
  *
  * @param pcp {Object} A `gpii.app.pcp` instance
- * @param gpiiConnector {Object} A `gpii.app.gpiiConnector` instance
  */
-// TODO move to upper component
-gpii.app.initPCPWindowIPC = function (app, pcp, gpiiConnector) {
+gpii.app.initPCPWindowIPC = function (app, pcp) {
     ipcMain.on("closePCP", function () {
         pcp.hide();
     });
@@ -162,11 +164,11 @@ gpii.app.initPCPWindowIPC = function (app, pcp, gpiiConnector) {
     });
 
     ipcMain.on("updateSetting", function (event, arg) {
-        gpiiConnector.updateSetting(arg);
+        pcp.events.onSettingAltered.fire(arg);
     });
 
     ipcMain.on("updateActivePreferenceSet", function (event, arg) {
-        gpiiConnector.updateActivePrefSet(arg.value);
+        pcp.events.onActivePreferenceSetAltered.fire(arg.value);
     });
 
     ipcMain.on("contentHeightChanged", function (event, contentHeight) {
@@ -276,5 +278,3 @@ gpii.app.pcp.registerAccentColorListener = function (pcp) {
         });
     }
 };
-
-
