@@ -30,7 +30,7 @@ https://github.com/GPII/universal/blob/master/LICENSE.txt
         },
         events: {
             onPreferencesUpdated: null,
-            onCloseClicked: null,
+            onPCPClose: null,
             onActivePreferenceSetAltered: null
         },
         modelListeners: {
@@ -83,7 +83,7 @@ https://github.com/GPII/universal/blob/master/LICENSE.txt
                         "aria-label": "Close"
                     },
                     invokers: {
-                        "onClick": "{header}.events.onCloseClicked.fire"
+                        "onClick": "{header}.events.onPCPClose.fire"
                     }
                 }
             }

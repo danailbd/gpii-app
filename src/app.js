@@ -99,11 +99,11 @@ fluid.defaults("gpii.app", {
 
                     "{gpiiConnector}.events.onPreferencesUpdated": {
                         listener: "{pcp}.notifyPCPWindow",
-                        args: ["keyIn", "{arguments}.0"]
+                        args: ["onPreferencesUpdated", "{arguments}.0"]
                     },
                     "{gpiiConnector}.events.onSettingUpdated": {
                         listener: "{pcp}.notifyPCPWindow",
-                        args: ["updateSetting", "{arguments}.0"]
+                        args: ["onSettingUpdated", "{arguments}.0"]
                     }
                 }
             }

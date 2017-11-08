@@ -23,7 +23,7 @@ https://github.com/GPII/universal/blob/master/LICENSE.txt
             helpBtn: ".flc-helpBtn"
         },
         events: {
-            onKeyOutClicked: null
+            onKeyOut: null
         },
         components: {
             keyOutBtn: {
@@ -32,7 +32,7 @@ https://github.com/GPII/universal/blob/master/LICENSE.txt
                 options: {
                     label: "{footer}.options.labels.keyOut",
                     invokers: {
-                        "onClick": "{footer}.events.onKeyOutClicked.fire"
+                        "onClick": "{footer}.events.onKeyOut.fire"
                     }
                 }
             },

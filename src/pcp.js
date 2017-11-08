@@ -154,24 +154,24 @@ gpii.app.pcp.initPCPWindowListeners = function (pcp) {
  * @param pcp {Object} A `gpii.app.pcp` instance
  */
 gpii.app.initPCPWindowIPC = function (app, pcp) {
-    ipcMain.on("closePCP", function () {
+    ipcMain.on("onPCPClose", function () {
         pcp.hide();
     });
 
-    ipcMain.on("keyOut", function () {
+    ipcMain.on("onKeyOut", function () {
         pcp.hide();
         app.keyOut();
     });
 
-    ipcMain.on("updateSetting", function (event, arg) {
+    ipcMain.on("onSettingAltered", function (event, arg) {
         pcp.events.onSettingAltered.fire(arg);
     });
 
-    ipcMain.on("updateActivePreferenceSet", function (event, arg) {
+    ipcMain.on("onActivePreferenceSetAltered", function (event, arg) {
         pcp.events.onActivePreferenceSetAltered.fire(arg.value);
     });
 
-    ipcMain.on("contentHeightChanged", function (event, contentHeight) {
+    ipcMain.on("onContentHeightChanged", function (event, contentHeight) {
         pcp.resize(contentHeight);
     });
 };
@@ -270,11 +270,11 @@ gpii.app.pcp.registerAccentColorListener = function (pcp) {
         // time it is focused (only the first time is insufficient because showing
         // the window (even off screen) automatically focuses it).
         pcp.pcpWindow.on("focus", function () {
-            pcp.notifyPCPWindow("accentColorChanged", systemPreferences.getAccentColor());
+            pcp.notifyPCPWindow("onAccentColorChanged", systemPreferences.getAccentColor());
         });
 
         systemPreferences.on("accent-color-changed", function (event, accentColor) {
-            pcp.notifyPCPWindow("accentColorChanged", accentColor);
+            pcp.notifyPCPWindow("onAccentColorChanged", accentColor);
         });
     }
 };

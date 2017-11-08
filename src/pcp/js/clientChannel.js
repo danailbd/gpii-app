@@ -22,14 +22,14 @@ https://github.com/GPII/universal/blob/master/LICENSE.txt
      * closed. It simply notifies the main electron process for this.
      */
     gpii.pcp.clientChannel.closePCP = function () {
-        ipcRenderer.send("closePCP");
+        ipcRenderer.send("onPCPClose");
     };
 
     /**
      * Notifies the main electron process that the user must be keyed out.
      */
     gpii.pcp.clientChannel.keyOut = function () {
-        ipcRenderer.send("keyOut");
+        ipcRenderer.send("onKeyOut");
     };
 
     /**
@@ -41,7 +41,7 @@ https://github.com/GPII/universal/blob/master/LICENSE.txt
      * of different type depending on the setting.
      */
     gpii.pcp.clientChannel.alterSetting = function (path, value) {
-        ipcRenderer.send("updateSetting", {
+        ipcRenderer.send("onSettingAltered", {
             path: path,
             value: value
         });
@@ -54,7 +54,7 @@ https://github.com/GPII/universal/blob/master/LICENSE.txt
      * @param value {String} The path of the new active preference set.
      */
     gpii.pcp.clientChannel.alterActivePreferenceSet = function (value) {
-        ipcRenderer.send("updateActivePreferenceSet", {
+        ipcRenderer.send("onActivePreferenceSetAltered", {
             value: value
         });
     };
@@ -65,7 +65,7 @@ https://github.com/GPII/universal/blob/master/LICENSE.txt
      * @param height {Number} The new height of the PSP `BrowserWindow`.
      */
     gpii.pcp.clientChannel.changeContentHeight = function (height) {
-        ipcRenderer.send("contentHeightChanged", height);
+        ipcRenderer.send("onContentHeightChanged", height);
     };
 
     /**
@@ -74,19 +74,15 @@ https://github.com/GPII/universal/blob/master/LICENSE.txt
      * @param clientChannel {Component} The `clientChannel` component.
      */
     gpii.pcp.clientChannel.initialize = function (clientChannel) {
-        ipcRenderer.on("keyIn", function (event, preferences) {
+        ipcRenderer.on("onPreferencesUpdated", function (event, preferences) {
             clientChannel.events.onPreferencesUpdated.fire(preferences);
         });
 
-        ipcRenderer.on("keyOut", function (event, preferences) {
-            clientChannel.events.onPreferencesUpdated.fire(preferences);
-        });
-
-        ipcRenderer.on("updateSetting", function (event, settingData) {
+        ipcRenderer.on("onSettingUpdated", function (event, settingData) {
             clientChannel.events.onSettingUpdated.fire(settingData.path, settingData.value);
         });
 
-        ipcRenderer.on("accentColorChanged", function (event, accentColor) {
+        ipcRenderer.on("onAccentColorChanged", function (event, accentColor) {
             clientChannel.events.onAccentColorChanged.fire(accentColor);
         });
     };

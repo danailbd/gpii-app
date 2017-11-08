@@ -41,8 +41,8 @@ https://github.com/GPII/universal/blob/master/LICENSE.txt
                 container: "#flc-body",
                 options: {
                     listeners: {
-                        onCloseClicked: "{clientChannel}.close",
-                        onKeyOutClicked: "{clientChannel}.keyOut",
+                        onPCPClose: "{clientChannel}.close",
+                        onKeyOut: "{clientChannel}.keyOut",
                         onSettingAltered: "{clientChannel}.alterSetting",
                         onActivePreferenceSetAltered: "{clientChannel}.alterActivePreferenceSet",
                         onContentHeightChanged: "{clientChannel}.changeContentHeight"

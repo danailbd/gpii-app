@@ -132,7 +132,7 @@ https://github.com/GPII/universal/blob/master/LICENSE.txt
                         onActivePreferenceSetAltered: "{mainWindow}.events.onActivePreferenceSetAltered"
                     },
                     listeners: {
-                        "onCloseClicked": "{mainWindow}.events.onCloseClicked"
+                        "onPCPClose": "{mainWindow}.events.onPCPClose"
                     }
                 }
             },
@@ -155,7 +155,7 @@ https://github.com/GPII/universal/blob/master/LICENSE.txt
                 container: "{that}.dom.footer",
                 options: {
                     events: {
-                        onKeyOutClicked: "{mainWindow}.events.onKeyOutClicked"
+                        onKeyOut: "{mainWindow}.events.onKeyOut"
                     }
                 }
             },
@@ -201,8 +201,8 @@ https://github.com/GPII/universal/blob/master/LICENSE.txt
             onSettingAltered: null, // the setting was altered by the user
             onSettingUpdated: null,  // setting update is present from the API
 
-            onCloseClicked: null,
-            onKeyOutClicked: null,
+            onPCPClose: null,
+            onKeyOut: null,
             onActivePreferenceSetAltered: null,
             onContentHeightChanged: null
         }
