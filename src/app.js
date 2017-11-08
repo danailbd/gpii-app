@@ -12,9 +12,9 @@ https://github.com/GPII/universal/blob/master/LICENSE.txt
 */
 "use strict";
 
-var fluid = require("infusion");
-var gpii = fluid.registerNamespace("gpii");
-var path = require("path");
+var fluid   = require("infusion");
+var gpii    = fluid.registerNamespace("gpii");
+var path    = require("path");
 var request = require("request");
 
 
@@ -56,6 +56,15 @@ fluid.defaults("gpii.app", {
     },
     // prerequisites
     components: {
+        pcp: {
+            type: "gpii.app.pcp",
+            createOnEvent: "onPrerequisitesReady",
+            options: {
+                model: {
+                    keyedInUserToken: "{app}.model.keyedInUserToken"
+                }
+            }
+        },
         gpiiConnector: {
             type: "gpii.app.gpiiConnector",
             createOnEvent: "onPrerequisitesReady",
@@ -64,25 +73,19 @@ fluid.defaults("gpii.app", {
                     "onPreferencesUpdated.updateSets": {
                         listener: "{app}.updatePreferences",
                         args: "{arguments}.0"
-                    }
-                }
-            }
-        },
-        pcp: {
-            type: "gpii.app.pcp",
-            createOnEvent: "onPrerequisitesReady",
-            options: {
-                model: {
-                    keyedInUserToken: "{app}.model.keyedInUserToken"
-                },
-                listeners: {
-                    "onCreate.registerWithConnector": {
-                        funcName: "{gpiiConnector}.registerPCPListener",
-                        args: "{pcp}" // more explicit than "{that}"
+                    },
+
+                    "onPreferencesUpdated.notifyPcp": {
+                        funcName: "{pcp}.notifyPCPWindow",
+                        args: ["keyIn", "{arguments}.0"]
+                    },
+                    "onSettingUpdated.notifyPcp": {
+                        funcName: "{pcp}.notifyPCPWindow",
+                        args: ["updateSetting", "{arguments}.0"]
                     }
                 }
             },
-            priority: "after:gpiiConnector"
+            priority: "after:pcp"
         },
         tray: {
             type: "gpii.app.tray",

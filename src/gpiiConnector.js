@@ -13,9 +13,9 @@ https://github.com/GPII/universal/blob/master/LICENSE.txt
 "use strict";
 
 var fluid = require("infusion");
-var gpii  = fluid.registerNamespace("gpii");
-
 var ws    = require("ws");
+
+var gpii = fluid.registerNamespace("gpii");
 
 /**
  * Responsible for creation and housekeeping of the connection to the PCP Channel WebSocket
@@ -33,10 +33,14 @@ fluid.defaults("gpii.app.gpiiConnector", {
     },
 
     events: {
-        onPreferencesUpdated: null
+        onPreferencesUpdated: null,
+        onSettingUpdated: null
     },
 
     listeners: {
+        "onCreate.register": {
+            funcName: "{gpiiConnector}.registerPCPListener"
+        },
         "onDestroy.closeConnection": {
             listener: "{that}.closeConnection"
         }
@@ -45,7 +49,7 @@ fluid.defaults("gpii.app.gpiiConnector", {
     invokers: {
         registerPCPListener: {
             funcName: "gpii.app.gpiiConnector.registerPCPListener",
-            args: ["{that}.socket", "{that}", "{arguments}.0"]
+            args: ["{that}.socket", "{that}"]
         },
         updateSetting: {
             funcName: "gpii.app.gpiiConnector.updateSetting",
@@ -82,6 +86,46 @@ gpii.app.gpiiConnector.updateSetting = function (socket, setting) {
     socket.send(payload);
 };
 
+/**
+ * Opens a connection to the PCP Channel WebSocket.
+ * @param config {Object} The configuration for the WebSocket
+ */
+gpii.app.gpiiConnector.createGPIIConnection = function (config) {
+    return new ws(config.gpiiWSUrl); // eslint-disable-line new-cap
+};
+
+/**
+ * Register listeners for messages from the GPII socket connection.
+ * @param socket {Object} The connected gpii socket
+ * @param gpiiConnector {Object} The `gpii.app.gpiiConnector` instance
+ */
+gpii.app.gpiiConnector.registerPCPListener = function (socket, gpiiConnector) {
+    socket.on("message", function (rawData) {
+        var data = JSON.parse(rawData),
+            operation = data.type,
+            path = data.path,
+            preferences;
+
+        if ((operation === "ADD" && path.length === 0) ||
+                operation === "DELETE") {
+            /*
+             * Preferences change update has been received
+             */
+            preferences = gpii.app.extractPreferencesData(data);
+            gpiiConnector.events.onPreferencesUpdated.fire(preferences);
+        } else if (operation === "ADD") {
+            /*
+             * Setting change update has been received
+             */
+            var settingPath = path[path.length - 2],
+                settingValue = data.value;
+            gpiiConnector.events.onSettingUpdated.fire({
+                path: settingPath,
+                value: settingValue
+            });
+        }
+    });
+};
 
 /**
  * Send active set change request to GPII.
@@ -97,54 +141,6 @@ gpii.app.gpiiConnector.updateActivePrefSet = function (socket, newPrefSet) {
     });
 
     socket.send(payload);
-};
-
-/**
- * Opens a connection to the PCP Channel WebSocket.
- * @param config {Object} The configuration for the WebSocket
- */
-gpii.app.gpiiConnector.createGPIIConnection = function (config) {
-    return new ws(config.gpiiWSUrl); // eslint-disable-line new-cap
-};
-
-/**
- * Register listeners for messages from the GPII socket connection.
- * @param socket {Object} The connected gpii socket
- * @param gpiiConnector {Object} The `gpii.app.gpiiConnector` instance
- * @param pcp {Object} The `gpii.app.pcp` instance
- */
-gpii.app.gpiiConnector.registerPCPListener = function (socket, gpiiConnector, pcp) {
-    socket.on("message", function (rawData) {
-        var data = JSON.parse(rawData),
-            operation = data.type,
-            path = data.path,
-            preferences;
-
-        if (operation === "ADD") {
-            if (path.length === 0) {
-                /*
-                 * "Keyed in" data has been received
-                 */
-                preferences = gpii.app.extractPreferencesData(data);
-                gpiiConnector.events.onPreferencesUpdated.fire(preferences);
-                pcp.notifyPCPWindow("keyIn", preferences);
-            } else {
-                /*
-                 * Setting change update has been received
-                 */
-                var settingPath = path[path.length - 2],
-                    settingValue = data.value;
-                pcp.notifyPCPWindow("updateSetting", {
-                    path: settingPath,
-                    value: settingValue
-                });
-            }
-        } else if (operation === "DELETE") {
-            preferences = gpii.app.extractPreferencesData(data);
-            gpiiConnector.events.onPreferencesUpdated.fire(preferences);
-            pcp.notifyPCPWindow("keyOut", preferences);
-        }
-    });
 };
 
 /**
