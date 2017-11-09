@@ -21,7 +21,7 @@ var fluid = require("infusion"),
     gpii = fluid.registerNamespace("gpii");
 
 require("../node_modules/kettle/lib/test/KettleTestUtils.http.js");
-require("../src/app.js");
+require("../src/main/app.js");
 
 fluid.registerNamespace("gpii.tests.app");
 

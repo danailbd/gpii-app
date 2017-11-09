@@ -246,7 +246,7 @@ gpii.app.pcp.makePCPWindow = function (windowOptions) {
     // TODO Make window size relative to the screen size
     var pcpWindow = new BrowserWindow(windowOptions);
 
-    var url = fluid.stringTemplate("file://%gpii-app/src/pcp/index.html", fluid.module.terms());
+    var url = fluid.stringTemplate("file://%gpii-app/src/renderer/pcp/index.html", fluid.module.terms());
     pcpWindow.loadURL(url);
 
     gpii.app.pcp.hidePCPWindow(pcpWindow);

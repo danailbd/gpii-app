@@ -161,7 +161,7 @@ gpii.app.createSettingModel = function (key, settingDescriptor) {
         schema: settingDescriptor.schema,
 
         // XXX hardcoded as they're not currently supported by the API (pcpChannel)
-        icon: "../icons/gear-cloud-white.png",
+        icon: "../../icons/gear-cloud-white.png",
         dynamicity: "none", // "none", "application" or "os"
         isPersisted: false
     };
