@@ -155,6 +155,8 @@ fluid.defaults("gpii.app", {
                 }
             }
         },
+        restartWarningController: {
+        },
         tray: {
             type: "gpii.app.tray",
             createOnEvent: "onPrerequisitesReady",
@@ -166,7 +168,7 @@ fluid.defaults("gpii.app", {
             // needed as the psp window is used by the tray
             priority: "after:psp"
         },
-        dialog: {
+        waitDialog: {
             type: "gpii.app.dialog",
             createOnEvent: "onPrerequisitesReady",
             options: {
@@ -380,7 +382,7 @@ gpii.app.handleUncaughtException = function (that, err) {
     // next user who tries to key in.
     that.updateShowDialog(false);
     // Immediately hide the loading dialog.
-    that.dialog.dialog.hide();
+    that.waitDialog.dialog.hide();
 
     if (err.code) {
         var error = handledErrors[err.code];
