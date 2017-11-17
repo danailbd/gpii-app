@@ -145,18 +145,54 @@ fluid.defaults("gpii.app", {
                     "{gpiiConnector}.events.onSettingUpdated": {
                         listener: "{psp}.notifyPSPWindow",
                         args: ["onSettingUpdated", "{arguments}.0"]
-                    },
-
-                    // TODO move
-                    "{gpiiConnector}.events.onRestartRequired": {
-                        listener: "gpii.app.showRestartWarning",
-                        args: ["{restartDialog}", "{arguments}.0"]
                     }
                 }
             }
         },
+        /**
+         * Responsible for toggling the "need restart" warnings both
+         * as a dialog, or in the psp
+         */
         restartWarningController: {
+            type: "fluid.component",
+            createOnEvent: "onPrerequisitesReady",
+            priority: "after:restartDialog",
+            options: {
+                listeners: {
+                    // close buttons interaction
+                    "{psp}.events.onClose": {
+                        func: "{restartDialog}.show",
+                        args: ["{settingsBroker}.model.solutionNames"]
+                    },
+                    "{restartDialog}.events.onRestartLater": {
+                        // TODO same functionallity?
+                        func: "{restartDialog}.hide"
+                    },
+                    "{restartDialog}.events.onClose": {
+                        func: "{restartDialog}.hide"
+                    },
+
+                    // TODO onPendingSettingChanged, so that logic is in a single place
+                    // - show warning 
+                    // - update warning
+                    // - hide warnings
+
+                    // Handle setting interactions (undo, restart now)
+                    "{settingsBroker}.events.onRestartRequired" : {
+                        func: "{that}.toggleRestartWarning",
+                        args: ["{arguments}.0"]
+                    }
+                },
+
+                invokers: {
+                    showRestartWarning: {
+                        funcName: "gpii.app.showRestartWarning",
+                        args: ["{psp}", "{restartDialog}", "{arguments}.0"]
+                    }
+                }
+            }
         },
+
         tray: {
             type: "gpii.app.tray",
             createOnEvent: "onPrerequisitesReady",
@@ -260,11 +296,29 @@ fluid.defaults("gpii.app", {
     }
 });
 
-gpii.app.showRestartWarning = function (restartWindow, affectedSolutions) {
+gpii.app.toggleRestartWarning = function (pspWindow, restartDialog, source, pendingSettings) {
+
+    if (pendingSettings.length === 0) {
+        // Hide all warnings
+        psp.hideRestartWarning();
+        restartDialog.hide(); // set items to []
+        return;
+    }
+
+    // always update the message
+    psp.showRestartWarning(pendingSettings);
+};
+
+gpii.app.showRestartWarning = function (pspWindow, restartDialog, source, pendingSettings) {
     // if (psp is shown) -> send notification
     // if pcp is close show notification
-    restartWindow.dialogChannel.updateSolutions(affectedSolutions);
-    restartWindow.applier.change("showDialog", true);
+
+    if (pendingSettings.length === 0) {
+        return;
+    }
+
+    // always update the message
+    psp.showRestartWarning(pendingSettings);
 };
 
 /**

@@ -28,6 +28,8 @@ require("./waitDialog.js");
 fluid.defaults("gpii.app.dialog.restartDialog.channel", {
     gradeNames: ["fluid.component"],
 
+    source: "restartChannel",
+
     events: {
         // onRestart: null,
         // onClose: null,
@@ -37,7 +39,7 @@ fluid.defaults("gpii.app.dialog.restartDialog.channel", {
     listeners: {
         "onCreate.registerChannel": {
             funcName: "gpii.app.dialog.restartDialog.channel.register",
-            args: "{that}.events"
+            args: ["{that}.events", "{that}.options.source"]
         }
     },
 
@@ -55,22 +57,22 @@ fluid.defaults("gpii.app.dialog.restartDialog.channel", {
     }
 });
 
-gpii.app.dialog.restartChannel.channel.register = function (events) {
+gpii.app.dialog.restartDialog.channel.register = function (events, source) {
     // TODO unite with PSP channel?
     ipcMain.on("onRestart", function (event, message) {
-        if (message.source === "restartChannel") {
+        if (message.source === source) {
             events.onRestart.fire();
         }
     });
 
-    ipcMain.on("onCloseAndRestart", function (event, message) {
-        if (message.source === "restartChannel") {
-            events.onRestart.fire();
+    ipcMain.on("onRestartLater", function (event, message) {
+        if (message.source === source) {
+            events.onResartLater.fire();
         }
     });
 
-    ipcMain.on("onCloseAndRestart", function (event, message) {
-        if (message.source === "restartChannel") {
+    ipcMain.on("onClose", function (event, message) {
+        if (message.source === source) {
             events.onRestart.fire();
         }
     });
@@ -95,6 +97,10 @@ fluid.defaults("gpii.app.dialog.restartDialog", {
         hide: {
             changePath: "showDialog",
             value: false
+        },
+        isShown: {
+            this: "{that}.dialog",
+            method: "isVisible"
         }
     },
 
