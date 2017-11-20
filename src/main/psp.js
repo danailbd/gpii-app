@@ -59,7 +59,7 @@ fluid.defaults("gpii.app.psp", {
         onUndoChanges: null,
 
         onClosed: null,
-//        onRestartLater: null
+        onRestartLater: null
     },
     listeners: {
         "onCreate.initPSPWindowIPC": {

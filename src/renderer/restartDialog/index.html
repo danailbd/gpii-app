@@ -4,13 +4,22 @@
         <link rel="stylesheet" href="../../../node_modules/winstrap/dist/css/winstrap.min.css">
         <link rel="stylesheet" href="../psp/css/button.css">
         <link rel="stylesheet" href="css/restartDialog.css">
+
+
+        <script type="text/javascript" src="../../../node_modules/infusion/src/lib/jquery/core/js/jquery.js"></script>
+        <script type="text/javascript" src="../../../node_modules/infusion/dist/infusion-all.js"></script>
+        <script type="text/javascript" src="../psp/js/widgets.js"></script>
+        <script type="text/javascript" src="js/index.js"></script>
     </head>
     <body>
         <div class="fl-popup theme-alt">
             <div class="fl-popup-contentWrapper">
                 <div class="fl-popup-header">
                     GPII Auto Personalization
-                    <button class="fl-popup-closeBtn">&#x2715;</button>
+                    <button class="flc-close fl-popup-closeBtn">
+                        &#x2715;
+                        <span class="flc-btnLabel"></span> <!-- TODO remove (reusing component) -->
+                    </button>
                 </div>
                 <div class="fl-popup-content">
                     <img class="fl-popup-contentImage" src="../../icons/gpii-color.ico">
@@ -37,5 +46,45 @@
                 </div>
             </div>
         </div>
+
+    <script>
+        $(function () {
+            var restartDialog = fluid.registerNamespace("gpii.restartDialog");
+
+            var ipcRenderer = require("electron").ipcRenderer;
+            restartDialog.restartNow = function () {
+                ipcRenderer.send("onRestartNow");
+            };
+
+            restartDialog.undoChanges = function () {
+                ipcRenderer.send("onUndoChanges");
+            };
+
+            restartDialog.restartLater = function () {
+                ipcRenderer.send("onRestartLater");
+            };
+
+            restartDialog.close = function () {
+                ipcRenderer.send("onClosed");
+            };
+
+            gpii.psp.restartWarning(".fl-popup-contentWrapper", {
+                listeners: {
+                    onRestartNow: {
+                        funcName: "gpii.restartDialog.restartNow"
+                    },
+                    onClosed: {
+                        funcName: "gpii.restartDialog.close"
+                    },
+                    onRestartLater: {
+                        funcName: "gpii.restartDialog.restartLater"
+                    },
+                    onUndoChanges: {
+                        funcName: "gpii.restartDialog.undoChanges"
+                    }
+                }
+            });
+        });
+    </script>
     </body>
 </html>

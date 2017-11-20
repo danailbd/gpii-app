@@ -28,8 +28,6 @@ require("./waitDialog.js");
 fluid.defaults("gpii.app.dialog.restartDialog.channel", {
     gradeNames: ["fluid.component"],
 
-    source: "restartChannel",
-
     events: {
         // onRestart: null,
         // onClosed: null,
@@ -59,22 +57,20 @@ fluid.defaults("gpii.app.dialog.restartDialog.channel", {
 
 gpii.app.dialog.restartDialog.channel.register = function (events, source) {
     // TODO unite with PSP channel?
-    ipcMain.on("onRestart", function (event, message) {
-        if (message.source === source) {
-            events.onRestart.fire();
-        }
+    ipcMain.on("onRestartNow", function (event, message) {
+        events.onRestart.fire();
     });
 
     ipcMain.on("onRestartLater", function (event, message) {
-        if (message.source === source) {
-            events.onClosed.fire();
-        }
+        events.onClosed.fire();
     });
 
     ipcMain.on("onClosed", function (event, message) {
-        if (message.source === source) {
-            events.onClosed.fire();
-        }
+        events.onClosed.fire();
+    });
+
+    ipcMain.on("onUndoChanges", function (event, message) {
+        events.onUndoChanges.fire();
     });
 };
 
@@ -121,11 +117,19 @@ fluid.defaults("gpii.app.dialog.restartDialog", {
             }
         }
     },
+
+
+    listeners: {
+        "onCreate.log": {
+            func: "{that}.show"
+        }
+    },
     events: {
         onRestart: null,
         onClosed: null,
         // TODO probably not needed
-        onRestartLater: null
+        onRestartLater: null,
+        onUndoChanges: null
     },
 
     components: {
@@ -138,8 +142,8 @@ fluid.defaults("gpii.app.dialog.restartDialog", {
                     onRestart: "{restartDialog}.events.onRestart",
                     onClosed: "{restartDialog}.events.onClosed",
                     // TODO probably not needed
-                    onRestartLater: "{restartDialog}.events.onRestartLater"
-
+                    onRestartLater: "{restartDialog}.events.onRestartLater",
+                    onUndoChanges: "{restartDialog}.events.onUndoChanges"
                 },
 
                 // XXX find a better way
@@ -156,12 +160,14 @@ fluid.defaults("gpii.app.dialog.restartDialog", {
 
 gpii.app.dialog.restartDialog.show = function (restartDialog, affectedSolutions) {
 
-    if (affectedSolutions.length > 0) {
+//    if (affectedSolutions.length > 0) {
         // finally, show the dialog
         // TODO improve mechanism?
         restartDialog.applier.change("showDialog", true);
 
         // change according new solutions
         restartDialog.applier.change("affectedSolutions", affectedSolutions);
-    }
+
+        restartDialog.dialog.webContents.openDevTools();
+//    }
 };
