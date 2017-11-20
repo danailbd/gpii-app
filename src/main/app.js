@@ -128,10 +128,6 @@ fluid.defaults("gpii.app", {
                         listener: "{psp}.notifyPSPWindow",
                         args: ["onSettingUpdated", "{arguments}.0"]
                     }],
-                    "{settingsBroker}.events.onRestartRequired": {
-                        listener: "{psp}.notifyPSPWindow",
-                        args: ["onRestartRequired", "{arguments}.0"]
-                    },
 
                     "{psp}.events.onActivePreferenceSetAltered": {
                         listener: "{gpiiConnector}.updateActivePrefSet",
@@ -159,28 +155,28 @@ fluid.defaults("gpii.app", {
             priority: "after:restartDialog",
             options: {
                 listeners: {
-                    // close buttons interaction
-                    "{psp}.events.onClose": {
+                    "{psp}.events.onClosed": {
                         func: "{restartDialog}.show",
-                        args: ["{settingsBroker}.model.solutionNames"]
+                        args: [
+                            "{settingsBroker}.model.solutionNames",
+                        ]
                     },
+                    "{restartDialog}.events.onRestart":{
+                        func: "{settingsBroker}.flushPendingChanges"
+                        // this will trigger toggleRestartWarning
+                    },
+
                     "{restartDialog}.events.onRestartLater": {
-                        // TODO same functionallity?
                         func: "{restartDialog}.hide"
                     },
-                    "{restartDialog}.events.onClose": {
+                    "{restartDialog}.events.onClosed": {
                         func: "{restartDialog}.hide"
                     },
 
-                    // TODO onPendingSettingChanged, so that logic is in a single place
-                    // - show warning 
-                    // - update warning
-                    // - hide warnings
-
-                    // Handle setting interactions (undo, restart now)
+                    // Handle setting interactions (undo, restart now, settings interaction)
                     "{settingsBroker}.events.onRestartRequired" : {
-                        func: "{that}.toggleRestartWarning",
-                        args: ["{arguments}.0"]
+                        funcName: "gpii.app.toggleRestartWarning",
+                        args: ["{psp}", "{restartDialog}", "{arguments}.0"]
                     }
                 },
 
@@ -296,17 +292,17 @@ fluid.defaults("gpii.app", {
     }
 });
 
-gpii.app.toggleRestartWarning = function (pspWindow, restartDialog, source, pendingSettings) {
+gpii.app.toggleRestartWarning = function (pspWindow, restartDialog, pendingSettings) {
 
     if (pendingSettings.length === 0) {
         // Hide all warnings
-        psp.hideRestartWarning();
+        pspWindow.hideRestartWarning();
         restartDialog.hide(); // set items to []
         return;
     }
 
     // always update the message
-    psp.showRestartWarning(pendingSettings);
+    pspWindow.showRestartWarning(pendingSettings);
 };
 
 gpii.app.showRestartWarning = function (pspWindow, restartDialog, source, pendingSettings) {

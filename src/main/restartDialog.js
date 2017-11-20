@@ -32,7 +32,7 @@ fluid.defaults("gpii.app.dialog.restartDialog.channel", {
 
     events: {
         // onRestart: null,
-        // onClose: null,
+        // onClosed: null,
         // onRestartLater: null
     },
 
@@ -67,13 +67,13 @@ gpii.app.dialog.restartDialog.channel.register = function (events, source) {
 
     ipcMain.on("onRestartLater", function (event, message) {
         if (message.source === source) {
-            events.onResartLater.fire();
+            events.onClosed.fire();
         }
     });
 
-    ipcMain.on("onClose", function (event, message) {
+    ipcMain.on("onClosed", function (event, message) {
         if (message.source === source) {
-            events.onRestart.fire();
+            events.onClosed.fire();
         }
     });
 };
@@ -98,10 +98,11 @@ fluid.defaults("gpii.app.dialog.restartDialog", {
             changePath: "showDialog",
             value: false
         },
-        isShown: {
-            this: "{that}.dialog",
-            method: "isVisible"
-        }
+        //        TODO not used
+//        isShown: {
+//            this: "{that}.dialog",
+//            method: "isVisible"
+//        }
     },
 
     config: {
@@ -122,7 +123,7 @@ fluid.defaults("gpii.app.dialog.restartDialog", {
     },
     events: {
         onRestart: null,
-        onClose: null,
+        onClosed: null,
         // TODO probably not needed
         onRestartLater: null
     },
@@ -135,7 +136,7 @@ fluid.defaults("gpii.app.dialog.restartDialog", {
             options: {
                 events: {
                     onRestart: "{restartDialog}.events.onRestart",
-                    onClose: "{restartDialog}.events.onClose",
+                    onClosed: "{restartDialog}.events.onClosed",
                     // TODO probably not needed
                     onRestartLater: "{restartDialog}.events.onRestartLater"
 
@@ -155,10 +156,12 @@ fluid.defaults("gpii.app.dialog.restartDialog", {
 
 gpii.app.dialog.restartDialog.show = function (restartDialog, affectedSolutions) {
 
-    // change according new solutions
-    restartDialog.applier.change("affectedSolutions", affectedSolutions);
+    if (affectedSolutions.length > 0) {
+        // finally, show the dialog
+        // TODO improve mechanism?
+        restartDialog.applier.change("showDialog", true);
 
-    // finally, show the dialog
-    // TODO improve mechanism?
-    restartDialog.applier.change("showDialog", true);
+        // change according new solutions
+        restartDialog.applier.change("affectedSolutions", affectedSolutions);
+    }
 };
