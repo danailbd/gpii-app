@@ -112,6 +112,10 @@ fluid.defaults("gpii.app.psp", {
         showRestartWarning: {
             func: "{psp}.notifyPSPWindow",
             args: ["onRestartRequired", "{arguments}.0"]
+        },
+        hideRestartWarning: {
+            func: "{psp}.notifyPSPWindow",
+            args: ["onRestartRequired", []]
         }
     }
 });
@@ -153,8 +157,8 @@ gpii.app.psp.showPSPWindow = function (pspWindow) {
  */
 gpii.app.psp.initPSPWindowListeners = function (psp) {
     var pspWindow = psp.pspWindow;
-    pspWindow.on("blur", function () {
-        psp.hide();
+    pspWindow.on("blur", function () {        
+        psp.events.onClosed.fire();
     });
 
     electron.screen.on("display-metrics-changed", function (event, display, changedMetrics) {

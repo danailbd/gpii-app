@@ -158,15 +158,15 @@ fluid.defaults("gpii.app", {
                     "{psp}.events.onClosed": {
                         func: "{restartDialog}.show",
                         args: [
-                            "{settingsBroker}.model.solutionNames",
+                            "{settingsBroker}.model.pendingChanges",
                         ]
                     },
-                    "{restartDialog}.events.onRestart":{
+                    "{restartDialog}.events.onRestartNow":{
                         func: "{settingsBroker}.flushPendingChanges"
                         // this will trigger toggleRestartWarning
                     },
-                    "{restartDialog}.events.onRestart":{
-                        func: "{settingsBroker}.clearPendingChanges"
+                    "{restartDialog}.events.onUndoChanges":{
+                        func: "{settingsBroker}.undoPendingChanges"
                         // this will trigger toggleRestartWarning
                     },
 

@@ -67,6 +67,11 @@
                 ipcRenderer.send("onClosed");
             };
 
+            // TODO
+            ipcRenderer.on("onRestartRequired", function (event, pendingChanges) {
+                console.log("Pending Changes: ", pendingChanges)
+            });
+
             gpii.restartDialog(".fl-popup-contentWrapper", {
                 listeners: {
                     onRestartNow: {
