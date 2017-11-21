@@ -24,9 +24,8 @@
                 <div class="fl-popup-content">
                     <img class="fl-popup-contentImage" src="../../icons/gpii-color.ico">
                     <div class="fl-popup-contentText">
-                        <h3>Changes require restart</h3>
-                        <p>In order to be applied, some of the changes you made require the following applications to restart: Windows</p>
-                        <p>What would you like to do?</p>
+                        <h3 class="flc-popup-title"></h3>
+                        <p class="flc-popup-bodyText"></p>
                     </div>
                     <div class="fl-popup-controls">
                         <button class="flc-restartCancel btn fl-btn">
@@ -68,7 +67,7 @@
                 ipcRenderer.send("onClosed");
             };
 
-            gpii.psp.restartWarning(".fl-popup-contentWrapper", {
+            gpii.restartDialog(".fl-popup-contentWrapper", {
                 listeners: {
                     onRestartNow: {
                         funcName: "gpii.restartDialog.restartNow"
