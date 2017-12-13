@@ -194,6 +194,23 @@ gpii.app.surveyTriggersManagerV2.registerTrigger = function (handlers, triggerDa
     // * apply handler for conditions
 };
 
+/*
+Push vs Pull
+ask for fact or notify for fact
+
+
+FactsManager
+- keeps all system facts refs
+- registers all handlers for facts
+    * keyedInBefore fact
+- fires facts changes events (subscribe)
+- subscribe
+    - on interval
+    - on handler event (configurable)
+
+Fact[Handler|Provider]
+- 
+*/
 
 ////////////////////////////////////////////////////////////////////////
 //                              HANDLERS                              //
@@ -225,7 +242,7 @@ fluid.defaults("gpii.app.surveyTriggersManagerV2.keyedInBeforeHandler", {
 
     model: {
         // TODO could be extracted to upper component
-        keyedInTimestamp: null,
+        keyedInSince: null
     },
 
     listener: {
@@ -293,19 +310,13 @@ gpii.app.surveyTriggersManager.keyedInBeforeHandler.handle =
 
 
 /*
-    TODO
-    Two posible approaches:
-    * fire event onTimerFinished
+ *  TODO
  */
 fluid.defaults("gpii.app.timer", {
     gradeNames: ["fluid.modelComponent"],
 
     model: {
-        timer: null,
-
-        /// could be useful
-        // value: null,
-        // unit: null
+        timer: null
     },
 
     listeners: {
@@ -318,10 +329,9 @@ fluid.defaults("gpii.app.timer", {
 
     invokers: {
         start: {
-            funcName: "gpii.app.timer.start",
+            funcName: "timer",
             args: [
-                "{that}",
-                "{arguments}.0"
+                "@expand:setInterval({that}.events.onTimerFinished.fire, {arguments}.0)"
             ]
         },
         clear: {
@@ -331,7 +341,36 @@ fluid.defaults("gpii.app.timer", {
     }
 });
 
-gpii.app.timer.start = function (timer, timeout) {
-    timer.change.applier("timer",
-        setTimeout(timer.events.onTimerFinished.fire, timeout));
-};
+
+/*
+ * TODO
+ */
+fluid.defaults("gpii.app.interval", {
+    gradeNames: ["fluid.modelComponent"],
+
+    model: {
+        interval: null
+    },
+
+    listeners: {
+        "onDestroy.clearInterval": "{that}.clear"
+    },
+
+    events: {
+        // better name... ..Clicked, ..Reached
+        onInterval: null
+    },
+
+    invokers: {
+        start: {
+            pathChange: "interval",
+            args: [
+                "@expand:setInterval({that}.events.onInterval.fire, {arguments}.0)"
+            ]
+        },
+        clear: {
+            funcName: "clearInterval",
+            args: "{that}.model.interval"
+        }
+    }
+});
