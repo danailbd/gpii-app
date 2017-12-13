@@ -64,13 +64,19 @@ https://github.com/GPII/universal/blob/master/LICENSE.txt
             }
         });
 
-        document.body.addEventListener("click", function (event) {
-            if (isNextButton(event.target)) {
+        // Close the survey when its end is reached.
+        new MutationObserver(function () {
+            var el = document.getElementById("EndOfSurvey");
+            if (el) {
+                this.disconnect();
                 setTimeout(function () {
                     ipcRenderer.sendToHost("onSurveyClose");
-                });
+                }, 2000);
             }
-        }, true);
+        }).observe(document, {
+            subtree: true,
+            childList: true
+        });
     }
 
     // Wait for the DOM to initialize and then attach necessary listeners.
