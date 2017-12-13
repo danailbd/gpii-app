@@ -69,9 +69,7 @@ https://github.com/GPII/universal/blob/master/LICENSE.txt
             var el = document.getElementById("EndOfSurvey");
             if (el) {
                 this.disconnect();
-                setTimeout(function () {
-                    ipcRenderer.sendToHost("onSurveyClose");
-                }, 2000);
+                ipcRenderer.sendToHost("onSurveyClose");
             }
         }).observe(document, {
             subtree: true,
