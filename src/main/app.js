@@ -62,6 +62,10 @@ fluid.defaults("gpii.app", {
     },
     // prerequisites
     components: {
+        factsManager: {
+            type: "gpii.app.factsManager",
+            createOnEvent: "onPrerequisitesReady"
+        },
         surveyManager: {
             type: "gpii.app.surveyManager",
             createOnEvent: "onPrerequisitesReady"

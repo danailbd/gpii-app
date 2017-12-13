@@ -117,7 +117,7 @@ Manager is always created
 Manager splits trigger registration into multiple handlers
 
 
-Handlers are singletons 
+Handlers are singletons
 Have names
 They are created in the start (inital initialization)
 Provides facts asyncly
@@ -139,46 +139,68 @@ keyedInBeforeHandler
 
 */
 
+fluid.defaults("gpii.app.triggerEngine", {
+    gradeNames: ["fluid.component"],
+
+    // TODO
+    members: {
+        engine: ""
+    },
+
+    events: {
+        onConditionsSatisfied: null
+    },
+
+    invokers: {
+        supplyFact: {
+            this: "console",
+            method: "log",
+            args: ["SOME FACTS: ", "{arguments}"]
+        },
+        init: {
+        },
+        reset: {
+        }
+    }
+});
+
+
+
+/**
+ * TODO
+ */
 fluid.defaults("gpii.app.surveyTriggersManagerV2", {
     gradeNames: ["fluid.modelComponent"],
-
-    model: {
-    },
 
     events: {
         onTriggerOccurred: null
     },
 
-    members: {
-        // single instance handlers
-        handlersMap: {
-            keyedInBefore: "{that}.keyedInBeforeHandler",
-            // more fun
-        }
-    },
-
-    listeners: {
-        "{app}.events.onKeyOut": "{that}.reset"
-    },
-
     components: {
-        // IDEA: separate component - triggersEngine
-        // condition handlers
-        userKeyedInBeforeHandler: {
-            // registers
-            type: "gpii.app.surveyTriggersManagerV2.userKeyedInBeforeHandler"
+        factsProvider: null,
+
+        // IDEA condition/rule engine
+        triggerEngine: {
+            type: "gpii.app.triggerEngine",
+            options: {
+                listeners: {
+                    onConditionsSatisfied: "{surveyTriggersManagerV2}.events.onTriggerOccurred",
+                    "{factsProvider}.events.onFactUpdated": "{that}.supplyFact"
+                }
+            }
         }
     },
 
     invokers: {
-        reset: {
-            funcName: "gpii.app.surveyTriggersManagerV2.reset",
-            args: "{that}"
-        },
+        // reset: {
+        //     funcName: "gpii.app.surveyTriggersManagerV2.reset",
+        //     args: "{that}"
+        // },
+
         registerTrigger: {
             funcName: "gpii.app.surveyTriggersManagerV2.registerTrigger",
             args: [
-                "{that}.handlersMap",
+                "{that}.triggerEngine",
                 "{arguments}.0"
             ]
         }
@@ -186,12 +208,11 @@ fluid.defaults("gpii.app.surveyTriggersManagerV2", {
 });
 
 
-gpii.app.surveyTriggersManagerV2.registerTrigger = function (handlers, triggerData) {
+gpii.app.surveyTriggersManagerV2.registerTrigger = function (triggerEngine, triggerData) {
     /// TODO support:
     /// * ANY, ALL
 
-    // * iter conditions
-    // * apply handler for conditions
+    // triggerEngine.init(triggerData);
 };
 
 /*
@@ -209,78 +230,199 @@ FactsManager
     - on handler event (configurable)
 
 Fact[Handler|Provider]
-- 
 */
 
 ////////////////////////////////////////////////////////////////////////
-//                              HANDLERS                              //
+//                          Facts Engine                              //
 ////////////////////////////////////////////////////////////////////////
-fluid.defaults("gpii.app.surveyTriggersManagerV2.baseHandler", {
-    gradeNames: ["fluid.modelComponent", "gpii.app.surveyTriggersManagerV2.baseHandler"],
+fluid.defaults("gpii.app.factsManager", {
+    gradeNames: ["fluid.modelComponent"],
 
-    name: "", // Added by implementor
+    model: {
+        // TODO
+        // in order to avoid iteration over collected/unchanged facts
+        cachedFacts: {}
+    },
 
     events: {
-        // TODO better name? / of component
-        onSimpleTrigger: null
+        // Listened to from Manager users
+        onFactUpdated: null,
+
+        // TODO use event decorator
+        // Thrown by factProviders
+        onInnerFactUpdated: null
+    },
+
+    listeners: {
+        onInnerFactUpdated: "{that}.notifyFacts"
+    },
+
+    components: {
+        /*
+         * Fact Providers
+         */
+
+        keyedInBeforeProvider: {
+            type: "gpii.app.surveyTriggersManagerV2.keyedInBeforeProvider",
+            options: {
+                events: {
+                    onFactUpdated: "{factsManager}.events.onInnerFactUpdated"
+                }
+            }
+        },
     },
 
     invokers: {
-        handle: {
+        getFacts: {
+            // Simple iteration over all facts providers
+            funcName: "gpii.app.factsManager.getFacts",
+            args: [
+                "{that}",
+                "{arguments}.0" // useCache
+            ]
+        },
+        notifyFacts: {
+            funcName: "gpii.app.factsManager.notifyFacts",
+            args: ["{that}"]
+        },
+
+        // TODO
+        // reset facts collection
+        /// resetFacts: {
+        ///     // Simple iteration over all facts providers
+        ///     funcName: "gpii.app.factsManager.resetFacts",
+        ///     args: ["{that}"]
+        /// }
+    }
+});
+
+gpii.app.factsManager.notifyFacts = function (that) {
+    that.events.onFactUpdated.fire(that.getFacts());
+};
+
+gpii.app.factsManager.getFacts = function (that) {
+    // TODO simple iteration over fact providers
+
+    // TODO IOC
+    var providers = [
+        "keyedInBeforeProvider"
+    ];
+
+    return providers.reduce(function (facts, provider) {
+        provider = that[provider];
+        facts[provider.options.factName] = provider.getFact();
+        return facts;
+    }, {});
+};
+
+
+
+/**
+ *
+ */
+fluid.defaults("gpii.app.surveyTriggersManagerV2.factProvider", {
+    gradeNames: ["fluid.modelComponent"],
+
+    events: {
+        // TODO better name? / of component
+        onFactUpdated: null
+    },
+
+    invokers: {
+        // return the fact (could not have been computed)
+        getFact: {
             funcName: "fluid.notImplemented",
             args: ["{arguments}.0"]
         },
+        // Reset all fact data
         reset: {
             funcName: "fluid.notImplemented"
         }
     }
 });
 
-fluid.defaults("gpii.app.surveyTriggersManagerV2.keyedInBeforeHandler", {
-    gradeNames: ["gpii.app.surveyTriggersManagerV2.baseHandler"],
-    name: "keyedInBeforeHandler",
+/**
+ * Provides keyIn before information. The most convenient way to have
+ * change notification is to have timer, as this fact isn't dependent
+ * on any interaction/change source.
+ */
+fluid.defaults("gpii.app.surveyTriggersManagerV2.keyedInBeforeProvider", {
+    gradeNames: ["gpii.app.surveyTriggersManagerV2.factProvider"],
+    factName: "keyedInBefore",
 
     model: {
-        // TODO could be extracted to upper component
-        keyedInSince: null
+        userKeyedInTimestamp: null
+    },
+
+    config: {
+        // XXX may be a subscribe method
+        notifyTimeout: 5000 // notify every 5 secs
     },
 
     listener: {
-        "{app}.events.keyedIn": {
-            func: "{that}.updateKeyedInTimestamp"
-        }
+        "{app}.events.keyedIn": [{
+            func: "{that}._updateKeyedInTimestamp"
+        }, { // Register interval notifications
+            func: "{interval}.start",
+            args: "{that}.options.config.notifyTimeout"
+        }],
+
+        "{app}.events.keyedOut": [{
+            func: "{that}.reset"
+        }]
     },
 
     components: {
-        timer: {
-            type: "gpii.app.timer",
-            events: {
-                // Just make an alias
-                onTimerFinished: "{that}.events.onSimpleTrigger"
+        interval: {
+            type: "gpii.app.interval",
+            options: {
+                events: {
+                    // Just make an alias
+                    onTimerFinished: "{factProvider}.events.onFactUpdated"
+                }
             }
         }
     },
 
     invokers: {
-        handle: {
-            funcName: "gpii.app.surveyTriggersManager.keyedInBeforeHandler.handle",
+        getFact: {
+            funcName: "gpii.app.surveyTriggersManagerV2.keyedInBeforeProvider.getFact",
             args: [
-                "{that}.model.keyedInTimestamp",
-                "{that timer}",
-                "{arguments}.0"
+                "{that}.model.keyedInTimestamp"
             ]
         },
         reset: {
-            funcName: "{that timer}.clear"
+            funcName: "gpii.app.surveyTriggersManagerV2.keyedInBeforeProvider.reset",
+            args: "{that}"
         },
 
-        updateKeyedInTimestamp: {
-            changePath: "keyedInUserTimestamp",
+        _updateKeyedInTimestamp: {
+            changePath: "userKeyedInTimestamp",
             value: "@expand:Date.now()"
         }
     }
 });
 
+gpii.app.surveyTriggersManagerV2.keyedInBeforeProvider.reset = function (that) {
+    that.inteval.clear();
+
+    // clear the timestamp, to indicate not keyedIn yet
+    that.applier.change("keyedInTimestamp", null);
+};
+
+
+/**
+ * @param keyedInTimestamp {Number} Time of key in
+ * @return {Number} milliseconds since key in
+ */
+gpii.app.surveyTriggersManagerV2.keyedInBeforeProvider.getFact = function (keyedInTimestamp) {
+    return Date.now() - keyedInTimestamp;
+};
+
+
+///// =====
+
+/*
 gpii.app.surveyTriggersManager.keyedInBeforeHandler.handle =
     function (keyedInTimestamp, timer, condition) {
         var unit = condition.value.unit,
@@ -307,7 +449,9 @@ gpii.app.surveyTriggersManager.keyedInBeforeHandler.handle =
         // "keyed in" is passed
         timer.start(timeout - (Date.now() - keyedInTimestamp));
     };
+*/
 
+// TODO TEST
 
 /*
  *  TODO
@@ -353,6 +497,18 @@ fluid.defaults("gpii.app.interval", {
     },
 
     listeners: {
+        // XXX
+        "onCreate.log": {
+            this: "console",
+            method: "log",
+            args: ["Interval Created"]
+        },
+        "onInterval.log": {
+            this: "console",
+            method: "log",
+            args: ["Interval Click"]
+        },
+
         "onDestroy.clearInterval": "{that}.clear"
     },
 
@@ -363,7 +519,7 @@ fluid.defaults("gpii.app.interval", {
 
     invokers: {
         start: {
-            pathChange: "interval",
+            changePath: "interval",
             args: [
                 "@expand:setInterval({that}.events.onInterval.fire, {arguments}.0)"
             ]
