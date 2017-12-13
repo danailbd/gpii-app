@@ -36,6 +36,10 @@ https://github.com/GPII/universal/blob/master/LICENSE.txt
                 && target.classList.contains("flc-breakOut");
     }
 
+    function isCloseButton(target) {
+        return target && target.classList.contains("flc-closeBtn");
+    }
+
     /**
      * Adds a listener which notifies the host `BrowserWindow` that it
      * needs to close as a result of the user clicking on the 'break out'
@@ -47,7 +51,7 @@ https://github.com/GPII/universal/blob/master/LICENSE.txt
      */
     function addBreakOutLinkListener() {
         document.body.addEventListener("click", function (event) {
-            if (isBreakOutLink(event.target)) {
+            if (isBreakOutLink(event.target) || isCloseButton(event.target)) {
                 // Needed so that the default action of the link can
                 // execute before the dialog is closed and destroyed.
                 setTimeout(function () {
