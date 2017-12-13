@@ -68,7 +68,8 @@ fluid.defaults("gpii.app", {
         },
         surveyManager: {
             type: "gpii.app.surveyManager",
-            createOnEvent: "onPrerequisitesReady"
+            createOnEvent: "onPrerequisitesReady",
+            priority: "after:factsManager"
         },
         psp: {
             type: "gpii.app.psp",
@@ -252,7 +253,8 @@ fluid.defaults("gpii.app", {
         onGPIIReady: null,
         onAppReady: null,
 
-        onKeyedIn: null
+        onKeyedIn: null,
+        onKeyedOut: null
     },
     modelListeners: {
         "{lifecycleManager}.model.logonChange": {
@@ -275,13 +277,15 @@ fluid.defaults("gpii.app", {
             namespace: "onLifeCycleManagerUserKeyedIn"
         }, {
             listener: "{that}.events.onKeyedIn.fire",
-            args: "{arguments}.1",
             namespace: "notifyUserKeyedIn"
         }],
-        "{lifecycleManager}.events.onSessionStop": {
+        "{lifecycleManager}.events.onSessionStop": [{
             listener: "gpii.app.handleSessionStop",
             args: ["{that}", "{arguments}.1.options.userToken"]
-        },
+        }, {
+            listener: "{that}.events.onKeyedOut.fire",
+            namespace: "notifyUserKeyedOut"
+        }],
 
         "onDestroy.beforeExit": {
             listener: "{that}.keyOut"

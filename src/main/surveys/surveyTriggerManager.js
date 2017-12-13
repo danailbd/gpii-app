@@ -16,83 +16,84 @@ var fluid = require("infusion");
 
 var gpii = fluid.registerNamespace("gpii");
 
+require("../utils.js");
 
-fluid.defaults("gpii.app.surveyTriggersManager", {
-    gradeNames: ["fluid.modelComponent"],
-
-    model: {
-        keyedInUserToken: null,
-        activeTimer: null
-    },
-
-    modelListeners: {
-        keyedInUserToken: {
-            funcName: "gpii.app.surveyTriggersManager.clearTriggersIfNeeded",
-            args: ["{that}", "{change}.value"],
-            excludeSource: "init"
-        }
-    },
-
-    events: {
-        onTriggerOccurred: null
-    },
-
-
-    invokers: {
-        registerTrigger: {
-            funcName: "gpii.app.surveyTriggersManager.registerTrigger",
-            args: ["{that}", "{arguments}.0"]
-        },
-        clearTriggers: {
-            funcName: "gpii.app.surveyTriggersManager.clearTriggers",
-            args: ["{that}"]
-        }
-    }
-});
-
-
-gpii.app.surveyTriggersManager.registerTrigger = function (that, triggerData) {
-    that.clearTriggers();
-
-    if (!triggerData || !triggerData.conditions) {
-        return;
-    }
-
-    var conditions = triggerData.conditions;
-    if (conditions.length !== 1) {
-        console.log("SurveyTriggerManager: Unsoported number of conditions: ", conditions.length);
-        return;
-    }
-
-    // XXX mock
-    var timer;
-    if (conditions[0].minutesSinceKeyIn) {
-        timer = setTimeout(
-            function () {
-                console.log("SurveyTriggerManager: KeyedIn Timer triggered!");
-
-                delete triggerData.conditions;
-                that.events.onTriggerOccurred.fire(triggerData);
-            },
-            conditions[0].minutesSinceKeyIn * 1000
-        );
-        that.applier.change("activeTimer", timer);
-    }
-};
-
-
-gpii.app.surveyTriggersManager.clearTriggers = function (that) {
-    if (that.model.activeTimer) {
-        clearTimeout(that.model.activeTimer);
-        that.applier.change("activeTimer", null, "DELETE");
-    }
-};
-
-gpii.app.surveyTriggersManager.clearTriggersIfNeeded = function (that, keyedInUserToken) {
-    if (!fluid.isValue(keyedInUserToken)) {
-        that.clearTriggers();
-    }
-};
+/// fluid.defaults("gpii.app.surveyTriggersManager", {
+///     gradeNames: ["fluid.modelComponent"],
+/// 
+///     model: {
+///         keyedInUserToken: null,
+///         activeTimer: null
+///     },
+/// 
+///     modelListeners: {
+///         keyedInUserToken: {
+///             funcName: "gpii.app.surveyTriggersManager.clearTriggersIfNeeded",
+///             args: ["{that}", "{change}.value"],
+///             excludeSource: "init"
+///         }
+///     },
+/// 
+///     events: {
+///         onTriggerOccurred: null
+///     },
+/// 
+/// 
+///     invokers: {
+///         registerTrigger: {
+///             funcName: "gpii.app.surveyTriggersManager.registerTrigger",
+///             args: ["{that}", "{arguments}.0"]
+///         },
+///         clearTriggers: {
+///             funcName: "gpii.app.surveyTriggersManager.clearTriggers",
+///             args: ["{that}"]
+///         }
+///     }
+/// });
+/// 
+/// 
+/// gpii.app.surveyTriggersManager.registerTrigger = function (that, triggerData) {
+///     that.clearTriggers();
+/// 
+///     if (!triggerData || !triggerData.conditions) {
+///         return;
+///     }
+/// 
+///     var conditions = triggerData.conditions;
+///     if (conditions.length !== 1) {
+///         console.log("SurveyTriggerManager: Unsoported number of conditions: ", conditions.length);
+///         return;
+///     }
+/// 
+///     // XXX mock
+///     var timer;
+///     if (conditions[0].minutesSinceKeyIn) {
+///         timer = setTimeout(
+///             function () {
+///                 console.log("SurveyTriggerManager: KeyedIn Timer triggered!");
+/// 
+///                 delete triggerData.conditions;
+///                 that.events.onTriggerOccurred.fire(triggerData);
+///             },
+///             conditions[0].minutesSinceKeyIn * 1000
+///         );
+///         that.applier.change("activeTimer", timer);
+///     }
+/// };
+/// 
+/// 
+/// gpii.app.surveyTriggersManager.clearTriggers = function (that) {
+///     if (that.model.activeTimer) {
+///         clearTimeout(that.model.activeTimer);
+///         that.applier.change("activeTimer", null, "DELETE");
+///     }
+/// };
+/// 
+/// gpii.app.surveyTriggersManager.clearTriggersIfNeeded = function (that, keyedInUserToken) {
+///     if (!fluid.isValue(keyedInUserToken)) {
+///         that.clearTriggers();
+///     }
+/// };
 
 
 /*
@@ -158,11 +159,18 @@ fluid.defaults("gpii.app.triggerEngine", {
             args: ["SOME FACTS: ", "{arguments}"]
         },
         init: {
+            funcName: "gpii.app.triggerEngine",
+            args: ["{that}", "{arguments}.0"]
         },
-        reset: {
-        }
+        // reset: {
+        // }
     }
 });
+
+gpii.app.triggerEngine = function (that, triggerData) {
+    // recreate engine
+    // add rule/conditions
+};
 
 
 
@@ -177,7 +185,7 @@ fluid.defaults("gpii.app.surveyTriggersManagerV2", {
     },
 
     components: {
-        factsProvider: null,
+        // factsManager: null,
 
         // IDEA condition/rule engine
         triggerEngine: {
@@ -185,7 +193,7 @@ fluid.defaults("gpii.app.surveyTriggersManagerV2", {
             options: {
                 listeners: {
                     onConditionsSatisfied: "{surveyTriggersManagerV2}.events.onTriggerOccurred",
-                    "{factsProvider}.events.onFactUpdated": "{that}.supplyFact"
+                    "{factsManager}.events.onFactUpdated": "{that}.supplyFact"
                 }
             }
         }
@@ -200,7 +208,7 @@ fluid.defaults("gpii.app.surveyTriggersManagerV2", {
         registerTrigger: {
             funcName: "gpii.app.surveyTriggersManagerV2.registerTrigger",
             args: [
-                "{that}.triggerEngine",
+                "{triggerEngine}",
                 "{arguments}.0"
             ]
         }
@@ -215,33 +223,14 @@ gpii.app.surveyTriggersManagerV2.registerTrigger = function (triggerEngine, trig
     // triggerEngine.init(triggerData);
 };
 
-/*
-Push vs Pull
-ask for fact or notify for fact
 
-
-FactsManager
-- keeps all system facts refs
-- registers all handlers for facts
-    * keyedInBefore fact
-- fires facts changes events (subscribe)
-- subscribe
-    - on interval
-    - on handler event (configurable)
-
-Fact[Handler|Provider]
-*/
-
-////////////////////////////////////////////////////////////////////////
-//                          Facts Engine                              //
-////////////////////////////////////////////////////////////////////////
 fluid.defaults("gpii.app.factsManager", {
     gradeNames: ["fluid.modelComponent"],
 
     model: {
         // TODO
         // in order to avoid iteration over collected/unchanged facts
-        cachedFacts: {}
+        /// cachedFacts: {}
     },
 
     events: {
@@ -269,7 +258,7 @@ fluid.defaults("gpii.app.factsManager", {
                     onFactUpdated: "{factsManager}.events.onInnerFactUpdated"
                 }
             }
-        },
+        }
     },
 
     invokers: {
@@ -277,14 +266,13 @@ fluid.defaults("gpii.app.factsManager", {
             // Simple iteration over all facts providers
             funcName: "gpii.app.factsManager.getFacts",
             args: [
-                "{that}",
-                "{arguments}.0" // useCache
+                "{that}"
             ]
         },
         notifyFacts: {
             funcName: "gpii.app.factsManager.notifyFacts",
             args: ["{that}"]
-        },
+        }
 
         // TODO
         // reset facts collection
@@ -301,40 +289,47 @@ gpii.app.factsManager.notifyFacts = function (that) {
 };
 
 gpii.app.factsManager.getFacts = function (that) {
-    // TODO simple iteration over fact providers
+    // TODO find proper place to cache cache
+    var factProviders = gpii.app.getSubcomponents(that);
 
-    // TODO IOC
-    var providers = [
-        "keyedInBeforeProvider"
-    ];
-
-    return providers.reduce(function (facts, provider) {
-        provider = that[provider];
-        facts[provider.options.factName] = provider.getFact();
-        return facts;
-    }, {});
+    return factProviders
+        .reduce(function (facts, provider) {
+            facts[provider.options.factName] = provider.getFact();
+            return facts;
+        }, {});
 };
 
 
 
 /**
- *
+ * The base class for fact providers. Each fact provider must
+ * support this interface.
+ * A user such a component may:
+ * - use the push notifications that are registered once change
+ *   in the corresponding fact has take place
+ * - may get the current state (value) of a fact at any given moment
  */
 fluid.defaults("gpii.app.surveyTriggersManagerV2.factProvider", {
     gradeNames: ["fluid.modelComponent"],
 
     events: {
-        // TODO better name? / of component
+        /*
+         * Frequently fired to notify for change in the fact state.
+         */
         onFactUpdated: null
     },
 
     invokers: {
-        // return the fact (could not have been computed)
+        /*
+         * Get fact's current state.
+         */
         getFact: {
             funcName: "fluid.notImplemented",
             args: ["{arguments}.0"]
         },
-        // Reset all fact data
+        /*
+         * Reset fact's data restarting the collection info.
+         */
         reset: {
             funcName: "fluid.notImplemented"
         }
@@ -342,9 +337,8 @@ fluid.defaults("gpii.app.surveyTriggersManagerV2.factProvider", {
 });
 
 /**
- * Provides keyIn before information. The most convenient way to have
- * change notification is to have timer, as this fact isn't dependent
- * on any interaction/change source.
+ * Provides information for time since the user keyed.
+ * Uses interval timer to notify for fact changes.
  */
 fluid.defaults("gpii.app.surveyTriggersManagerV2.keyedInBeforeProvider", {
     gradeNames: ["gpii.app.surveyTriggersManagerV2.factProvider"],
@@ -355,21 +349,21 @@ fluid.defaults("gpii.app.surveyTriggersManagerV2.keyedInBeforeProvider", {
     },
 
     config: {
-        // XXX may be a subscribe method
-        notifyTimeout: 5000 // notify every 5 secs
+        // XXX dev time; set to 30 secs default
+        notificationTimeout: 3000 // notify every 5 secs
     },
 
-    listener: {
-        "{app}.events.keyedIn": [{
+    listeners: {
+        "{app}.events.onKeyedIn": [{
             func: "{that}._updateKeyedInTimestamp"
         }, { // Register interval notifications
             func: "{interval}.start",
-            args: "{that}.options.config.notifyTimeout"
+            args: "{that}.options.config.notificationTimeout"
         }],
 
-        "{app}.events.keyedOut": [{
+        "{app}.events.onKeyedOut": {
             func: "{that}.reset"
-        }]
+        }
     },
 
     components: {
@@ -378,7 +372,7 @@ fluid.defaults("gpii.app.surveyTriggersManagerV2.keyedInBeforeProvider", {
             options: {
                 events: {
                     // Just make an alias
-                    onTimerFinished: "{factProvider}.events.onFactUpdated"
+                    onIntervalTick: "{factProvider}.events.onFactUpdated"
                 }
             }
         }
@@ -388,7 +382,7 @@ fluid.defaults("gpii.app.surveyTriggersManagerV2.keyedInBeforeProvider", {
         getFact: {
             funcName: "gpii.app.surveyTriggersManagerV2.keyedInBeforeProvider.getFact",
             args: [
-                "{that}.model.keyedInTimestamp"
+                "{that}.model.userKeyedInTimestamp"
             ]
         },
         reset: {
@@ -406,7 +400,7 @@ fluid.defaults("gpii.app.surveyTriggersManagerV2.keyedInBeforeProvider", {
 gpii.app.surveyTriggersManagerV2.keyedInBeforeProvider.reset = function (that) {
     that.inteval.clear();
 
-    // clear the timestamp, to indicate not keyedIn yet
+    // clear the timestamp, as no one keyedIn
     that.applier.change("keyedInTimestamp", null);
 };
 
@@ -503,25 +497,20 @@ fluid.defaults("gpii.app.interval", {
             method: "log",
             args: ["Interval Created"]
         },
-        "onInterval.log": {
-            this: "console",
-            method: "log",
-            args: ["Interval Click"]
-        },
 
         "onDestroy.clearInterval": "{that}.clear"
     },
 
     events: {
         // better name... ..Clicked, ..Reached
-        onInterval: null
+        onIntervalTick: null
     },
 
     invokers: {
         start: {
             changePath: "interval",
             args: [
-                "@expand:setInterval({that}.events.onInterval.fire, {arguments}.0)"
+                "@expand:setInterval({that}.events.onIntervalTick.fire, {arguments}.0)"
             ]
         },
         clear: {

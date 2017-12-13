@@ -65,7 +65,7 @@ fluid.defaults("gpii.app.surveyManager", {
                 },
                 components: {
                     // TODO pass from implementor PFI
-                    factsManager: "{app factsManager}"
+                    factsManager: "{app}.factsManager"
                 }
             }
         },

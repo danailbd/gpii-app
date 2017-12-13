@@ -90,3 +90,14 @@ app.notifyWindow = function (browserWindow, messageChannel, message) {
 app.equalsAsJSON = function (obj1, obj2) {
     return JSON.stringify(obj1) === JSON.stringify(obj2);
 };
+
+
+/**
+ * Collect all subcomponents for the given component
+ * @param that {Component} The components holder
+ * @return {Component[]} The list of subcomponents
+ */
+app.getSubcomponents = function (that) {
+    return fluid.values(that)
+                .filter(fluid.isComponent);
+};
