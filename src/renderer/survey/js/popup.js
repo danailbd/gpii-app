@@ -14,6 +14,8 @@ https://github.com/GPII/universal/blob/master/LICENSE.txt
 "use strict";
 (function (fluid) {
     var gpii = fluid.registerNamespace("gpii"),
+        fs = require("fs"),
+        async = require("async"),
         shell = require("electron").shell;
 
     /**
@@ -40,6 +42,10 @@ https://github.com/GPII/universal/blob/master/LICENSE.txt
             "onCreate.notifySurveyCreated": {
                 funcName: "{that}.events.onIPCMessage.fire",
                 args: ["onSurveyCreated"]
+            },
+            "onCreate.injectCSS": {
+                funcName: "gpii.survey.popup.injectCSS",
+                args: ["{that}.dom.webview"]
             },
             "onCreate.addIPCListener": {
                 funcName: "gpii.survey.popup.addIPCListener",
@@ -90,6 +96,28 @@ https://github.com/GPII/universal/blob/master/LICENSE.txt
             this.getWebContents().on("new-window", function (event, url) {
                 shell.openExternal(url);
             });
+        });
+    };
+
+    gpii.survey.popup.injectCSS = function (webview) {
+        webview.on("dom-ready", function () {
+            webview[0].openDevTools();
+            async.eachSeries(
+                [
+                    __dirname + "/css/webview.css"
+                ],
+                function (filename, cb) {
+                    fs.readFile(filename, "utf-8", function (error, data) {
+                        if (!error) {
+                            webview[0].insertCSS(data);
+                        }
+                        cb(error);
+                    });
+                },
+                function (error) {
+                    console.log("Inserting CSS finished", error);
+                }
+            );
         });
     };
 })(fluid);

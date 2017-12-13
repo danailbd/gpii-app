@@ -40,6 +40,10 @@ https://github.com/GPII/universal/blob/master/LICENSE.txt
         return target && target.classList.contains("flc-closeBtn");
     }
 
+    function isNextButton(target) {
+        return target && target.id === "NextButton";
+    }
+
     /**
      * Adds a listener which notifies the host `BrowserWindow` that it
      * needs to close as a result of the user clicking on the 'break out'
@@ -59,6 +63,14 @@ https://github.com/GPII/universal/blob/master/LICENSE.txt
                 });
             }
         });
+
+        document.body.addEventListener("click", function (event) {
+            if (isNextButton(event.target)) {
+                setTimeout(function () {
+                    ipcRenderer.sendToHost("onSurveyClose");
+                });
+            }
+        }, true);
     }
 
     // Wait for the DOM to initialize and then attach necessary listeners.
