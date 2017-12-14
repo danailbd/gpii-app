@@ -18,14 +18,15 @@ var path    = require("path");
 var request = require("request");
 
 
-require("./settingsBroker.js");
+require("./factsManager.js");
 require("./gpiiConnector.js");
-require("./menu.js"); // menuInApp, menuInAppDev
-require("./tray.js");
+require("./menu.js");
 require("./psp.js");
-require("./surveys/surveyManager.js");
-require("./waitDialog.js");
 require("./restartDialog.js");
+require("./settingsBroker.js");
+require("./surveys/surveyManager.js");
+require("./tray.js");
+require("./waitDialog.js");
 
 require("./networkCheck.js");
 

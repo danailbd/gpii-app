@@ -67,7 +67,7 @@ fluid.defaults("gpii.app.surveyConnector", {
         /*
          * A list of survey triggers that are to be registered
          */
-        onTriggerReceived: null
+        onTriggerDataReceived: null
     },
 
     invokers: {
@@ -116,7 +116,7 @@ gpii.app.surveyConnector.register = function (socket, events, surveyParser) {
             events.onSurveyRequired.fire(surveyOptions);
             break;
         case "surveyTrigger":
-            events.onTriggerReceived.fire(payload);
+            events.onTriggerDataReceived.fire(payload);
             break;
         default:
             console.log("SurveyConnector - Unrecognized message type: ", message);
