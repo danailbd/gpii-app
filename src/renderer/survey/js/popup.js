@@ -15,7 +15,6 @@ https://github.com/GPII/universal/blob/master/LICENSE.txt
 (function (fluid) {
     var gpii = fluid.registerNamespace("gpii"),
         fs = require("fs"),
-        async = require("async"),
         shell = require("electron").shell;
 
     /**
@@ -101,23 +100,11 @@ https://github.com/GPII/universal/blob/master/LICENSE.txt
 
     gpii.survey.popup.injectCSS = function (webview) {
         webview.on("dom-ready", function () {
-            webview[0].openDevTools();
-            async.eachSeries(
-                [
-                    __dirname + "/css/webview.css"
-                ],
-                function (filename, cb) {
-                    fs.readFile(filename, "utf-8", function (error, data) {
-                        if (!error) {
-                            webview[0].insertCSS(data);
-                        }
-                        cb(error);
-                    });
-                },
-                function (error) {
-                    console.log("Inserting CSS finished", error);
+            fs.readFile(__dirname + "/css/webview.css", "utf-8", function (error, data) {
+                if (!error) {
+                    webview[0].insertCSS(data);
                 }
-            );
+            });
         });
     };
 })(fluid);

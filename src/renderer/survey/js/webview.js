@@ -40,10 +40,6 @@ https://github.com/GPII/universal/blob/master/LICENSE.txt
         return target && target.classList.contains("flc-closeBtn");
     }
 
-    function isNextButton(target) {
-        return target && target.id === "NextButton";
-    }
-
     /**
      * Adds a listener which notifies the host `BrowserWindow` that it
      * needs to close as a result of the user clicking on the 'break out'
@@ -63,8 +59,19 @@ https://github.com/GPII/universal/blob/master/LICENSE.txt
                 });
             }
         });
+    }
 
-        // Close the survey when its end is reached.
+    /**
+     * Sends an `onSurveyClose` IPC message to the host page automatically
+     * when the survey end has been reached. In order to do this, the webview
+     * registers a `MutationObserver` which listens for changes in the DOM
+     * of the whole page. Whenever such a change occurs, instead of iterating
+     * through the changes manually (using the argument passed to the callback
+     * function), an attempt to find an element with id `EndOfSurvey` is made.
+     * If such an element does exist, this means that the user has reached the
+     * end of the survey.
+     */
+    function addEndOfSurveyListener() {
         new MutationObserver(function () {
             var el = document.getElementById("EndOfSurvey");
             if (el) {
@@ -80,5 +87,6 @@ https://github.com/GPII/universal/blob/master/LICENSE.txt
     // Wait for the DOM to initialize and then attach necessary listeners.
     document.addEventListener("DOMContentLoaded", function () {
         addBreakOutLinkListener();
+        addEndOfSurveyListener();
     });
 })();
