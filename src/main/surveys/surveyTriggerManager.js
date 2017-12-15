@@ -49,38 +49,44 @@ keyedInBeforeHandler
 fluid.defaults("gpii.app.conditionsEngine", {
     gradeNames: ["fluid.modelComponent"],
 
-    model: {
-        engine: null
-    },
+    /*
+     * Map of named rules.
+     */
+    registeredRulesMap: {},
 
     events: {
         onRuleSatisfied: null
     },
 
-    listeners: {
-        "onCreate.initEngine": {
-            func: "{that}.reset"
-        }
-    },
-
     invokers: {
         /*
-         * Runs async rule checking.
-         * Note that, in case the any rule is satisfied, the engine will
-         * be reset, removing the succeeded rule.
+         * Runs async rules checking.
+         * In case of satisfied rules, the registered "success" listener
+         * will fire the
          */
-        checkRule: {
-            this: "{that}.model.engine",
-            method: "run",
+        checkRules: {
+            funcName: "gpii.app.conditionsEngine.checkRules",
             // the new facts
-            args: ["{arguments}.0"]
+            args: [
+                "{that}.options.registeredRulesMap",
+                "{arguments}.0"
+            ]
         },
         addRule: {
             funcName: "gpii.app.conditionsEngine.addRule",
             args: [
-                "{that}.model.engine",
+                "{that}",
+                "{that}.options.registeredRulesMap",
                 "{arguments}.0",
-                "{arguments}.1"
+                "{arguments}.1",
+                "{arguments}.2"
+            ]
+        },
+        removeRule: {
+            funcName: "gpii.app.conditionsEngine.removeRule",
+            args: [
+                "{that}.options.registeredRulesMap",
+                "{arguments}.0"
             ]
         },
         reset: {
@@ -91,12 +97,12 @@ fluid.defaults("gpii.app.conditionsEngine", {
             ]
         },
 
-        // Could be overritten to supply different success handling
+        // Could be overwritten to supply different success handling
         registerSuccessListener: {
             funcName: "gpii.app.conditionsEngine.registerSuccessListener",
             args: [
-                "{that}",
-                "{that}.model.engine",
+                "{arguments}.0",
+                "{arguments}.1",
                 "{that}.events"
             ]
         }
@@ -104,39 +110,59 @@ fluid.defaults("gpii.app.conditionsEngine", {
 });
 
 
-gpii.app.conditionsEngine.registerSuccessListener = function (that, engine, events) {
-    console.log("Trigger engine - Registered listeners")
-    engine.once("success", function (event) {
-        console.log("conditionsEngine success (event): ", event)
-        events.onRuleSatisfied.fire(event);
-        // Reset the engine in order to clear the rule
-        that.reset();
+gpii.app.conditionsEngine.registerSuccessListener = function (engine, ruleId, events) {
+    engine.on(ruleId, function (params) {
+        console.log("Conditions Engine - Rule success: ", ruleId, params)
+        events.onRuleSatisfied.fire(ruleId, params);
     });
 };
 
 gpii.app.conditionsEngine.reset = function (that) {
-    var engine = new RulesEngine();
-    that.applier.change("engine", engine);
-
-    that.registerSuccessListener();
+    that.options.registeredRulesMap = {};
 };
 
-gpii.app.conditionsEngine.addRule = function (engine, conditions, event) {
-    engine.addRule({
+gpii.app.conditionsEngine.removeRule = function (registeredRulesMap, ruleId) {
+    console.log("ConditionsEngine - Remove Rule: ", ruleId, registeredRulesMap)
+    // just let garbage collection do its work
+    delete registeredRulesMap[ruleId];
+};
+
+gpii.app.conditionsEngine.addRule = function (that, registeredRulesMap, ruleId, conditions, payload) {
+    /*
+     * A bit strange approach for accomplishing the required behaviour as
+     * the current dependent rule engine doesn't support removal of already added rules.
+     */
+    registeredRulesMap[ruleId] = new RulesEngine([{
         conditions: conditions,
         event: {
-            type: event.type,
-            params: event.payload
+            type: ruleId,
+            // TODO do we need that?
+            params: payload
         }
-    });
+    }]);
+
+    that.registerSuccessListener(registeredRulesMap[ruleId], ruleId);
 };
 
+/**
+ * TODO
+ */
+gpii.app.conditionsEngine.checkRules = function (registeredRulesMap, facts) {
+    var ruleEngines = fluid.values(registeredRulesMap);
+
+    console.log("DEBUG: Checking Registered rules: ")
+
+    ruleEngines.forEach(function (engine) {
+        console.log(engine.rules)
+        engine.run(facts);
+    });
+};
 
 
 /**
  * TODO
  */
-fluid.defaults("gpii.app.surveyTriggersManagerV2", {
+fluid.defaults("gpii.app.surveyTriggerManager", {
     gradeNames: ["fluid.modelComponent"],
 
     events: {
@@ -146,13 +172,19 @@ fluid.defaults("gpii.app.surveyTriggersManagerV2", {
     components: {
         factsManager: null,
 
-        // IDEA condition/rule engine
+        // TODO condition/rule engine
         conditionsEngine: {
             type: "gpii.app.conditionsEngine",
             options: {
                 listeners: {
-                    onRuleSatisfied: "{surveyTriggersManagerV2}.events.onTriggerOccurred",
-                    "{factsManager}.events.onFactUpdated": "{that}.checkRule"
+                    onRuleSatisfied: {
+                        func: "{surveyTriggerManager}.handleRuleSuccess",
+                        args: [
+                            "{arguments}.0",
+                            "{arguments}.1"
+                        ]
+                    },
+                    "{factsManager}.events.onFactUpdated": "{that}.checkRules"
                 }
             }
         }
@@ -160,12 +192,21 @@ fluid.defaults("gpii.app.surveyTriggersManagerV2", {
 
     invokers: {
         // reset: {
-        //     funcName: "gpii.app.surveyTriggersManagerV2.reset",
+        //     funcName: "gpii.app.surveyTriggerManager.reset",
         //     args: "{that}"
         // },
 
+        handleRuleSuccess: {
+            funcName: "gpii.app.surveyTriggerManager.handleRuleSuccess",
+            args: [
+                "{that}",
+                "{arguments}.0",
+                "{arguments}.1"
+            ]
+        },
+
         registerTrigger: {
-            funcName: "gpii.app.surveyTriggersManagerV2.registerTrigger",
+            funcName: "gpii.app.surveyTriggerManager.registerTrigger",
             args: [
                 "{conditionsEngine}",
                 "{arguments}.0"
@@ -174,18 +215,30 @@ fluid.defaults("gpii.app.surveyTriggersManagerV2", {
     }
 });
 
+
+gpii.app.surveyTriggerManager.handleRuleSuccess = function (that, ruleId, payload) {
+    console.log("Rule handled: ", ruleId, payload)
+    if (ruleId === "surveyTrigger") {
+        that.events.onTriggerOccurred.fire(payload);
+    }
+
+    that.conditionsEngine.removeRule(ruleId);
+};
+
 /**
  * TODO
  * simple wrapper
  */
-gpii.app.surveyTriggersManagerV2.registerTrigger = function (conditionsEngine, triggerData) {
+gpii.app.surveyTriggerManager.registerTrigger = function (conditionsEngine, triggerData) {
     console.log("Trigger manager: Register Trigger - ", triggerData);
-    // TODO
-    conditionsEngine.addRule(triggerData.conditions, {
-        type: "surveyTrigger",
-        payload: {
-            id: triggerData.id,
+    conditionsEngine.addRule(
+        "surveyTrigger",
+        triggerData.conditions,
+        // TODO do we need in case only one survey at a time
+        // we may have multiple?
+        {
+            triggerId: triggerData.id,
             urlTriggerHandler: triggerData.urlTriggerHandler
-        }
-    });
+
+        });
 };

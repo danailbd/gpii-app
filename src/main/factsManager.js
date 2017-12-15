@@ -48,7 +48,7 @@ fluid.defaults("gpii.app.factsManager", {
          */
 
         keyedInBeforeProvider: {
-            type: "gpii.app.surveyTriggersManagerV2.keyedInBeforeProvider",
+            type: "gpii.app.surveyTriggerManager.keyedInBeforeProvider",
             options: {
                 events: {
                     onFactUpdated: "{factsManager}.events.onInnerFactUpdated"
@@ -105,7 +105,7 @@ gpii.app.factsManager.getFacts = function (that) {
  *   in the corresponding fact has take place
  * - may get the current state (value) of a fact at any given moment
  */
-fluid.defaults("gpii.app.surveyTriggersManagerV2.factProvider", {
+fluid.defaults("gpii.app.surveyTriggerManager.factProvider", {
     gradeNames: ["fluid.modelComponent"],
 
     events: {
@@ -136,8 +136,8 @@ fluid.defaults("gpii.app.surveyTriggersManagerV2.factProvider", {
  * Provides information for time since the user keyed.
  * Uses interval timer to notify for fact changes.
  */
-fluid.defaults("gpii.app.surveyTriggersManagerV2.keyedInBeforeProvider", {
-    gradeNames: ["gpii.app.surveyTriggersManagerV2.factProvider"],
+fluid.defaults("gpii.app.surveyTriggerManager.keyedInBeforeProvider", {
+    gradeNames: ["gpii.app.surveyTriggerManager.factProvider"],
     factName: "keyedInBefore",
 
     model: {
@@ -176,13 +176,13 @@ fluid.defaults("gpii.app.surveyTriggersManagerV2.keyedInBeforeProvider", {
 
     invokers: {
         getFact: {
-            funcName: "gpii.app.surveyTriggersManagerV2.keyedInBeforeProvider.getFact",
+            funcName: "gpii.app.surveyTriggerManager.keyedInBeforeProvider.getFact",
             args: [
                 "{that}.model.userKeyedInTimestamp"
             ]
         },
         reset: {
-            funcName: "gpii.app.surveyTriggersManagerV2.keyedInBeforeProvider.reset",
+            funcName: "gpii.app.surveyTriggerManager.keyedInBeforeProvider.reset",
             args: "{that}"
         },
 
@@ -193,7 +193,7 @@ fluid.defaults("gpii.app.surveyTriggersManagerV2.keyedInBeforeProvider", {
     }
 });
 
-gpii.app.surveyTriggersManagerV2.keyedInBeforeProvider.reset = function (that) {
+gpii.app.surveyTriggerManager.keyedInBeforeProvider.reset = function (that) {
     that.inteval.clear();
 
     // clear the timestamp, as no one keyedIn
@@ -205,41 +205,11 @@ gpii.app.surveyTriggersManagerV2.keyedInBeforeProvider.reset = function (that) {
  * @param keyedInTimestamp {Number} Time of key in
  * @return {Number} milliseconds since key in
  */
-gpii.app.surveyTriggersManagerV2.keyedInBeforeProvider.getFact = function (keyedInTimestamp) {
+gpii.app.surveyTriggerManager.keyedInBeforeProvider.getFact = function (keyedInTimestamp) {
     return Date.now() - keyedInTimestamp;
 };
 
 
-///// =====
-
-/*
-gpii.app.surveyTriggersManager.keyedInBeforeHandler.handle =
-    function (keyedInTimestamp, timer, condition) {
-        var unit = condition.value.unit,
-            value = condition.value.value;
-
-        var timeout = 0;
-        switch (unit) {
-        // TODO enum? (compute prefix only once)
-        case "s":
-            timeout = 1000 * value;
-            break;
-        case "m":
-            timeout = 1000 * 60 * value;
-            break;
-        case "h":
-            timeout = 1000 * 60 * 60 * value;
-            break;
-        default:
-            console.log("ERROR(KeyedInBeforeHandler): No such unit - ", unit);
-        }
-
-        // As the keyed in may have occurred some time before the
-        // triggers are registered, ensure proper timer since
-        // "keyed in" is passed
-        timer.start(timeout - (Date.now() - keyedInTimestamp));
-    };
-*/
 
 // TODO TEST
 
@@ -265,7 +235,7 @@ fluid.defaults("gpii.app.timer", {
         start: {
             funcName: "timer",
             args: [
-                "@expand:setInterval({that}.events.onTimerFinished.fire, {arguments}.0)"
+                "@expand:setTimeout({that}.events.onTimerFinished.fire, {arguments}.0)"
             ]
         },
         clear: {

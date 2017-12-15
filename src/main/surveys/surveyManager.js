@@ -46,15 +46,15 @@ fluid.defaults("gpii.app.surveyManager", {
                     },
 
                     onTriggerDataReceived: {
-                        func: "{surveyTriggersManager}.registerTrigger",
+                        func: "{surveyTriggerManager}.registerTrigger",
                         args: ["{arguments}.0"]
                     }
                 }
             }
         },
 
-        surveyTriggersManager: {
-            type: "gpii.app.surveyTriggersManagerV2",
+        surveyTriggerManager: {
+            type: "gpii.app.surveyTriggerManager",
             options: {
                 model: {
                     keyedInUserToken: "{app}.model.keyedInUserToken"
