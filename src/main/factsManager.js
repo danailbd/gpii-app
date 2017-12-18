@@ -19,39 +19,30 @@ var gpii = fluid.registerNamespace("gpii");
 
 /**
  * TODO
+ * Once fact updated notification, it collects all facts from providers
+ * and sends them through the `onFactUpdated` event.
  */
 fluid.defaults("gpii.app.factsManager", {
     gradeNames: ["fluid.modelComponent"],
 
     model: {
-        // TODO
-        // in order to avoid iteration over collected/unchanged facts
         /// cachedFacts: {}
     },
 
     events: {
         // Listened to from Manager users
-        onFactUpdated: null,
-
-        // TODO use event decorator
-        // Thrown by factProviders
-        onInnerFactUpdated: null
-    },
-
-    listeners: {
-        onInnerFactUpdated: "{that}.notifyFacts"
+        onFactUpdated: null
     },
 
     components: {
         /*
          * Fact Providers
          */
-
         keyedInBeforeProvider: {
             type: "gpii.app.surveyTriggerManager.keyedInBeforeProvider",
             options: {
-                events: {
-                    onFactUpdated: "{factsManager}.events.onInnerFactUpdated"
+                listeners: {
+                    onFactUpdated: "{factsManager}.notifyFacts"
                 }
             }
         }
@@ -68,24 +59,31 @@ fluid.defaults("gpii.app.factsManager", {
         notifyFacts: {
             funcName: "gpii.app.factsManager.notifyFacts",
             args: ["{that}"]
-        }
+        },
 
-        // TODO
-        // reset facts collection
-        /// resetFacts: {
-        ///     // Simple iteration over all facts providers
-        ///     funcName: "gpii.app.factsManager.resetFacts",
-        ///     args: ["{that}"]
-        /// }
+        resetFacts: {
+            // Simple iteration over all facts providers
+            funcName: "gpii.app.factsManager.resetFacts",
+            args: ["{that}"]
+        }
     }
 });
 
+/**
+ * Simply sends all freshly collected facts over the responsible event.
+ * @param that {Component} The `gpii.app.factsManager` component
+ */
 gpii.app.factsManager.notifyFacts = function (that) {
+    console.log("Notify facts");
     that.events.onFactUpdated.fire(that.getFacts());
 };
 
+/**
+ * Collect facts from all fact providers
+ * @param that {Component} The gpii.app.factsManager component
+ * @return {Object} A map of all facts - { factName: factValue, }
+ */
 gpii.app.factsManager.getFacts = function (that) {
-    // TODO find proper place to cache cache
     var factProviders = gpii.app.getSubcomponents(that);
 
     return factProviders
@@ -95,12 +93,24 @@ gpii.app.factsManager.getFacts = function (that) {
         }, {});
 };
 
+/**
+ * Reset all fact providers' state.
+ * @param that {Component} The gpii.app.factsManager component
+ */
+gpii.app.factsManager.resetFacts = function (that) {
+    var factProviders = gpii.app.getSubcomponents(that);
+
+    factProviders
+        .forEach(function (provider) {
+            provider.reset();
+        });
+};
 
 
 /**
  * The base class for fact providers. Each fact provider must
  * support this interface.
- * A user such a component may:
+ * A user of such a component may:
  * - use the push notifications that are registered once change
  *   in the corresponding fact has take place
  * - may get the current state (value) of a fact at any given moment
@@ -145,8 +155,7 @@ fluid.defaults("gpii.app.surveyTriggerManager.keyedInBeforeProvider", {
     },
 
     config: {
-        // XXX dev time; set to 30 secs default
-        notificationTimeout: 3000 // notify every 5 secs
+        notificationTimeout: 1000 // notify every second
     },
 
     listeners: {
@@ -193,28 +202,29 @@ fluid.defaults("gpii.app.surveyTriggerManager.keyedInBeforeProvider", {
     }
 });
 
+/**
+ * Clears the registered interval.
+ * @param that {Component} The `gpii.app.surveyTriggerManager` component
+ */
 gpii.app.surveyTriggerManager.keyedInBeforeProvider.reset = function (that) {
-    that.inteval.clear();
-
-    // clear the timestamp, as no one keyedIn
+    that.interval.clear();
     that.applier.change("keyedInTimestamp", null);
 };
 
 
 /**
- * @param keyedInTimestamp {Number} Time of key in
- * @return {Number} milliseconds since key in
+ * Computes the time since keying in
+ * @param keyedInTimestamp {Number} Time of keying in
+ * @return {Number} milliseconds since keyed in
  */
 gpii.app.surveyTriggerManager.keyedInBeforeProvider.getFact = function (keyedInTimestamp) {
     return Date.now() - keyedInTimestamp;
 };
 
 
-
-// TODO TEST
-
 /*
- *  TODO
+ * Simple wrapper for the native timeout. Responsible for clearing the interval
+ * upon component destruction.
  */
 fluid.defaults("gpii.app.timer", {
     gradeNames: ["fluid.modelComponent"],
@@ -247,7 +257,8 @@ fluid.defaults("gpii.app.timer", {
 
 
 /*
- * TODO
+ * Simple wrapper for the native interval. Responsible for clearing the interval
+ * upon component destruction.
  */
 fluid.defaults("gpii.app.interval", {
     gradeNames: ["fluid.modelComponent"],
@@ -268,16 +279,13 @@ fluid.defaults("gpii.app.interval", {
     },
 
     events: {
-        // better name... ..Clicked, ..Reached
         onIntervalTick: null
     },
 
     invokers: {
         start: {
             changePath: "interval",
-            args: [
-                "@expand:setInterval({that}.events.onIntervalTick.fire, {arguments}.0)"
-            ]
+            value: "@expand:setInterval({that}.events.onIntervalTick.fire, {arguments}.0)"
         },
         clear: {
             funcName: "clearInterval",
