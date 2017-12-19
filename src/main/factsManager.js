@@ -39,7 +39,7 @@ fluid.defaults("gpii.app.factsManager", {
             type: "gpii.app.surveyTriggerManager.keyedInBeforeProvider",
             options: {
                 listeners: {
-                    onFactsUpdated: "{factsManager}.notifyFacts"
+                    onFactsUpdated: "{factsManager}.emitFacts"
                 }
             }
         }
@@ -53,8 +53,8 @@ fluid.defaults("gpii.app.factsManager", {
                 "{that}"
             ]
         },
-        notifyFacts: {
-            funcName: "gpii.app.factsManager.notifyFacts",
+        emitFacts: {
+            funcName: "gpii.app.factsManager.emitFacts",
             args: ["{that}"]
         },
 
@@ -70,7 +70,7 @@ fluid.defaults("gpii.app.factsManager", {
  * Simply sends all freshly collected facts over the responsible event.
  * @param that {Component} The `gpii.app.factsManager` component
  */
-gpii.app.factsManager.notifyFacts = function (that) {
+gpii.app.factsManager.emitFacts = function (that) {
     console.log("DEBUG: Notify facts")
     that.events.onFactsUpdated.fire(that.getFacts());
 };
