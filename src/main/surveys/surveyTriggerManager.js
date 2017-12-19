@@ -83,7 +83,6 @@ gpii.app.surveyTriggerManager.reset = function (that) {
 };
 
 gpii.app.surveyTriggerManager.handleRuleSuccess = function (that, ruleId, payload) {
-    console.log("Rule handled: ", ruleId, payload)
     if (ruleId === that.options.ruleIds.surveyTrigger) {
         that.events.onTriggerOccurred.fire(payload);
         that.rulesEngine.removeRule(ruleId);
@@ -94,7 +93,6 @@ gpii.app.surveyTriggerManager.handleRuleSuccess = function (that, ruleId, payloa
  * TODO
  */
 gpii.app.surveyTriggerManager.registerTrigger = function (triggerRuleId, rulesEngine, triggerData) {
-    console.log("Trigger manager: Register Trigger - ", triggerData)
     rulesEngine.addRule(
         triggerRuleId,
         triggerData.conditions,

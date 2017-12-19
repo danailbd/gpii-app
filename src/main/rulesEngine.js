@@ -104,7 +104,7 @@ fluid.defaults("gpii.app.rulesEngine", {
 gpii.app.rulesEngine.registerSuccessListener = function (registeredRulesMap, ruleId, events) {
     // Register for the specific rule to
     registeredRulesMap[ruleId].on("success", function (event) {
-        console.log("Conditions Engine - Rule success: ", ruleId, event.params)
+        console.log("DEBUG: Conditions Engine - Rule success: ", ruleId, event.params)
         events.onRuleSatisfied.fire(ruleId, event.params);
     });
 };
@@ -124,7 +124,6 @@ gpii.app.rulesEngine.reset = function (that) {
  * @param ruleId {String} The id for the that is to be removed
  */
 gpii.app.rulesEngine.removeRule = function (registeredRulesMap, ruleId) {
-    console.log("rulesEngine - Remove Rule: ", ruleId, registeredRulesMap)
     // just let garbage collection do its work
     registeredRulesMap[ruleId] = null;
 };
@@ -165,10 +164,7 @@ gpii.app.rulesEngine.checkRules = function (registeredRulesMap, facts) {
         .values(registeredRulesMap)
         .filter(fluid.isValue);
 
-    console.log("DEBUG: Checking Registered rules: ")
-
     ruleEngines.forEach(function (engine) {
-        console.log(engine.rules)
         engine.run(facts);
     });
 };
