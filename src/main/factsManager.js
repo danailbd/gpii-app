@@ -16,22 +16,19 @@ var fluid = require("infusion");
 
 var gpii = fluid.registerNamespace("gpii");
 
+require("./utils.js");
 
 /**
  * TODO
  * Once fact updated notification, it collects all facts from providers
- * and sends them through the `onFactUpdated` event.
+ * and sends them through the `onFactsUpdated` event.
  */
 fluid.defaults("gpii.app.factsManager", {
-    gradeNames: ["fluid.modelComponent"],
-
-    model: {
-        /// cachedFacts: {}
-    },
+    gradeNames: ["fluid.component"],
 
     events: {
         // Listened to from Manager users
-        onFactUpdated: null
+        onFactsUpdated: null
     },
 
     components: {
@@ -42,7 +39,7 @@ fluid.defaults("gpii.app.factsManager", {
             type: "gpii.app.surveyTriggerManager.keyedInBeforeProvider",
             options: {
                 listeners: {
-                    onFactUpdated: "{factsManager}.notifyFacts"
+                    onFactsUpdated: "{factsManager}.notifyFacts"
                 }
             }
         }
@@ -75,7 +72,7 @@ fluid.defaults("gpii.app.factsManager", {
  */
 gpii.app.factsManager.notifyFacts = function (that) {
     console.log("Notify facts");
-    that.events.onFactUpdated.fire(that.getFacts());
+    that.events.onFactsUpdated.fire(that.getFacts());
 };
 
 /**
@@ -122,7 +119,7 @@ fluid.defaults("gpii.app.surveyTriggerManager.factProvider", {
         /*
          * Frequently fired to notify for change in the fact state.
          */
-        onFactUpdated: null
+        onFactsUpdated: null
     },
 
     invokers: {
@@ -155,12 +152,13 @@ fluid.defaults("gpii.app.surveyTriggerManager.keyedInBeforeProvider", {
     },
 
     config: {
-        notificationTimeout: 1000 // notify every second
+        // notify every second by default
+        notificationTimeout: 1000
     },
 
     listeners: {
         "{app}.events.onKeyedIn": [{
-            func: "{that}._updateKeyedInTimestamp"
+            func: "{that}.updateKeyedInTimestamp"
         }, { // Register interval notifications
             func: "{interval}.start",
             args: "{that}.options.config.notificationTimeout"
@@ -177,7 +175,7 @@ fluid.defaults("gpii.app.surveyTriggerManager.keyedInBeforeProvider", {
             options: {
                 events: {
                     // Just make an alias
-                    onIntervalTick: "{factProvider}.events.onFactUpdated"
+                    onIntervalTick: "{factProvider}.events.onFactsUpdated"
                 }
             }
         }
@@ -195,7 +193,7 @@ fluid.defaults("gpii.app.surveyTriggerManager.keyedInBeforeProvider", {
             args: "{that}"
         },
 
-        _updateKeyedInTimestamp: {
+        updateKeyedInTimestamp: {
             changePath: "userKeyedInTimestamp",
             value: "@expand:Date.now()"
         }
@@ -220,76 +218,3 @@ gpii.app.surveyTriggerManager.keyedInBeforeProvider.reset = function (that) {
 gpii.app.surveyTriggerManager.keyedInBeforeProvider.getFact = function (keyedInTimestamp) {
     return Date.now() - keyedInTimestamp;
 };
-
-
-/*
- * Simple wrapper for the native timeout. Responsible for clearing the interval
- * upon component destruction.
- */
-fluid.defaults("gpii.app.timer", {
-    gradeNames: ["fluid.modelComponent"],
-
-    model: {
-        timer: null
-    },
-
-    listeners: {
-        "onDestroy.clearTimer": "{that}.clear"
-    },
-
-    events: {
-        onTimerFinished: null
-    },
-
-    invokers: {
-        start: {
-            funcName: "timer",
-            args: [
-                "@expand:setTimeout({that}.events.onTimerFinished.fire, {arguments}.0)"
-            ]
-        },
-        clear: {
-            funcName: "clearTimeout",
-            args: "{that}.model.timer"
-        }
-    }
-});
-
-
-/*
- * Simple wrapper for the native interval. Responsible for clearing the interval
- * upon component destruction.
- */
-fluid.defaults("gpii.app.interval", {
-    gradeNames: ["fluid.modelComponent"],
-
-    model: {
-        interval: null
-    },
-
-    listeners: {
-        // XXX
-        "onCreate.log": {
-            this: "console",
-            method: "log",
-            args: ["Interval Created"]
-        },
-
-        "onDestroy.clearInterval": "{that}.clear"
-    },
-
-    events: {
-        onIntervalTick: null
-    },
-
-    invokers: {
-        start: {
-            changePath: "interval",
-            value: "@expand:setInterval({that}.events.onIntervalTick.fire, {arguments}.0)"
-        },
-        clear: {
-            funcName: "clearInterval",
-            args: "{that}.model.interval"
-        }
-    }
-});

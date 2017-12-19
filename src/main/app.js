@@ -23,6 +23,7 @@ require("./gpiiConnector.js");
 require("./menu.js");
 require("./psp.js");
 require("./restartDialog.js");
+require("./rulesEngine.js");
 require("./settingsBroker.js");
 require("./surveys/surveyManager.js");
 require("./tray.js");
@@ -67,10 +68,20 @@ fluid.defaults("gpii.app", {
             type: "gpii.app.factsManager",
             createOnEvent: "onPrerequisitesReady"
         },
+        rulesEngine: {
+            createOnEvent: "onPrerequisitesReady",
+            priority: "after:factsManager",
+            type: "gpii.app.rulesEngine",
+            options: {
+                listeners: {
+                    "{factsManager}.events.onFactsUpdated": "{that}.checkRules"
+                }
+            }
+        },
         surveyManager: {
             type: "gpii.app.surveyManager",
             createOnEvent: "onPrerequisitesReady",
-            priority: "after:factsManager"
+            priority: "after:rulesEngine"
         },
         psp: {
             type: "gpii.app.psp",
