@@ -19,31 +19,72 @@ var gpii = fluid.registerNamespace("gpii");
 
 
 /**
- * TODO
+ * A component that, having facts provided, supports checks on whether a list of
+ * rules (their conditions) are satisfied and notifies by firing an event with the `ruleId`
+ * once a rule's conditions are met. A rule is represented as a set of conditions and in
+ * order for the rule to be checked it needs to be registered. Multiple rules
+ * could be registered and they'll be checked simultaneously.
+ * Every rule requires a list of conditions and a unique `ruleId` to be given to it.
+ * In case a rule with such id is already registered, it will be OVERRIDDEN with the newly added.
  *
- * A user of this rules engine would probably follow these steps of usage:
- * - register for `onRuleSatisfied` event with specific `ruleId`
- * - `addRule` that is to be tested
- * - once the rule succeeds, `removeRule`
+ * Facts are supplied by the `gpii.app.factsManager` and represent pieces of information
+ * that are used for the various checks in the dependent conditions. Each condition
+ * specifies the name of the fact which it is dependent on. Here's a simple example:
+ * Given the condition
+ * ```
+ * all: [{
+ *   fact: "keyedInBefore,
+ *   operator: "equal",
+ *   value: 3000
+ * }]
+ * ```
+ * It requires the fact "keyedInBefore" for its check. [to checkRules] Facts are supplied as a
+ * map and are expected to follow the format: `{ "factName": factValue, }`
  *
- * The rules' conditions follow this shema https://github.com/CacheControl/json-rules-engine/blob/72d0d2abe46ae95c730ac5ccbe7cb0f6cf28d784/docs/rules.md#conditions, where the `fact` name is
+ * Removal of rules is also supported. For example, it could be the case that once a rule's
+ * conditions are met, the rule should be removed (de-registered), as notifications are no more
+ * required, but this is delegated to the user of the component to decide.
+ *
+ * A rule' conditions follow this shema https://github.com/CacheControl/json-rules-engine/blob/72d0d2abe46ae95c730ac5ccbe7cb0f6cf28d784/docs/rules.md#conditions, where the `fact` name is
  * defined and registered in the `gpii.app.factsManager`, `gpii.app.factProvider`.
  *
- * Note: A strange implementation detail is that currently each rule is run in a dedicated `json-rule-engine` engine
- * in order to support removal of rules. Using this module adds flexibility and currently seems sufficient.
+ *
+ * For a user of this rules engine it is most likely to follow this workflow:
+ * - register for `onRuleSatisfied` event and watch for specific `ruleId`
+ * - registering a rule  that is to be tested, using the `addRule` method
+ * - removing the rule once the rule succeeds, using the `removeRule` method
+ *
+ * N.B.! Only one rule can be registered for with given id at time.
+ *
+ * Note: A strange implementation detail is that currently each rule is run in dedicated `json-rule-engine` engine
+ * in order to support removal (de-registration) of rules. Although it this seems like a strange hack to be used,
+ * using this module adds flexibility and currently seems sufficient.
  */
 fluid.defaults("gpii.app.rulesEngine", {
     gradeNames: ["fluid.modelComponent"],
 
     /*
-     * Map of named rules. It follows the pattern:
-     * { ruleId: <Single rule, ruleEngine>, }
+     * A map of currently registered rules.
+     * As we want to have control over registered rules
+     * (remove or change a rule by an id) using the
+     * third-party dependency `json-rules-engine` necessitates
+     * that we keep them in the following manner:
+     * { ruleId: <Single Ruled ruleEngine>,... }
+     * where `ruleEngine` is of type `json-rules-engine` engine
+     * In other words, every rule is kept in a dedicated ruleEngine
+     * (a `json-rules-engine` engine).
      */
     members: {
         registeredRulesMap: {}
     },
 
     events: {
+        /*
+         * Fired once any rule is satisfied.
+         * Fired with arguments:
+         * <ruleId>       - the successful rule's id,
+         * <rule_payload> - the payload which is provided with rule registration
+         */
         onRuleSatisfied: null
     },
 
