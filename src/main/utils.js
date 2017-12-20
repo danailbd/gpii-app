@@ -105,7 +105,7 @@ app.getSubcomponents = function (that) {
 
 
 /*
- * Simple wrapper for the native timeout. Responsible for clearing the interval
+ * A simple wrapper for the native timeout. Responsible for clearing the interval
  * upon component destruction.
  */
 fluid.defaults("gpii.app.timer", {
@@ -139,7 +139,7 @@ fluid.defaults("gpii.app.timer", {
 
 
 /*
- * Simple wrapper for the native interval. Responsible for clearing the interval
+ * A simple wrapper for the native interval. Responsible for clearing the interval
  * upon component destruction.
  */
 fluid.defaults("gpii.app.interval", {

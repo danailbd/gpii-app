@@ -17,8 +17,8 @@ var fluid = require("infusion");
 var gpii = fluid.registerNamespace("gpii");
 
 /**
- * Responsible for notifying when curtain survey trigger rule is satisfied.
- * It uses the `gpii.app.rulesEngine` engine for watch over the conditions' completion
+ * Responsible for notifying when a certain survey trigger rule is satisfied.
+ * It uses the `gpii.app.rulesEngine` engine to watch for the conditions' completion.
  */
 fluid.defaults("gpii.app.surveyTriggerManager", {
     gradeNames: ["fluid.modelComponent"],

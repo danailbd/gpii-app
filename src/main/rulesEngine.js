@@ -24,12 +24,12 @@ var gpii = fluid.registerNamespace("gpii");
  * A user of this rules engine would probably follow these steps of usage:
  * - register for `onRuleSatisfied` event with specific `ruleId`
  * - `addRule` that is to be tested
- * - once the rule succees, `removeRule`
+ * - once the rule succeeds, `removeRule`
  *
  * The rules' conditions follow this shema https://github.com/CacheControl/json-rules-engine/blob/72d0d2abe46ae95c730ac5ccbe7cb0f6cf28d784/docs/rules.md#conditions, where the `fact` name is
- * a defined and registered in the `gpii.app.factsManager`, `gpii.app.factProvider`.
+ * defined and registered in the `gpii.app.factsManager`, `gpii.app.factProvider`.
  *
- * Note: A strange implementation detail is that currently each rule is run in dedicated `json-rule-engine` engine
+ * Note: A strange implementation detail is that currently each rule is run in a dedicated `json-rule-engine` engine
  * in order to support removal of rules. Using this module adds flexibility and currently seems sufficient.
  */
 fluid.defaults("gpii.app.rulesEngine", {
@@ -81,7 +81,7 @@ fluid.defaults("gpii.app.rulesEngine", {
             ]
         },
 
-        // Could be overwritten to supply different success handling
+        // Could be overwritten to provide different success handling
         registerSuccessListener: {
             funcName: "gpii.app.rulesEngine.registerSuccessListener",
             args: [
@@ -94,7 +94,7 @@ fluid.defaults("gpii.app.rulesEngine", {
 });
 
 /**
- * Registers success listener for the given rule. Once the rule is satisfied an
+ * Registers a success listener for the given rule. Once the rule is satisfied an
  * event is fired with `ruleId` and  `payload` as parameters.
  * @param registeredRulesMap {Object} The map of all registered rules
  * @param ruleId {String} The id for the that is to be removed
@@ -136,8 +136,8 @@ gpii.app.rulesEngine.removeRule = function (registeredRulesMap, ruleId) {
  * @param conditions {Object} A list of */
 gpii.app.rulesEngine.addRule = function (that, registeredRulesMap, ruleId, conditions, payload) {
     /*
-     * This approach is needed the current dependent rule engine module (`json-rules-engine`) doesn't
-     * support removal of already added rules. But we want to use its extensive rule checking functionality
+     * This approach is needed by the current dependent rule engine module (`json-rules-engine`) doesn't
+     * support removal of already added rules. But we want to use its extensive rule checking functionality.
      */
     registeredRulesMap[ruleId] = new RulesEngine([{
         conditions: conditions,
@@ -151,7 +151,7 @@ gpii.app.rulesEngine.addRule = function (that, registeredRulesMap, ruleId, condi
 };
 
 /**
- * Runs async check whether any of the registered rules is satisfied
+ * Runs an async check whether any of the registered rules is satisfied
  * against the supplied facts. In case of satisfied rules, the
  * registered "success" listener will be fired.
  *
