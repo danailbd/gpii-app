@@ -93,12 +93,5 @@ gpii.app.surveyTriggerManager.handleRuleSuccess = function (that, ruleId, payloa
  * TODO
  */
 gpii.app.surveyTriggerManager.registerTrigger = function (triggerRuleId, rulesEngine, triggerData) {
-    rulesEngine.addRule(
-        triggerRuleId,
-        triggerData.conditions,
-        {
-            triggerId: triggerData.triggerId,
-            urlTriggerHandler: triggerData.urlTriggerHandler
-
-        });
+    rulesEngine.addRule(triggerRuleId, triggerData.conditions, triggerData);
 };

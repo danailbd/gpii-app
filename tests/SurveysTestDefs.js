@@ -65,7 +65,6 @@ gpii.tests.surveys.testTriggersRequestValue = function (value, keyedInUserToken)
 };
 
 gpii.tests.surveys.testTriggerOccurredValue = function (value, expectedValue) {
-    expectedValue = fluid.censorKeys(expectedValue, ["conditions"]);
     jqUnit.assertDeepEq("The triggers occurred payload contains the correct data",
         expectedValue, value);
 };
