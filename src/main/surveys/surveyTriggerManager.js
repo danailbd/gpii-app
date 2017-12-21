@@ -24,11 +24,13 @@ fluid.defaults("gpii.app.surveyTriggerManager", {
     gradeNames: ["fluid.modelComponent"],
 
     events: {
-        onTriggerOccurred: null
+        onTriggerOccurred: null,
+        onSurveyTimeout: null
     },
 
     ruleIds: {
-        surveyTrigger: "surveyTrigger"
+        surveyTrigger: "surveyTrigger",
+        surveyTimeout: "surveyTimeout"
     },
 
     listeners: {
@@ -67,6 +69,15 @@ fluid.defaults("gpii.app.surveyTriggerManager", {
                 "{rulesEngine}",
                 "{arguments}.0"
             ]
+        },
+
+        registerTimeout: {
+            funcName: "gpii.app.surveyTriggerManager.registerTimeout",
+            args: [
+                "{that}.options.ruleIds.surveyTimeout",
+                "{rulesEngine}",
+                "{arguments}.0"
+            ]
         }
     }
 });
@@ -86,6 +97,9 @@ gpii.app.surveyTriggerManager.handleRuleSuccess = function (that, ruleId, payloa
     if (ruleId === that.options.ruleIds.surveyTrigger) {
         that.events.onTriggerOccurred.fire(payload);
         that.rulesEngine.removeRule(ruleId);
+    } else if (ruleId === that.options.ruleIds.surveyTimeout) {
+        that.events.onSurveyTimeout.fire(payload);
+        that.rulesEngine.removeRule(ruleId);
     }
 };
 
@@ -94,4 +108,8 @@ gpii.app.surveyTriggerManager.handleRuleSuccess = function (that, ruleId, payloa
  */
 gpii.app.surveyTriggerManager.registerTrigger = function (triggerRuleId, rulesEngine, triggerData) {
     rulesEngine.addRule(triggerRuleId, triggerData.conditions, triggerData);
+};
+
+gpii.app.surveyTriggerManager.registerTimeout = function (timeoutRuleId, rulesEngine, timeoutData) {
+    rulesEngine.addRule(timeoutRuleId, timeoutData.conditions, timeoutData);
 };

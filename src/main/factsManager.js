@@ -54,6 +54,15 @@ fluid.defaults("gpii.app.factsManager", {
                     onFactUpdated: "{factsManager}.emitFacts"
                 }
             }
+        },
+
+        surveyShownTimeProvider: {
+            type: "gpii.app.factsManager.serveyShownTimeProvider",
+            options: {
+                listeners: {
+                    onFactUpdated: "{factsManager}.emitFacts"
+                }
+            }
         }
     },
 
@@ -231,4 +240,69 @@ gpii.app.factsManager.keyedInBeforeProvider.reset = function (that) {
  */
 gpii.app.factsManager.keyedInBeforeProvider.getFact = function (keyedInTimestamp) {
     return Date.now() - keyedInTimestamp;
+};
+
+fluid.defaults("gpii.app.factsManager.serveyShownTimeProvider", {
+    gradeNames: ["gpii.app.factsManager.factProvider"],
+    factName: "surveyShownTime",
+
+    model: {
+        surveyShownTimestamp: null
+    },
+
+    config: {
+        // notify every second by default
+        notificationTimeout: 1000
+    },
+
+    listeners: {
+        "{app}.events.onSurveyRequired": [{
+            func: "{that}.updateSurveyShownTimestamp"
+        }, { // Register interval notifications
+            func: "{interval}.start",
+            args: "{that}.options.config.notificationTimeout"
+        }],
+
+        "{app}.events.onKeyedOut": {
+            func: "{that}.reset"
+        }
+    },
+
+    components: {
+        interval: {
+            type: "gpii.app.interval",
+            options: {
+                events: {
+                    onIntervalTick: "{factProvider}.events.onFactUpdated"
+                }
+            }
+        }
+    },
+
+    invokers: {
+        getFact: {
+            funcName: "gpii.app.factsManager.serveyShownTimeProvider.getFact",
+            args: [
+                "{that}.model.surveyShownTimestamp"
+            ]
+        },
+        reset: {
+            funcName: "gpii.app.factsManager.serveyShownTimeProvider.reset",
+            args: "{that}"
+        },
+
+        updateSurveyShownTimestamp: {
+            changePath: "surveyShownTimestamp",
+            value: "@expand:Date.now()"
+        }
+    }
+});
+
+gpii.app.factsManager.serveyShownTimeProvider.reset = function (that) {
+    that.interval.clear();
+    that.applier.change("surveyShownTimestamp", null);
+};
+
+gpii.app.factsManager.serveyShownTimeProvider.getFact = function (surveyShownTimestamp) {
+    return Date.now() - surveyShownTimestamp;
 };

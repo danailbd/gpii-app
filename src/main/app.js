@@ -84,7 +84,12 @@ fluid.defaults("gpii.app", {
         surveyManager: {
             type: "gpii.app.surveyManager",
             createOnEvent: "onPrerequisitesReady",
-            priority: "after:rulesEngine"
+            priority: "after:rulesEngine",
+            options: {
+                events: {
+                    onSurveyRequired: "{app}.events.onSurveyRequired"
+                }
+            }
         },
         dialogManager: {
             type: "gpii.app.dialogManager",
@@ -98,6 +103,10 @@ fluid.defaults("gpii.app", {
                     "{surveyManager}.events.onSurveyRequired": {
                         func: "{that}.show",
                         args: ["survey", "{arguments}.0"] // the raw payload
+                    },
+                    "{surveyManager}.events.onSurveyTimeout": {
+                        func: "{that}.close",
+                        args: ["survey"]
                     }
                 }
             }
@@ -287,7 +296,8 @@ fluid.defaults("gpii.app", {
         onAppReady: null,
 
         onKeyedIn: null,
-        onKeyedOut: null
+        onKeyedOut: null,
+        onSurveyRequired: null
     },
     modelListeners: {
         "{lifecycleManager}.model.logonChange": {

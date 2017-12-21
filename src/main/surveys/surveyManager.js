@@ -12,7 +12,8 @@ https://github.com/GPII/universal/blob/master/LICENSE.txt
 */
 "use strict";
 
-var fluid = require("infusion");
+var fluid = require("infusion"),
+    gpii = fluid.registerNamespace("gpii");
 
 require("../utils.js");
 require("./surveyTriggerManager.js");
@@ -21,7 +22,8 @@ require("./surveyConnector.js");
 fluid.defaults("gpii.app.surveyManager", {
     gradeNames: ["fluid.component"],
     events: {
-        onSurveyRequired: null
+        onSurveyRequired: null,
+        onSurveyTimeout: null
     },
 
     components: {
@@ -40,6 +42,11 @@ fluid.defaults("gpii.app.surveyManager", {
                         func: "{that}.requestTriggers"
                     },
 
+                    onSurveyRequired: {
+                        funcName: "gpii.app.surveyManager.registerSurveyTimeout",
+                        args: ["{surveyTriggerManager}", "{arguments}.0"]
+                    },
+
                     onTriggerDataReceived: {
                         func: "{surveyTriggerManager}.registerTrigger",
                         args: ["{arguments}.0"]
@@ -51,6 +58,9 @@ fluid.defaults("gpii.app.surveyManager", {
         surveyTriggerManager: {
             type: "gpii.app.surveyTriggerManager",
             options: {
+                events: {
+                    onSurveyTimeout: "{surveyManager}.events.onSurveyTimeout"
+                },
                 listeners: {
                     onTriggerOccurred: {
                         func: "{surveyConnector}.notifyTriggerOccurred",
@@ -64,3 +74,9 @@ fluid.defaults("gpii.app.surveyManager", {
         }
     }
 });
+
+gpii.app.surveyManager.registerSurveyTimeout = function (surveyTriggerManager, payload) {
+    if (fluid.isValue(payload.timeout)) {
+        surveyTriggerManager.registerTimeout(payload.timeout);
+    }
+};

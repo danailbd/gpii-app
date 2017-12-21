@@ -48,6 +48,15 @@ wss.on("connection", function connection(ws) {
                     "closable": true,     //default
                     "minimizable": false, //default
                     "maximizable": false  //default
+                },
+                "timeout": {
+                    conditions: {
+                        all: [{
+                            fact: "surveyShownTime",
+                            operator: "greaterThanInclusive",
+                            value: 1000 * 5
+                        }]
+                    }
                 }
             }
         };
