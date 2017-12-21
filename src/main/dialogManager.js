@@ -15,7 +15,7 @@ https://github.com/GPII/universal/blob/master/LICENSE.txt
 var fluid = require("infusion"),
     gpii = fluid.registerNamespace("gpii");
 
-require("./surveyDialog.js");
+require("./surveys/surveyDialog.js");
 
 /**
  * A component which provides means for showing, hiding and closing of dialogs
