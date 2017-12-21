@@ -38,15 +38,12 @@ var gpii = fluid.registerNamespace("gpii");
  *   value: 3000
  * }]
  * ```
- * It requires the fact "keyedInBefore" for its check. [to checkRules] Facts are supplied as a
- * map and are expected to follow the format: `{ "factName": factValue, }`
+ * It requires the fact "keyedInBefore" for its check. Facts are supplied as a
+ * map and are expected to follow the format: `{ "factName": factValue, ... }`
  *
  * Removal of rules is also supported. For example, it could be the case that once a rule's
  * conditions are met, the rule should be removed (de-registered), as notifications are no more
  * required, but this is delegated to the user of the component to decide.
- *
- * A rule' conditions follow this shema https://github.com/CacheControl/json-rules-engine/blob/72d0d2abe46ae95c730ac5ccbe7cb0f6cf28d784/docs/rules.md#conditions, where the `fact` name is
- * defined and registered in the `gpii.app.factsManager`, `gpii.app.factProvider`.
  *
  *
  * For a user of this rules engine it is most likely to follow this workflow:
@@ -160,25 +157,32 @@ gpii.app.rulesEngine.reset = function (that) {
 
 /**
  * Removes a rule from the rule engine. For example this could wanted for
- * once the rule is satisfied, but this logic is
+ * once the rule is satisfied, but this logic is delegated to the user of the
+ * component.
  * @param registeredRulesMap {Object} The map of all registered rules
  * @param ruleId {String} The id for the that is to be removed
  */
 gpii.app.rulesEngine.removeRule = function (registeredRulesMap, ruleId) {
-    // just let garbage collection do its work
+    // just let garbage collection do its work for the old rule
     registeredRulesMap[ruleId] = null;
 };
 
 /**
  * Registers a rule to the engine which is to be tested with the next `checkRules` call.
- * @param that {Component} The rulesEngine component
+ * A rule's conditions follow this schema https://github.com/CacheControl/json-rules-engine/blob/72d0d2abe46ae95c730ac5ccbe7cb0f6cf28d784/docs/rules.md#conditions,
+ * where a `fact` by this name is registered in the `gpii.app.factsManager`.
+ *
+ * @param that {Component} The `gpii.app.rulesEngine` component
  * @param registeredRulesMap {Object} The map of all registered rules
- * @param ruleId {String} The id for rule being added
- * @param conditions {Object} A list of */
+ * @param ruleId {String} The unique id for the rule being added. N.B. In case a rule with 
+ * such id already exists, it will be overridden.
+ * @param conditions {Object} The list of conditions for the rules
+ * @param payload {Object} The payload to be sent with the event once the rule succeeds
+ */
 gpii.app.rulesEngine.addRule = function (that, registeredRulesMap, ruleId, conditions, payload) {
     /*
-     * This approach is needed by the current dependent rule engine module (`json-rules-engine`) doesn't
-     * support removal of already added rules. But we want to use its extensive rule checking functionality.
+     * This approach is needed by the current dependent rule engine module (`json-rules-engine`), which doesn't
+     * support removal of already added rules. But we want to use its extensive conditions checking functionality.
      */
     registeredRulesMap[ruleId] = new RulesEngine([{
         conditions: conditions,
@@ -193,12 +197,12 @@ gpii.app.rulesEngine.addRule = function (that, registeredRulesMap, ruleId, condi
 
 /**
  * Runs an async check whether any of the registered rules is satisfied
- * against the supplied facts. In case of satisfied rules, the
+ * against the supplied facts. In case a rule's conditions are met, the
  * registered "success" listener will be fired.
  *
  * @param registeredRulesMap {Object} The map of registered rules
  * @param facts {Object} A map of all facts to be used for the checking.
- * It follows the type { factName: factValue, }
+ * Follows the schema { factName: factValue, ... }.
  */
 gpii.app.rulesEngine.checkRules = function (registeredRulesMap, facts) {
     var ruleEngines = fluid

@@ -19,15 +19,27 @@ var gpii = fluid.registerNamespace("gpii");
 require("./utils.js");
 
 /**
- * TODO
- * Once fact updated notification, it collects all facts from providers
- * and sends them through the `onFactsUpdated` event.
+ * Manages and disseminates facts. A fact is simply represented by a name
+ * and value. For each fact there is a fact provider that collects and supplies it.
+ * Example for fact is "keyedInBefore", which defines times since keying in in
+ * milliseconds.
+ *
+ * Once a fact's updated notification is recieved, all facts are collected from the providers
+ * and sent through the `onFactsUpdated` event.
  */
 fluid.defaults("gpii.app.factsManager", {
     gradeNames: ["fluid.component"],
 
     events: {
-        // Listened to from Manager users
+        /*
+         * Listened to from component users
+         * Sent with a map of facts that follow the schema:
+         * {
+         *  "factName1": factValue1,
+         *  "factName2": factValue2,
+         *  ...
+         * }
+         */
         onFactsUpdated: null
     },
 
@@ -36,10 +48,10 @@ fluid.defaults("gpii.app.factsManager", {
          * Fact Providers
          */
         keyedInBeforeProvider: {
-            type: "gpii.app.surveyTriggerManager.keyedInBeforeProvider",
+            type: "gpii.app.factsManager.keyedInBeforeProvider",
             options: {
                 listeners: {
-                    onFactsUpdated: "{factsManager}.emitFacts"
+                    onFactUpdated: "{factsManager}.emitFacts"
                 }
             }
         }
@@ -76,9 +88,10 @@ gpii.app.factsManager.emitFacts = function (that) {
 };
 
 /**
- * Collect facts from all fact providers
+ * Get facts collected from all fact providers.
  * @param that {Component} The gpii.app.factsManager component
- * @return {Object} A map of all facts - { factName: factValue, }
+ * @return {Object} A map of all facts - { factName: factValue, ... },
+ * where the `factName` is defined in the corresponding provider
  */
 gpii.app.factsManager.getFacts = function (that) {
     var factProviders = gpii.app.getSubcomponents(that);
@@ -109,11 +122,12 @@ gpii.app.factsManager.resetFacts = function (that) {
  * support this interface.
  * A user of such a component may:
  * - use the push notifications that are registered once change
- *   in the corresponding fact has take place
+ *   in the corresponding fact has taken place
  * - may get the current state (value) of a fact at any given moment
  */
-fluid.defaults("gpii.app.surveyTriggerManager.factProvider", {
+fluid.defaults("gpii.app.factsManager.factProvider", {
     gradeNames: ["fluid.modelComponent"],
+    factName: "",
 
     events: {
         /*
@@ -140,11 +154,11 @@ fluid.defaults("gpii.app.surveyTriggerManager.factProvider", {
 });
 
 /**
- * Provides information for time since the user keyed.
+ * Provides information for time since the user keyed in milliseconds.
  * Uses interval timer to notify for fact changes.
  */
-fluid.defaults("gpii.app.surveyTriggerManager.keyedInBeforeProvider", {
-    gradeNames: ["gpii.app.surveyTriggerManager.factProvider"],
+fluid.defaults("gpii.app.factsManager.keyedInBeforeProvider", {
+    gradeNames: ["gpii.app.factsManager.factProvider"],
     factName: "keyedInBefore",
 
     model: {
@@ -175,7 +189,7 @@ fluid.defaults("gpii.app.surveyTriggerManager.keyedInBeforeProvider", {
             options: {
                 events: {
                     // Just make an alias
-                    onIntervalTick: "{factProvider}.events.onFactsUpdated"
+                    onIntervalTick: "{factProvider}.events.onFactUpdated"
                 }
             }
         }
@@ -183,13 +197,13 @@ fluid.defaults("gpii.app.surveyTriggerManager.keyedInBeforeProvider", {
 
     invokers: {
         getFact: {
-            funcName: "gpii.app.surveyTriggerManager.keyedInBeforeProvider.getFact",
+            funcName: "gpii.app.factsManager.keyedInBeforeProvider.getFact",
             args: [
                 "{that}.model.userKeyedInTimestamp"
             ]
         },
         reset: {
-            funcName: "gpii.app.surveyTriggerManager.keyedInBeforeProvider.reset",
+            funcName: "gpii.app.factsManager.keyedInBeforeProvider.reset",
             args: "{that}"
         },
 
@@ -202,19 +216,19 @@ fluid.defaults("gpii.app.surveyTriggerManager.keyedInBeforeProvider", {
 
 /**
  * Clears the registered interval.
- * @param that {Component} The `gpii.app.surveyTriggerManager` component
+ * @param that {Component} The `gpii.app.factsManager` component
  */
-gpii.app.surveyTriggerManager.keyedInBeforeProvider.reset = function (that) {
+gpii.app.factsManager.keyedInBeforeProvider.reset = function (that) {
     that.interval.clear();
     that.applier.change("keyedInTimestamp", null);
 };
 
 
 /**
- * Computes the time since keying in
+ * Computes the time since keying in.
  * @param keyedInTimestamp {Number} Time of keying in
  * @return {Number} milliseconds since keyed in
  */
-gpii.app.surveyTriggerManager.keyedInBeforeProvider.getFact = function (keyedInTimestamp) {
+gpii.app.factsManager.keyedInBeforeProvider.getFact = function (keyedInTimestamp) {
     return Date.now() - keyedInTimestamp;
 };
