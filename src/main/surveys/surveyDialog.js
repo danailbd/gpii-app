@@ -19,8 +19,8 @@ var fluid = require("infusion"),
 
 require("../dialog.js");
 
-// XXX: Needed to circumvent the certificate error for the "umd.edu" domain certificate
-// error. Should be removed before going to production.
+// XXX: Needed to circumvent the certificate error for the "umd.edu" domain.Should
+// be removed before going to production.
 require("electron").app.on("certificate-error", function (event, webContents, url, error, certificate, callback) {
     event.preventDefault();
     callback(true);
@@ -45,6 +45,13 @@ fluid.defaults("gpii.app.surveyDialog", {
     gradeNames: ["gpii.app.dialog"],
     config: {
         attrs: {
+            icon: {
+                expander: {
+                    funcName: "fluid.stringTemplate",
+                    args: ["%gpii-app/src/icons/gpii-color.ico", "@expand:fluid.module.terms()"]
+                }
+            },
+
             show: false,
             skipTaskbar: false,
             frame: true,
@@ -62,15 +69,15 @@ fluid.defaults("gpii.app.surveyDialog", {
         },
         fileSuffixPath: "survey/index.html"
     },
+    events: {
+        onSurveyCreated: null,
+        onSurveyClose: null
+    },
     listeners: {
         "onCreate.hideMenu": {
             this: "{that}.dialog",
             method: "setMenu",
             args: [null]
-        },
-        "onCreate.initReadyToShowListener": {
-            listener: "gpii.app.surveyDialog.initReadyToShowListener",
-            args: ["{that}", "{that}.options.config.surveyUrl"]
         },
         "onCreate.initClosedListener": {
             listener: "gpii.app.surveyDialog.initClosedListener",
@@ -79,6 +86,16 @@ fluid.defaults("gpii.app.surveyDialog", {
         "onCreate.initSurveyWindowIPC": {
             listener: "gpii.app.surveyDialog.initSurveyWindowIPC",
             args: ["{that}"]
+        },
+        "onSurveyCreated.openSurvey": {
+            listener: "gpii.app.surveyDialog.openSurvey",
+            args: ["{that}", "{that}.options.config"]
+        },
+        "onSurveyClose.closeSurvey": {
+            funcName: "{that}.close"
+        },
+        "onDestroy.removeSurveyWindowIPC": {
+            listener: "gpii.app.surveyDialog.removeSurveyWindowIPC"
         }
     },
     invokers: {
@@ -89,29 +106,66 @@ fluid.defaults("gpii.app.surveyDialog", {
     }
 });
 
-gpii.app.surveyDialog.initReadyToShowListener = function (that, surveyUrl) {
-    that.dialog.once("ready-to-show", function () {
-        that.notifySurveyWindow("openSurvey", surveyUrl);
-        that.show();
-    });
-};
-
+/**
+ * Initializes the `closed` listener for the `BrowserWindow`. Whenever the window
+ * is closed, the `surveyDialog` should be destroyed, as it can no longer be shown,
+ * hidden or interacted with in any other way. Note that the `closed` event fires
+ * both when it is closed programatically or via the close button in the upper
+ * right corner.
+ * @param that {Component} The `gpii.app.surveyDialog` instance.
+ */
 gpii.app.surveyDialog.initClosedListener = function (that) {
     that.dialog.on("closed", function () {
         that.destroy();
     });
 };
 
+/**
+ * Initializes the IPC listeners needed for the communication with the `BrowserWindow`.
+ * @param that {Component} The `gpii.app.surveyDialog` instance.
+ */
 gpii.app.surveyDialog.initSurveyWindowIPC = function (that) {
-    ipcMain.on("onSurveyClose", function () {
-        that.close();
+    // We need to ensure that the `BrowserWindow` has been completely created before
+    // trying to load a page in the webview element. It turned out that opening the
+    // survey when the built-in `ready-to-show` listener for the `BrowserWindow` is
+    // called is not sufficient as the webcontents object is sporadically not created.
+    // Thus it is better to rely on a message passed by the renderer process in order
+    // to determine when the actual survey content can be loaded.
+    ipcMain.once("onSurveyCreated", function () {
+        that.events.onSurveyCreated.fire();
     });
+
+    // Messages via this channel are sent to the `surveyDialog` component whenever the
+    // user clicks on the 'break out' link within the survey.
+    ipcMain.once("onSurveyClose", function () {
+        that.events.onSurveyClose.fire();
+    });
+};
+
+/**
+ * Notifies the survey pop-up that `surveyUrl` should be loaded in the webview.
+ * @param that {Component} The `gpii.app.surveyDialog` instance.
+ * @param config {Object} An object containing the configuration options for the
+ * survey to be shown.
+ */
+gpii.app.surveyDialog.openSurvey = function (that, config) {
+    that.notifySurveyWindow("openSurvey", config);
+    that.show();
+};
+
+/**
+ * Removes the IPC listeners needed for the communication with the `BrowserWindow`
+ * when the latter is about to be destroyed.
+ */
+gpii.app.surveyDialog.removeSurveyWindowIPC = function () {
+    ipcMain.removeAllListeners("onSurveyCreated");
+    ipcMain.removeAllListeners("onSurveyClose");
 };
 
 /**
  * A wrapper for the actual survey dialog. This component makes the instantiation
  * of the actual dialog more elegant - the survey dialog is automatically created
- * by the framework when the  `onDialogCreate` event is fired. Also, Infusion takes
+ * by the framework when the `onDialogCreate` event is fired. Also, Infusion takes
  * care of destroying any other instances of the survey dialog that may be present
  * before actually creating a new one.
  *
@@ -131,7 +185,8 @@ fluid.defaults("gpii.app.survey", {
             options: {
                 config: {
                     surveyUrl: "{arguments}.0",
-                    attrs: "{arguments}.1"
+                    closeOnSubmit: "{arguments}.1",
+                    attrs: "{arguments}.2"
                 }
             }
         }
@@ -157,18 +212,33 @@ fluid.defaults("gpii.app.survey", {
     }
 });
 
-gpii.app.survey.show = function (survey, options) {
-    survey.events.onDialogCreate.fire(options.url, options.window || {});
+/**
+ * Responsible for firing the `onDialogCreate` event which in turn creates the
+ * wrapped `surveyDialog` component.
+ * @param that {Component} The `gpii.app.survey` instance.
+ * @param options {Object} An object containing the various properties for the
+ * `surveyDialog` which is to be created.
+ */
+gpii.app.survey.show = function (that, options) {
+    that.events.onDialogCreate.fire(options.url, options.closeOnSubmit, options.window);
 };
 
-gpii.app.survey.hide = function (survey) {
-    if (survey.surveyDialog) {
-        survey.surveyDialog.hide();
+/**
+ * Responsible for hiding the `surveyDialog` component if it exists.
+ * @param that {Component} The `gpii.app.survey` instance.
+ */
+gpii.app.survey.hide = function (that) {
+    if (that.surveyDialog) {
+        that.surveyDialog.hide();
     }
 };
 
-gpii.app.survey.close = function (survey) {
-    if (survey.surveyDialog) {
-        survey.surveyDialog.close();
+/**
+ * Responsible for closing the `surveyDialog` component if it exists.
+ * @param that {Component} The `gpii.app.survey` instance.
+ */
+gpii.app.survey.close = function (that) {
+    if (that.surveyDialog) {
+        that.surveyDialog.close();
     }
 };

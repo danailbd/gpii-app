@@ -4,14 +4,17 @@ var WebSocket = require("ws");
 var wss = new WebSocket.Server({ port: 3333 });
 
 wss.on("connection", function connection(ws) {
-    var keyedInUserToken = null;
+    var keyedInUserToken = null,
+        machineId = null;
 
     function handleTriggersRequest(keyedInData) {
         keyedInUserToken = keyedInData.userId;
+        machineId = keyedInData.machineId;
         console.log("Survey Triggers Requested: ", keyedInData);
 
         var triggerFixture = {
-            surveyTrigger: {
+            type: "surveyTrigger",
+            value: {
                 conditions: {
                     all: [{
                         fact: "keyedInBefore",
@@ -31,19 +34,20 @@ wss.on("connection", function connection(ws) {
         console.log("Survey Trigger Occured: ", trigger);
 
         var surveyRawPayloadFixture = {
-            survey: {
-                "url": "https://survey.az1.qualtrics.com/jfe/form/SV_7QWbGd4JuGmSu33?keyedInUserToken=" + keyedInUserToken,
+            type: "survey",
+            value: {
+                "url": "https://survey.az1.qualtrics.com/jfe/form/SV_7QWbGd4JuGmSu33?keyedInUserToken=" + keyedInUserToken + "&machineId=" + machineId,
+                "closeOnSubmit": false,
                 "window": {
-                    "height": 600,  //optional
                     "width": 800,   //optional
-                    "userResizable": true,
-                    "titleBar": {
-                        "title": "GPII Auto-Personalization Survey",
-                        // "icon": "icon asset", //use gear-cloud icon by default
-                        "closeButton": true,     //default
-                        "minimizeButton": false, //default
-                        "maximizeButton": false  //default
-                    }
+                    "height": 600,  //optional
+                    "resizable": true,
+
+                    "title": "GPII Auto-Personalization Survey",
+                    // "icon": "icon asset", //use gear-cloud icon by default
+                    "closable": true,     //default
+                    "minimizable": false, //default
+                    "maximizable": false  //default
                 }
             }
         };
@@ -54,15 +58,15 @@ wss.on("connection", function connection(ws) {
 
     ws.on("message", function incoming(message) {
         message = JSON.parse(message);
-        var payload = message.payload,
+        var value = message.value,
             type = message.type;
 
         switch (type) {
         case "triggersRequest":
-            handleTriggersRequest(payload);
+            handleTriggersRequest(value);
             break;
         case "triggerOccurred":
-            handleTriggerOccurrance(payload);
+            handleTriggerOccurrance(value);
             break;
         }
     });

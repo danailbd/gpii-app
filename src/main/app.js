@@ -16,6 +16,7 @@ var fluid   = require("infusion");
 var gpii    = fluid.registerNamespace("gpii");
 var path    = require("path");
 var request = require("request");
+var machineInfo = require("node-machine-id");
 
 
 require("./factsManager.js");
@@ -54,6 +55,7 @@ require("electron").app.on("window-all-closed", fluid.identity);
 fluid.defaults("gpii.app", {
     gradeNames: "fluid.modelComponent",
     model: {
+        machineId: null,
         keyedInUserToken: null,
         snapsetName: null,
         showDialog: false,
@@ -258,10 +260,12 @@ fluid.defaults("gpii.app", {
     events: {
         onPrerequisitesReady: {
             events: {
+                onMachineIdFetched: "onMachineIdFetched",
                 onGPIIReady: "onGPIIReady",
                 onAppReady: "onAppReady"
             }
         },
+        onMachineIdFetched: null,
         onGPIIReady: null,
         onAppReady: null,
 
@@ -275,6 +279,10 @@ fluid.defaults("gpii.app", {
         }
     },
     listeners: {
+        "onCreate.fetchMachineId": {
+            listener: "gpii.app.fetchMachineId",
+            args: ["{that}"]
+        },
         "onCreate.appReady": {
             listener: "gpii.app.fireAppReady",
             args: ["{that}.events.onAppReady.fire"]
@@ -342,6 +350,22 @@ fluid.defaults("gpii.app", {
         record: "gpii.app.onKeyInError"
     }
 });
+
+/**
+ * Retrieves the id of the machine on which the PSP is running and sets it in the
+ * model. In case the machine id cannot be obtained, this will not prevent the app
+ * from starting.
+ * @param psp {Component} The `gpii.app.psp` component.
+ */
+gpii.app.fetchMachineId = function (that) {
+    machineInfo.machineId().then(function (machineId) {
+        that.applier.change("machineId", machineId);
+        that.events.onMachineIdFetched.fire();
+    }, function (error) {
+        fluid.log(fluid.logLevel.WARN, "Error obtaining machine id: " + error);
+        that.events.onMachineIdFetched.fire();
+    });
+};
 
 /**
  * Either hides or shows the warning in the PSP.
@@ -498,7 +522,7 @@ gpii.app.handleUncaughtException = function (that, err) {
             tray.displayBalloon({
                 title: error.title || "GPII Error",
                 content: error.message || err.message,
-                icon: path.join(__dirname, "../icons/gpii-icon-balloon.png")
+                icon: path.join(fluid.module.terms()["gpii-app"], "src/icons/gpii-icon-balloon.png")
             });
             if (error.fatal) {
                 var timeout;

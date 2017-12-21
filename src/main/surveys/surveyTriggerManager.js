@@ -97,7 +97,7 @@ gpii.app.surveyTriggerManager.registerTrigger = function (triggerRuleId, rulesEn
         triggerRuleId,
         triggerData.conditions,
         {
-            triggerId: triggerData.id,
+            triggerId: triggerData.triggerId,
             urlTriggerHandler: triggerData.urlTriggerHandler
 
         });
