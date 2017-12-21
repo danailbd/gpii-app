@@ -133,7 +133,7 @@ fluid.defaults("gpii.app.factsManager.factProvider", {
         /*
          * Frequently fired to notify for change in the fact state.
          */
-        onFactsUpdated: null
+        onFactUpdated: null
     },
 
     invokers: {
