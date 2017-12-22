@@ -14,6 +14,13 @@
             "distributePcpChannelConnector": {
                 "record": "gpii.app.dev.gpiiConnector",
                 "target": "{that gpiiConnector}.options.gradeNames"
+            },
+            "distributeSurveyConnector": {
+                "record": {
+                    "hostname": "astea@surveyserver.gpii.net",
+                    "port": 33334
+                },
+                "target": "{that surveyConnector}.options.config"
             }
         }
     },
