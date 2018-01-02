@@ -30,6 +30,7 @@ require("./SettingsBrokerTestDefs.js");
 require("./RestartDialogTestDefs.js");
 require("./DialogManagerTestDefs.js");
 require("./SurveysTestDefs.js");
+require("./RulesEngineTestsDefs.js");
 
 fluid.registerNamespace("gpii.tests.app");
 
@@ -45,12 +46,12 @@ gpii.tests.app.startSequence = [
 // A common end sequence for all test definitions. They all use a mocked version of the
 // survey server which should be closed when each testcase holder finishes.
 gpii.tests.app.endSequence = [
-    { // Close the mock survey server gracefully
-        func: "{that}.app.surveyManager.surveyServer.close"
-    }, { // Wait for the mock survey server until it has closed itself completely
-        event: "{that}.app.surveyManager.surveyServer.events.onServerClosed",
-        listener: "fluid.identity"
-    }
+//    { // Close the mock survey server gracefully
+//        func: "{that}.app.surveyManager.surveyServer.close"
+//    }, { // Wait for the mock survey server until it has closed itself completely
+//        event: "{that}.app.surveyManager.surveyServer.events.onServerClosed",
+//        listener: "fluid.identity"
+//    }
 ];
 
 // This is a fork of kettle.test.testDefToCaseHolder which is written in a non-reusable style
@@ -100,10 +101,11 @@ gpii.tests.app.bootstrapServer = function (testDefs, transformer) {
 };
 
 gpii.tests.app.bootstrapServer([
-    fluid.copy(gpii.tests.app.testDefs),
-    fluid.copy(gpii.tests.dev.testDefs),
-    fluid.copy(gpii.tests.settingsBroker.testDefs),
-    fluid.copy(gpii.tests.restartWarningController.testDefs),
-    fluid.copy(gpii.tests.dialogManager.testDefs),
-    fluid.copy(gpii.tests.surveys.testDefs)
+    // fluid.copy(gpii.tests.app.testDefs),
+    // fluid.copy(gpii.tests.dev.testDefs),
+    // fluid.copy(gpii.tests.settingsBroker.testDefs),
+    // fluid.copy(gpii.tests.restartWarningController.testDefs),
+    // fluid.copy(gpii.tests.dialogManager.testDefs),
+    // fluid.copy(gpii.tests.surveys.testDefs),
+    fluid.copy(gpii.tests.rulesEngine.testDefs)
 ]);

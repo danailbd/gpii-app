@@ -194,7 +194,7 @@ gpii.app.surveyConnector.requestTriggers = function (socket, keyedInData) {
 };
 
 /**
- * Notify the survey server that trigger conditions are met.
+ * Notify the survey server that trigger's conditions are met.
  * @param socket {ws} A connected ws (WebSocket) instance
  * @param trigger {Object} Data corresponding to the successful trigger
  */
