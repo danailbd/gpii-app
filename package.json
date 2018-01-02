@@ -22,10 +22,11 @@
     "test": "powershell provisioning/Tests.ps1 -originalBuildScriptPath './node_modules/gpii-windows/provisioning'; electron tests.js"
   },
   "dependencies": {
-    "electron": "1.4.16",
+    "electron": "1.4.1",
     "electron-edge": "6.5.4",
     "gpii-windows": "git://github.com/danailbd/windows.git#hst-2017",
     "infusion": "3.0.0-dev.20170830T182157Z.392b2f8",
+    "json-rules-engine": "2.0.2",
     "node-jqunit": "1.1.7",
     "node-machine-id": "1.1.9",
     "request": "2.69.0",
