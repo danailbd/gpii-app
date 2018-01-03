@@ -1,15 +1,11 @@
 {
-    "type": "gpii.appDevWithTaskTray",
+    "type": "gpii.tests.all.config",
     "options": {
         "gradeNames": ["fluid.component"],
         "distributeOptions": {
             "distributeTaskTray": {
                 "record": "gpii.appWrapper",
                 "target": "{that flowManager}.options.gradeNames"
-            },
-            "distributeMenuDisplay": {
-                "record": "gpii.app.menuInAppDev",
-                "target": "{that menu}.options.gradeNames"
             },
             "distributePcpChannelConnector": {
                 "record": {
@@ -19,16 +15,20 @@
                 },
                 "target": "{that gpiiConnector}.options.config"
             },
-            "distributeSurveyConnector": {
+            "receiveApp": {
                 "record": {
-                    "hostname": "localhost",
-                    "port": 3334
+                    "funcName": "gpii.tests.app.receiveApp",
+                    "args": ["{testCaseHolder}", "{arguments}.0"]
                 },
-                "target": "{that surveyConnector}.options.config"
+                "target": "{that flowManager gpii.app}.options.listeners.onCreate"
+            },
+            "mockSurveyServer": {
+                "record": "gpii.tests.mocks.surveyServerWrapper",
+                "target": "{that gpii.app.surveyManager}.options.gradeNames"
             }
         }
     },
     "mergeConfigs": [
-        "../node_modules/universal/gpii/configs/gpii.config.development.all.local.json"
+        "../../node_modules/universal/gpii/configs/gpii.config.development.all.local.json"
      ]
 }

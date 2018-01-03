@@ -28,6 +28,9 @@ require("./surveys/surveyDialog.js");
  * In order to show/hide/close a dialog, the IoCSS selector of the particular
  * component needs to be provided as an argument of the corresponding function.
  */
+// XXX: Currently only the survey dialog is managed by the dialogManager. As a
+// refactoring step, in the future the rest of the dialogs will be controlled by
+// this manager, as well.
 fluid.defaults("gpii.app.dialogManager", {
     gradeNames: ["fluid.modelComponent"],
     model: {
