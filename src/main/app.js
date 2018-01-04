@@ -81,11 +81,9 @@ fluid.defaults("gpii.app", {
             }
         },
         factsManager: {
-            type: "gpii.app.factsManager",
-            createOnEvent: "onPrerequisitesReady"
+            type: "gpii.app.factsManager"
         },
         rulesEngine: {
-            createOnEvent: "onPrerequisitesReady",
             priority: "after:factsManager",
             type: "gpii.app.rulesEngine",
             options: {
@@ -96,8 +94,12 @@ fluid.defaults("gpii.app", {
         },
         surveyManager: {
             type: "gpii.app.surveyManager",
-            createOnEvent: "onPrerequisitesReady",
-            priority: "after:rulesEngine"
+            priority: "after:rulesEngine",
+            options: {
+                events: {
+                    onSurveyWSConnected: "{app}.events.onSurveyWSConnected"
+                }
+            }
         },
         dialogManager: {
             type: "gpii.app.dialogManager",
@@ -282,13 +284,15 @@ fluid.defaults("gpii.app", {
                 onMachineIdFetched: "onMachineIdFetched",
                 onGPIIReady: "onGPIIReady",
                 onAppReady: "onAppReady",
-                onPSPChannelConnected: "onPSPChannelConnected"
+                onPSPChannelConnected: "onPSPChannelConnected",
+                onSurveyWSConnected: "onSurveyWSConnected"
             }
         },
         onMachineIdFetched: null,
         onGPIIReady: null,
         onAppReady: null,
         onPSPChannelConnected: null,
+        onSurveyWSConnected: null,
 
         onKeyedIn: null,
         onKeyedOut: null
