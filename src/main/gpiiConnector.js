@@ -14,8 +14,6 @@ https://github.com/GPII/universal/blob/master/LICENSE.txt
 require("./utils.js");
 
 var fluid = require("infusion");
-var ws    = require("ws");
-
 var gpii = fluid.registerNamespace("gpii");
 
 /**
@@ -54,11 +52,10 @@ fluid.defaults("gpii.app.gpiiConnector", {
 });
 
 /**
- * Sends setting update request to GPII over the socket if necessary.
+ * Sends a setting update request to GPII over the socket if necessary.
  * A request will not be sent if the current and the previous values
  * of the setting coincide.
- *
- * @param socket {Object} The already connected WebSocket instance
+ * @param gpiiConnector {Component} The `gpii.app.gpiiConnector` instance
  * @param setting {Object} The setting to be changed
  * @param setting.path {String} The id of the setting
  * @param setting.value {String} The new value of the setting
@@ -78,9 +75,9 @@ gpii.app.gpiiConnector.updateSetting = function (gpiiConnector, setting) {
 };
 
 /**
- * Register listeners for messages from the GPII socket connection.
- * @param socket {Object} The connected gpii socket
+ * Responsible for parsing messages from the GPII socket connection.
  * @param gpiiConnector {Object} The `gpii.app.gpiiConnector` instance
+ * @param message {Object} The received message
  */
 gpii.app.gpiiConnector.parseMessage = function (gpiiConnector, message) {
     var payload = message.payload || {},
@@ -115,7 +112,7 @@ gpii.app.gpiiConnector.parseMessage = function (gpiiConnector, message) {
 /**
  * Send active set change request to GPII.
  *
- * @param socket {ws} The already connected `ws`(`WebSocket`) instance
+ * @param gpiiConnector {Object} The `gpii.app.gpiiConnector` instance
  * @param newPrefSet {String} The id of the new preference set
  */
 gpii.app.gpiiConnector.updateActivePrefSet = function (gpiiConnector, newPrefSet) {

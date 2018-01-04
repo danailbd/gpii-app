@@ -1,5 +1,7 @@
 /*!
-GPII Application
+Simple WebSocket wrapper
+
+An Infusion component which manages a WebSocket connection.
 Copyright 2016 Steven Githens
 Copyright 2016-2017 OCAD University
 
@@ -16,6 +18,13 @@ var fluid = require("infusion"),
     gpii = fluid.registerNamespace("gpii"),
     WebSocket = require("ws");
 
+/**
+ * This component provides means for opening a WebSocket connection to a URL,
+ * sending messages through it and closing it. The component also fires events
+ * when a connection is established (the `onConnected` event), if an error
+ * occurs (the `onError` event) and when a message is received via the
+ * WebSocket (the `onMessageReceived` event).
+ */
 fluid.defaults("gpii.app.ws", {
     gradeNames: ["fluid.component"],
 
@@ -55,6 +64,14 @@ fluid.defaults("gpii.app.ws", {
     }
 });
 
+/**
+ * Establishes a connection to a URL which is built using the provided config
+ * parameter. Attaches various listener to the connection which when called
+ * will fire the appropriate event of the component.
+ * @param that {Component} The `gpii.app.ws` instance.
+ * @param config {Object} An object containing the hostname, port and path of
+ * the URL to connect to.
+ */
 gpii.app.ws.connect = function (that, config) {
     var url = fluid.stringTemplate("ws://%hostname:%port%path", config);
     that.ws = new WebSocket(url);
@@ -76,12 +93,22 @@ gpii.app.ws.connect = function (that, config) {
     });
 };
 
+/**
+ * Sends a message through the WebSocket. The data that is to be sent is first
+ * converted to a string representation (using JSON.stringify).
+ * @param ws {Object} The already connected WebSocket instance if any.
+ * @param data {Any} The data to send.
+ */
 gpii.app.ws.send = function (ws, data) {
     if (ws) {
         ws.send(JSON.stringify(data));
     }
 };
 
+/**
+ * Closes gracefully the WebSocket connection.
+ * @param ws {Object} The already connected WebSocket instance if any.
+ */
 gpii.app.ws.disconnect = function (ws) {
     if (ws) {
         // for ref https://developer.mozilla.org/en-US/docs/Web/API/CloseEvent#Status_codes

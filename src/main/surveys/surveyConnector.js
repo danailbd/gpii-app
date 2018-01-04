@@ -116,9 +116,9 @@ fluid.defaults("gpii.app.surveyConnector", {
 });
 
 /**
- * Registers listeners for the different survey server messages (requests)
- * @param socket {ws} The connected ws (WebSocket) instance
+ * Responsible for parsing messages received via the ws member of the component.
  * @param events {Object} Map of events to be used for the various server requests
+ * @param message {Object} The received message
  */
 gpii.app.surveyConnector.parseMessage = function (events, message) {
     // Single key payload
@@ -139,8 +139,7 @@ gpii.app.surveyConnector.parseMessage = function (events, message) {
 
 /**
  * Notify the survey server that a user have keyed in.
- *
- * @param socket {ws} A connected ws (WebSocket) instance
+ * @param that {Component} The `gpii.app.surveyConnector` instance
  * @param keyedInData {Object} Data that is to be sent over the socket
  * @param keyedInData.userId {String} The id of the keyed in user
  * @param keyedInData.machineId {String} The id of the keyed in user's machine
@@ -154,7 +153,7 @@ gpii.app.surveyConnector.requestTriggers = function (that, keyedInData) {
 
 /**
  * Notify the survey server that trigger conditions are met.
- * @param socket {ws} A connected ws (WebSocket) instance
+ * @param that {Component} The `gpii.app.surveyConnector` instance
  * @param trigger {Object} Data corresponding to the successful trigger
  */
 gpii.app.surveyConnector.notifyTriggerOccurred = function (that, trigger) {
