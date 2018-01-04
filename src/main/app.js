@@ -18,7 +18,7 @@ var path    = require("path");
 var request = require("request");
 var machineInfo = require("node-machine-id");
 
-
+require("./ws.js");
 require("./factsManager.js");
 require("./dialogManager.js");
 require("./gpiiConnector.js");
@@ -67,6 +67,19 @@ fluid.defaults("gpii.app", {
     },
     // prerequisites
     components: {
+        gpiiConnector: {
+            type: "gpii.app.gpiiConnector",
+            createOnEvent: "onGPIIReady",
+            options: {
+                listeners: {
+                    "onPreferencesUpdated.updateSets": "{app}.updatePreferences",
+                    "onSnapsetNameUpdated.updateSnapsetName": "{app}.updateSnapsetName"
+                },
+                events: {
+                    onConnected: "{app}.events.onPSPChannelConnected"
+                }
+            }
+        },
         factsManager: {
             type: "gpii.app.factsManager",
             createOnEvent: "onPrerequisitesReady"
@@ -116,21 +129,10 @@ fluid.defaults("gpii.app", {
             createOnEvent: "onPrerequisitesReady",
             priority: "after:psp"
         },
-        gpiiConnector: {
-            type: "gpii.app.gpiiConnector",
-            createOnEvent: "onPrerequisitesReady",
-            priority: "after:psp",
-            options: {
-                listeners: {
-                    "onPreferencesUpdated.updateSets": "{app}.updatePreferences",
-                    "onSnapsetNameUpdated.updateSnapsetName": "{app}.updateSnapsetName"
-                }
-            }
-        },
         settingsBroker: {
             type: "gpii.app.settingsBroker",
             createOnEvent: "onPrerequisitesReady",
-            priority: "after:gpiiConnector",
+            priority: "after:psp",
             options: {
                 model: {
                     keyedInUserToken: "{app}.model.keyedInUserToken"
@@ -279,12 +281,14 @@ fluid.defaults("gpii.app", {
             events: {
                 onMachineIdFetched: "onMachineIdFetched",
                 onGPIIReady: "onGPIIReady",
-                onAppReady: "onAppReady"
+                onAppReady: "onAppReady",
+                onPSPChannelConnected: "onPSPChannelConnected"
             }
         },
         onMachineIdFetched: null,
         onGPIIReady: null,
         onAppReady: null,
+        onPSPChannelConnected: null,
 
         onKeyedIn: null,
         onKeyedOut: null
