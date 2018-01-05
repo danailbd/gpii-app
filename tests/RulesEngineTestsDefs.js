@@ -126,10 +126,7 @@ gpii.tests.rulesEngine.testDefs = {
         configPath: "tests/configs"
     },
     gradeNames: ["gpii.test.common.testCaseHolder"],
-    sequence: [{
-        event: "{that rulesEngine}.events.onCreate",
-        listener: "fluid.identity"
-    }, [
+    sequence: [[
         /*
          * test simple rule check
          * - single fact condition
