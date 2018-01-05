@@ -283,6 +283,7 @@ fluid.defaults("gpii.app", {
                 }
             }
         },
+        // This subcomponent must be the last one created.
         pspReady: {
             type: "fluid.component",
             createOnEvent: "onPrerequisitesReady",
