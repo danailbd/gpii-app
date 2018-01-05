@@ -73,9 +73,6 @@ gpii.tests.surveys.testDefs = {
     },
     gradeNames: ["gpii.test.common.testCaseHolder"],
     sequence: [{
-        event: "{that gpii.app.dialogManager}.events.onCreate",
-        listener: "fluid.identity"
-    }, {
         func: "{that}.app.keyIn",
         args: ["snapset_1a"]
     }, {

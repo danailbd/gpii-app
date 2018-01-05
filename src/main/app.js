@@ -50,8 +50,13 @@ require("electron").app.on("ready", gpii.app.electronAppListener);
 // Override default behaviour - don't exit process once all windows are closed
 require("electron").app.on("window-all-closed", fluid.identity);
 
-/*
- ** Component to manage the app.
+/**
+ * A component to manage the app. Each subcomponent of the app (except for the first
+ * one) has a specified priority of creation. This is needed to ensure that every
+ * component is created no sooner than all the components it depends on. Furthermore,
+ * the `pspReady` subcomponent must be created last because its only purpose is to
+ * send the `onPSPReady` event which indicates that the PSP application is fully
+ * functional. This is useful especially when writing integration tests.
  */
 fluid.defaults("gpii.app", {
     gradeNames: "fluid.modelComponent",
@@ -65,27 +70,17 @@ fluid.defaults("gpii.app", {
             activeSet: null
         }
     },
-    // prerequisites
     components: {
-        gpiiConnector: {
-            type: "gpii.app.gpiiConnector",
-            createOnEvent: "onGPIIReady",
-            options: {
-                listeners: {
-                    "onPreferencesUpdated.updateSets": "{app}.updatePreferences",
-                    "onSnapsetNameUpdated.updateSnapsetName": "{app}.updateSnapsetName"
-                },
-                events: {
-                    onConnected: "{app}.events.onPSPChannelConnected"
-                }
-            }
+        networkCheck: { // Network check component to meet GPII-2349
+            type: "gpii.app.networkCheck"
         },
         factsManager: {
-            type: "gpii.app.factsManager"
+            type: "gpii.app.factsManager",
+            priority: "after:networkCheck"
         },
         rulesEngine: {
-            priority: "after:factsManager",
             type: "gpii.app.rulesEngine",
+            priority: "after:factsManager",
             options: {
                 listeners: {
                     "{factsManager}.events.onFactsUpdated": "{that}.checkRules"
@@ -117,24 +112,49 @@ fluid.defaults("gpii.app", {
                 }
             }
         },
+        gpiiConnector: {
+            type: "gpii.app.gpiiConnector",
+            createOnEvent: "onGPIIReady",
+            priority: "after:dialogManager",
+            options: {
+                listeners: {
+                    "onPreferencesUpdated.updateSets": "{app}.updatePreferences",
+                    "onSnapsetNameUpdated.updateSnapsetName": "{app}.updateSnapsetName"
+                },
+                events: {
+                    onConnected: "{app}.events.onPSPChannelConnected"
+                }
+            }
+        },
         psp: {
             type: "gpii.app.psp",
             createOnEvent: "onPrerequisitesReady",
+            priority: "after:gpiiConnector",
             options: {
                 model: {
                     keyedInUserToken: "{app}.model.keyedInUserToken"
                 }
             }
         },
+        waitDialog: {
+            type: "gpii.app.waitDialog",
+            createOnEvent: "onPrerequisitesReady",
+            priority: "after:psp",
+            options: {
+                model: {
+                    showDialog: "{app}.model.showDialog"
+                }
+            }
+        },
         restartDialog: {
             type: "gpii.app.dialog.restartDialog",
             createOnEvent: "onPrerequisitesReady",
-            priority: "after:psp"
+            priority: "after:waitDialog"
         },
         settingsBroker: {
             type: "gpii.app.settingsBroker",
             createOnEvent: "onPrerequisitesReady",
-            priority: "after:psp",
+            priority: "after:restartDialog",
             options: {
                 model: {
                     keyedInUserToken: "{app}.model.keyedInUserToken"
@@ -149,6 +169,17 @@ fluid.defaults("gpii.app", {
                 }
             }
         },
+        tray: {
+            type: "gpii.app.tray",
+            createOnEvent: "onPrerequisitesReady",
+            priority: "after:settingsBroker",
+            options: {
+                model: {
+                    keyedInUserToken: "{gpii.app}.model.keyedInUserToken",
+                    pendingChanges: "{settingsBroker}.model.pendingChanges"
+                }
+            }
+        },
         /*
          * A helper component used as mediator for handling communication
          * between the PSP and gpiiConnector components.
@@ -156,7 +187,7 @@ fluid.defaults("gpii.app", {
         channelMediator: {
             type: "fluid.component",
             createOnEvent: "onPrerequisitesReady",
-            priority: "after:settingsBroker",
+            priority: "after:tray",
             options: {
                 listeners: {
                     "{settingsBroker}.events.onSettingApplied": [{
@@ -191,7 +222,7 @@ fluid.defaults("gpii.app", {
         restartWarningController: {
             type: "fluid.modelComponent",
             createOnEvent: "onPrerequisitesReady",
-            priority: "after:restartDialog",
+            priority: "after:channelMediator",
             options: {
                 model: {
                     isPspShown: "{psp}.model.isShown"
@@ -252,30 +283,15 @@ fluid.defaults("gpii.app", {
                 }
             }
         },
-
-        tray: {
-            type: "gpii.app.tray",
+        pspReady: {
+            type: "fluid.component",
             createOnEvent: "onPrerequisitesReady",
+            priority: "after:channelMediator",
             options: {
-                model: {
-                    keyedInUserToken: "{gpii.app}.model.keyedInUserToken",
-                    pendingChanges: "{settingsBroker}.model.pendingChanges"
-                }
-            },
-            // needed as the psp window is used by the tray
-            priority: "after:psp"
-        },
-        waitDialog: {
-            type: "gpii.app.waitDialog",
-            createOnEvent: "onPrerequisitesReady",
-            options: {
-                model: {
-                    showDialog: "{gpii.app}.model.showDialog"
+                listeners: {
+                    onCreate: "{app}.events.onPSPReady.fire"
                 }
             }
-        },
-        networkCheck: { // Network check component to meet GPII-2349
-            type: "gpii.app.networkCheck"
         }
     },
     events: {
@@ -293,6 +309,7 @@ fluid.defaults("gpii.app", {
         onAppReady: null,
         onPSPChannelConnected: null,
         onSurveyWSConnected: null,
+        onPSPReady: null,
 
         onKeyedIn: null,
         onKeyedOut: null
