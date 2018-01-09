@@ -23,11 +23,11 @@ https://github.com/GPII/universal/blob/master/LICENSE.txt
             "onCreate.initResizeListener": {
                 "this": "@expand:$({that}.container.0.contentWindow)",
                 method: "on",
-                args: ["resize", "{that}.onHeightChanged"]
+                args: ["resize", "{that}.events.onHeightChanged.fire"]
             }
         },
-        invokers: {
-            onHeightChanged: fluid.notImplemented
+        events: {
+            onHeightChanged: null
         }
     });
 })(fluid);

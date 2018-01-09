@@ -206,15 +206,15 @@ https://github.com/GPII/universal/blob/master/LICENSE.txt
                 type: "gpii.psp.heightChangeListener",
                 container: "{that}.dom.heightChangeListener",
                 options: {
-                    invokers: {
-                        onHeightChanged: "{restartWarning}.events.onContentHeightChanged.fire"
+                    events: {
+                        onHeightChanged: "{restartWarning}.events.onHeightChanged"
                     }
                 }
             }
         },
 
         events: {
-            onContentHeightChanged: null
+            onHeightChanged: null
         },
 
         styles: {
@@ -241,7 +241,7 @@ https://github.com/GPII/universal/blob/master/LICENSE.txt
 
         // Fire manually the height changed event because the listener is not
         // triggered when the warning has already been hidden.
-        restartWarning.events.onContentHeightChanged.fire();
+        restartWarning.events.onHeightChanged.fire();
     };
 
     /**

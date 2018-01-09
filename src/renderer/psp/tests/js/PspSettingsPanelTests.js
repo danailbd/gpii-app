@@ -1032,9 +1032,9 @@ https://github.com/GPII/universal/blob/master/LICENSE.txt
                                 [dropdownSettingFixture, multipickerSettingFixture]
                             ]
                         }, {
-                            event: "{restartWarning}.events.onContentHeightChanged",
+                            event: "{restartWarning}.events.onHeightChanged",
                             listener: "jqUnit.assert",
-                            args: ["When the restart warning is show, onContentHeightChanged event is fired"]
+                            args: ["When the restart warning is shown, onHeightChanged event is fired"]
                         }, {
                             funcName: "gpii.tests.psp.testRestartWarningMessage",
                             args: [
@@ -1085,9 +1085,9 @@ https://github.com/GPII/universal/blob/master/LICENSE.txt
                                 []
                             ]
                         }, {
-                            event: "{restartWarning}.events.onContentHeightChanged",
+                            event: "{restartWarning}.events.onHeightChanged",
                             listener: "jqUnit.assert",
-                            args: ["When the restart warning is hidden, onContentHeightChanged event is fired"]
+                            args: ["When the restart warning is hidden, onHeightChanged event is fired"]
                         }, {
                             funcName: "gpii.tests.psp.testRestartWarningVisibility",
                             args: ["{restartWarning}.container", false]

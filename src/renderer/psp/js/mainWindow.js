@@ -146,7 +146,7 @@ https://github.com/GPII/universal/blob/master/LICENSE.txt
                 container: "{that}.dom.restartWarning",
                 options: {
                     listeners: {
-                        onContentHeightChanged: {
+                        onHeightChanged: {
                             funcName: "{mainWindow}.onContentHeightChanged"
                         },
                         "{mainWindow}.events.onRestartRequired": {
@@ -173,8 +173,10 @@ https://github.com/GPII/universal/blob/master/LICENSE.txt
                 type: "gpii.psp.heightChangeListener",
                 container: "{that}.dom.heightChangeListener",
                 options: {
-                    invokers: {
-                        onHeightChanged: "{mainWindow}.onContentHeightChanged"
+                    listeners: {
+                        onHeightChanged: {
+                            funcName: "{mainWindow}.onContentHeightChanged"
+                        }
                     }
                 }
             }
