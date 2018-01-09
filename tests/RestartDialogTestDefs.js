@@ -26,6 +26,12 @@ require("../src/main/app.js");
 
 fluid.registerNamespace("gpii.tests.settingsBroker.testDefs");
 
+var settingChangeFixture = {
+    liveness: "manualRestart",
+    value: 1,
+    oldValue: 2,
+    path: "change/setting"
+};
 
 var manualRestartSettingFixture = {
     icon: "../../icons/gear-cloud-white.png",
@@ -53,7 +59,7 @@ gpii.tests.restartWarningController.utils.simulateSettingAlter = function (psp, 
 
 gpii.tests.restartWarningController.testDefs = {
     name: "Restart dialog integration tests",
-    expect: 15,
+    expect: 16,
     config: {
         configName: "app.dev",
         configPath: "configs"
@@ -197,8 +203,15 @@ gpii.tests.restartWarningController.testDefs = {
         }
     ],
 
+    {
+        func: "{that}.app.settingsBroker.clearPendingChanges"
+    },
     { // show PSP
         func: "{that}.app.psp.show"
+    },
+    {
+        func: "{that}.app.psp.events.onSettingAltered.fire",
+        args: [settingChangeFixture]
     },
     { // Simulate RestartNow click
         func: "{that}.app.psp.events.onRestartNow.fire"
@@ -209,6 +222,18 @@ gpii.tests.restartWarningController.testDefs = {
          * when PSP is closed with RestartNow
          */
         {
+            event: "{that}.app.settingsBroker.events.onSettingApplied",
+            listener: "jqUnit.assertLeftHand", // check includes
+            args: [
+                "RestartDialog: PSP is hidden when onRestart is fired",
+                settingChangeFixture,
+                "{arguments}.0"
+            ]
+        }, {
+            changeEvent: "{that}.app.settingsBroker.applier.modelChanged",
+            path: "pendingChanges",
+            listener: "fluid.identity"
+        }, {
             funcName: "jqUnit.assertFalse",
             args: [
                 "RestartDialog: PSP is hidden when onRestart is fired",
@@ -228,7 +253,6 @@ gpii.tests.restartWarningController.testDefs = {
                 "@expand:{that}.app.restartDialog.isShown()"
             ]
         }
-        // TODO check whether setting applied event was fired
     ],
 
     { // show PSP
@@ -273,13 +297,5 @@ gpii.tests.restartWarningController.testDefs = {
             ]
         }
     ]
-
-    /*
-     * Tests that are missing
-     * - should show warning in PSP with correct settings list
-     * - should show dialog with correct settings list
-     * - should fire N events (settingApplied) with resartNow
-     * - should fire N events () with undoChanges
-     */
     ]
 };
