@@ -26,7 +26,7 @@ fluid.defaults("gpii.app.dialog.restartDialog.channel", {
     gradeNames: ["fluid.component"],
 
     events: {
-        // onClosed: null
+        onClosed: null // provided by parent component
     },
 
     listeners: {
@@ -92,12 +92,11 @@ fluid.defaults("gpii.app.dialog.restartDialog", {
     },
 
     events: {
-        onClosed: null
+        onClosed: null,
 
-        // Handled by the `gpii.app.psp`
-        // onRestartNow: null,
-        // onRestartLater: null,
-        // onUndoChanges: null
+        onRestartNow: null,   // provided by parent component
+        onRestartLater: null, // provided by parent component
+        onUndoChanges: null   // provided by parent component
     },
 
     components: {

@@ -375,11 +375,11 @@ https://github.com/GPII/universal/blob/master/LICENSE.txt
         },
 
         events: {
-            // XXX not quite valid naming as the widget component (in settingPresenter) also renders
             onSettingRendered: null,
-            onSettingAltered: null,  // passed from parent
-            // onSettingUpdated: null  // passed from parent
-            onRestartRequired: null
+            onRestartRequired: null,
+
+            onSettingAltered: null,  // provided by parent component
+            onSettingUpdated: null  // provided by parent component
         },
 
         components: {
