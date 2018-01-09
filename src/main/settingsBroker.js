@@ -103,7 +103,7 @@ gpii.app.settingsBroker.enqueue = function (settingsBroker, setting) {
     if (pendingChange) {
         // If the new setting's value is simply the initial value for the setting,
         // remove the pending changes for this setting altogether.
-        if (gpii.app.equalsAsJSON(pendingChange.oldValue, setting.value)) {
+        if (fluid.model.diff(pendingChange.oldValue, setting.value)) {
             pendingChanges = fluid.remove_if(pendingChanges, function (change) {
                 return change.path === setting.path;
             });

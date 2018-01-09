@@ -80,13 +80,3 @@ app.notifyWindow = function (browserWindow, messageChannel, message) {
         browserWindow.webContents.send(messageChannel, message);
     }
 };
-
-/**
- * Checks whether two objects are equal by using `JSON.stringify` internally.
- * This  means that if the compared values are arrays or objects, the ordering
- * of the elements/properties within them matters.
- * @return {Boolean} `true` if the values are equal and `false` otherwise.
- */
-app.equalsAsJSON = function (obj1, obj2) {
-    return JSON.stringify(obj1) === JSON.stringify(obj2);
-};

@@ -83,7 +83,7 @@ fluid.defaults("gpii.app.gpiiConnector", {
  * the setting
  */
 gpii.app.gpiiConnector.updateSetting = function (socket, setting) {
-    if (fluid.isValue(setting.oldValue) && gpii.app.equalsAsJSON(setting.oldValue, setting.value)) {
+    if (fluid.isValue(setting.oldValue) && fluid.model.diff(setting.oldValue, setting.value)) {
         return;
     }
 
