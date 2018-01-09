@@ -58,9 +58,17 @@ https://github.com/GPII/universal/blob/master/LICENSE.txt
      * @param accentColor {String} The accent color used in the user's OS.
      */
     gpii.psp.updateTheme = function (theme, accentColor) {
-        var mainColor = "#" + accentColor.slice(0, 6),
-            themeRules = ":root{ --main-color: " + mainColor + "; }";
-        theme.text(themeRules);
+        // The accent color is an 8-digit hex number whose last 2 digits
+        // represent the alpha. In case the user has chosen his accent
+        // color to be automatically picked by Windows, the accent color
+        // is sometimes reported as an 8-digit hex number and sometimes
+        // as a 6-digit number. The latter appears is incorrect and
+        // should be ignored.
+        if (accentColor && accentColor.length === 8) {
+            var mainColor = "#" + accentColor.slice(0, 6),
+                themeRules = ":root{ --main-color: " + mainColor + "; }";
+            theme.text(themeRules);
+        }
     };
 
     /**
