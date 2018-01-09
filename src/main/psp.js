@@ -235,10 +235,11 @@ gpii.app.initPSPWindowIPC = function (app, psp) {
  * @param pspWindow {Object} An Electron `BrowserWindow`.
  */
 gpii.app.psp.moveOffScreen = function (pspWindow) {
-    var windowSize = pspWindow.getSize(),
-        width = windowSize[0],
-        height = windowSize[1];
-    pspWindow.setPosition(-width, -height);
+    // Move the PSP so far away that even if there is an additional screen attached,
+    // it will not be visible. It appears that the min value for the `BrowserWindow`
+    // position can be -Math.pow(2, 31). Any smaller values lead to an exception.
+    var coordinate = -Math.pow(2, 20);
+    pspWindow.setPosition(coordinate, coordinate);
 };
 
 /**
