@@ -1,5 +1,7 @@
 /*!
-GPII Application
+Settings Broker - Postpone settings applying
+
+Introduces component that serves as a "broker" for the communication bettween the PcpChannel and the PSP itself. It postpones sending of a setting change, in case the later requires OS or Application restart. It provides mechanism for undo as well as applying of all such "pending" setting changes.
 Copyright 2016 Steven Githens
 Copyright 2016-2017 OCAD University
 

@@ -1,5 +1,7 @@
 /*!
-GPII Application
+The PSP Main component
+
+A component that represents the whole PSP. It wraps all of the PSP's functionality and also provides information on whether there's someone keyIn or not.
 Copyright 2016 Steven Githens
 Copyright 2016-2017 OCAD University
 

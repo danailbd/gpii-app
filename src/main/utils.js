@@ -1,5 +1,7 @@
 /*!
-GPII Application
+PSP utility functions
+
+A set of utility function used throughout the components used in the main process of the PSP.
 Copyright 2016 Steven Githens
 Copyright 2016-2017 OCAD University
 

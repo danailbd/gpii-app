@@ -1,5 +1,7 @@
 /*!
-GPII Application
+Dialog for the "Restart Needed" functionality
+
+Introduces an Electron BrowserWindow component that manages the "Restart Needed" pop-up, which includes the creation and connection of the dialog.
 Copyright 2016 Steven Githens
 Copyright 2016-2017 OCAD University
 

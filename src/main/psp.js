@@ -1,4 +1,7 @@
 /*!
+PSP BrowserWindow dialog
+
+Introduces a component that manages the PSP's Electron BrowserWindow (the panel itself).
 GPII Application
 Copyright 2016 Steven Githens
 Copyright 2016-2017 OCAD University

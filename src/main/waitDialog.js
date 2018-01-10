@@ -1,5 +1,7 @@
 /*!
-GPII Application
+Spinner BrowserWindow Dialog
+
+Introduces a component that uses an Electron BrowserWindow to represent a "please wait" spinner.
 Copyright 2016 Steven Githens
 Copyright 2016-2017 OCAD University
 

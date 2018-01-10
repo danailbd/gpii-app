@@ -1,4 +1,7 @@
 /*!
+Base BrowserWindow dialog component
+
+A base component for all Electron BrowserWindow dialogs.
 GPII Application
 Copyright 2016 Steven Githens
 Copyright 2016-2017 OCAD University

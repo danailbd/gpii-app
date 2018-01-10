@@ -1,5 +1,7 @@
 /*!
-GPII Application
+The PSP Electron Tray
+
+Introduces a component that creates and manages the PSP Electron Tray icon.
 Copyright 2016 Steven Githens
 Copyright 2016-2017 OCAD University
 

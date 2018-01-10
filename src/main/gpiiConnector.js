@@ -1,4 +1,7 @@
 /*!
+The PcpChannel connector
+
+Introduces component that manages the connection with the PcpChannel.
 GPII Application
 Copyright 2016 Steven Githens
 Copyright 2016-2017 OCAD University
