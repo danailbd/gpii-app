@@ -13,7 +13,6 @@ https://github.com/GPII/universal/blob/master/LICENSE.txt
 "use strict";
 
 var fluid    = require("infusion");
-var path     = require("path");
 var electron = require("electron");
 
 var Tray           = electron.Tray,

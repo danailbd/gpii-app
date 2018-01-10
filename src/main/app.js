@@ -14,7 +14,6 @@ https://github.com/GPII/universal/blob/master/LICENSE.txt
 
 var fluid   = require("infusion");
 var gpii    = fluid.registerNamespace("gpii");
-var path    = require("path");
 var request = require("request");
 
 
@@ -467,7 +466,7 @@ gpii.app.handleUncaughtException = function (that, err) {
             tray.displayBalloon({
                 title: error.title || "GPII Error",
                 content: error.message || err.message,
-                icon: path.join(__dirname, "../icons/gpii-icon-balloon.png")
+                icon: fluid.module.resolvePath("%gpii-app/src/icons/gpii-icon-balloon.png")
             });
             if (error.fatal) {
                 var timeout;
