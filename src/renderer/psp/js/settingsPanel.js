@@ -24,13 +24,33 @@
     fluid.registerNamespace("gpii.psp.utils");
 
 
+    /**
+     * Utility function for retrieving the last sub-element of a container
+     * @param container {jQuery} The jQuery container object
+     * @returns {jQuery} A jQuery container object
+     */
+    gpii.psp.utils.getContainerLastChild = function (container) {
+        return container.children().last();
+    };
+
+    /**
+     * A simple wrapper for the remove function
+     * @param container {jQuery} A jQuery object
+     */
+    gpii.psp.utils.removeContainer = function (container) {
+        if (container) {
+            container.remove();
+        }
+    };
+
+
 
     fluid.defaults("gpii.psp.repeater.renderer", {
         gradeNames: "fluid.viewComponent",
 
         markup: {
             container: null,
-            element:    null
+            element:   null
         },
 
         model: {
@@ -38,8 +58,16 @@
             renderedContainer: null
         },
         events: {
+            onElementRendered: {
+                events: {
+                    onContainerRendered: "onContainerRendered",
+                    onMarkupRendered: "onMarkupRendered"
+                },
+                args: ["{that}.model.renderedContainer"]
+            },
+
             onContainerRendered: null,
-            onElementRendered: null
+            onMarkupRendered: null
         },
         listeners: {
             "onDestroy.clearInjectedMarkup": {
@@ -90,7 +118,7 @@
                             args: "{renderer}.options.markup.element"
                         },
                         "onCreate.notify": {
-                            funcName: "{renderer}.events.onElementRendered.fire",
+                            funcName: "{renderer}.events.onMarkupRendered.fire",
                             args: ["{that}.model.renderedContainer"],
                             priority: "after:render"
                         }
@@ -120,8 +148,8 @@
     fluid.defaults("gpii.psp.repeater.element", {
         gradeNames: "fluid.viewComponent",
 
-        item:        null,   // XXX I really wished this was in the model
-        index:       null, // TODO
+        item:        null, // XXX I really wished this was in the model
+        index:       null,
         handlerType: null, // the items to be repeated
 
         markup: {
@@ -139,15 +167,15 @@
                 container: "{that}.container",
                 options: {
                     markup: "{element}.options.markup",
-                    events: {
-                        onElementRendered: "{element}.events.onElementRendered"
+
+                    listeners: {
+                        // Avoid injection as we want to use a boiled event
+                        onElementRendered: "{element}.events.onElementRendered.fire"
                     }
                 }
-                // TODO onElementRendered once all is rendered
             },
-/*
             handler: {
-                type: "{element}.options.handlerType",
+                type: "{that}.options.handlerType",
                 createOnEvent: "onElementRendered",
                 container: "{arguments}.0",
                 options: {
@@ -156,7 +184,6 @@
                     }
                 }
             }
-*/
         }
     });
 
@@ -174,7 +201,7 @@
             elements: [] // the items to be repeated
         },
         handlerType: null, // the items to be repeated
-        markup: null,    // the markup for the repeated items
+        markup:      null,    // the markup for the repeated items
 
         invokers: {
             // TODO docs
@@ -198,6 +225,7 @@
                     // repeat by array
                     index: "{source}",
                     item:  "{sourcePath}",
+                    handlerType: "{repeater}.options.handlerType",
 
                     markup: {
                         // TODO think about moving inside
@@ -238,43 +266,6 @@
         return fluid.stringTemplate(settingMarkup, {body: widgetMarkups});
     }
 
-
-        var e = gpii.psp.repeater(".flc-splash", {
-            model: {
-                elements: [1, 2, 3]
-            },
-            // handlerType: "some",
-            markup: "<span class=\"%containerClass\">%sub</span>",
-            sub: "Hello",
-
-            invokers: {
-                getMarkup: {
-                    funcName: "gpii.getMarkup",
-                    args: ["{that}.options.markup", "{that}.options.sub", "{arguments}.0"]
-                }
-            }
-        });
-        console.log("Result:", e);
-
-
-    /**
-     * Utility function for retrieving the last sub-element of a container
-     * @param container {jQuery} The jQuery container object
-     * @returns {jQuery} A jQuery container object
-     */
-    gpii.psp.utils.getContainerLastChild = function (container) {
-        return container.children().last();
-    };
-
-    /**
-     * A simple wrapper for the remove function
-     * @param container {jQuery} A jQuery object
-     */
-    gpii.psp.utils.removeContainer = function (container) {
-        if (container) {
-            container.remove();
-        }
-    };
 
 
 

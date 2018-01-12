@@ -18,7 +18,42 @@
 (function (fluid) {
     var gpii = fluid.registerNamespace("gpii");
 
+    fluid.defaults("gpii.some", {
+        gradeNames: "fluid.viewComponent",
+
+        selectors: {
+            a: ".flc-some"
+        },
+
+        listeners: {
+            onCreate: {
+                this: "{that}.dom.a",
+                method: "text",
+                args: ["{that}.model.item"]
+            }
+        }
+    });
+
+
+
     $(function () {
-        gpii.psp();
+        // gpii.psp();
+        
+        var e = gpii.psp.repeater(".flc-splash", {
+            model: {
+                elements: [1, 2, 3]
+            },
+            handlerType: "gpii.some",
+            markup: "<span class=\"flc-some\">%body</span>",
+            sub: "Hello",
+
+            invokers: {
+                getMarkup: {
+                    funcName: "gpii.getMarkup",
+                    args: ["{that}.options.markup", "{that}.options.sub", "{arguments}.0"]
+                }
+            }
+        });
+        console.log("Result:", e);
     });
 })(fluid);
