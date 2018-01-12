@@ -23,6 +23,240 @@
     fluid.registerNamespace("gpii.psp");
     fluid.registerNamespace("gpii.psp.utils");
 
+
+
+    fluid.defaults("gpii.psp.repeater.renderer", {
+        gradeNames: "fluid.viewComponent",
+
+        markup: {
+            container: null,
+            element:    null
+        },
+
+        model: {
+            // Save the container created
+            renderedContainer: null
+        },
+        events: {
+            onContainerRendered: null,
+            onElementRendered: null
+        },
+        listeners: {
+            "onDestroy.clearInjectedMarkup": {
+                funcName: "gpii.psp.utils.removeContainer",
+                args: "{that}.model.renderedContainer"
+            }
+        },
+        components: {
+            /*
+             * Render the outer most container for the element
+             */
+            renderElementContainer: {
+                type: "fluid.viewComponent",
+                container: "{that}.container",
+                options: {
+                    // TODO DOCS what magic is done here
+                    listeners: {
+                        "onCreate.render": {
+                            this: "{that}.container",
+                            method: "append",
+                            args: ["{renderer}.options.markup.container"]
+                        },
+                        "onCreate.updateContainer": {
+                            funcName: "{renderer}.setContainer",
+                            args: "@expand:gpii.psp.utils.getContainerLastChild({that}.container)",
+                            priority: "after:render"
+                        },
+                        "onCreate.notify": {
+                            funcName: "{renderer}.events.onContainerRendered.fire",
+                            // Get the newly created container
+                            priority: "after:updateContainer"
+                        }
+                    }
+                }
+            },
+            /**
+             * Renders the markup inside the dedicated container
+             */
+            renderElementMarkup: {
+                type: "fluid.viewComponent",
+                container: "{that}.model.renderedContainer",
+                createOnEvent: "onContainerRendered",
+                options: {
+                    listeners: {
+                        "onCreate.render": {
+                            this: "{that}.container",
+                            method: "append",
+                            args: "{renderer}.options.markup.element"
+                        },
+                        "onCreate.notify": {
+                            funcName: "{renderer}.events.onElementRendered.fire",
+                            args: ["{that}.model.renderedContainer"],
+                            priority: "after:render"
+                        }
+                    }
+                }
+            }
+        },
+        invokers: {
+            setContainer: {
+                changePath: "renderedContainer",
+                value: "{arguments}.0"
+            }
+        }
+    });
+
+    /*
+
+      <div class="flc-element-1">
+            // markup
+            // setting markup
+            // widget
+      </div>
+
+    <div class="group/setting"> <inner setting/widget> </div>
+
+     */
+    fluid.defaults("gpii.psp.repeater.element", {
+        gradeNames: "fluid.viewComponent",
+
+        item:        null,   // XXX I really wished this was in the model
+        index:       null, // TODO
+        handlerType: null, // the items to be repeated
+
+        markup: {
+            container: null,
+            element:   null
+        },
+
+        events: {
+            onElementRendered: null // thrown once all rendering is completed
+        },
+
+        components: {
+            renderer: { // injects the markup to the DOM; container + markup
+                type: "gpii.psp.repeater.renderer",
+                container: "{that}.container",
+                options: {
+                    markup: "{element}.options.markup",
+                    events: {
+                        onElementRendered: "{element}.events.onElementRendered"
+                    }
+                }
+                // TODO onElementRendered once all is rendered
+            },
+/*
+            handler: {
+                type: "{element}.options.handlerType",
+                createOnEvent: "onElementRendered",
+                container: "{arguments}.0",
+                options: {
+                    model: {
+                        item: "{element}.options.item"
+                    }
+                }
+            }
+*/
+        }
+    });
+
+
+    /*
+     
+        handlerType: "gpii.psp.groupElement" | "gpii.psp.settingElement"
+        
+
+     */
+    fluid.defaults("gpii.psp.repeater", {
+        gradeNames: "fluid.viewComponent",
+
+        model: {
+            elements: [] // the items to be repeated
+        },
+        handlerType: null, // the items to be repeated
+        markup: null,    // the markup for the repeated items
+
+        invokers: {
+            // TODO docs
+            getMarkup: { // expected from parent
+                funcName: "fluid.notImplemented",
+                args: ["{arguments}.0"] // item
+            }
+        },
+
+        dynamicContainerMarkup: {
+            container: "<div class=\"%containerClass\"></div>",
+            containerClassPrefix: "flc-dynamicElement-%id"      // preferably altered by the parent
+        },
+
+        dynamicComponents: {
+            element: {
+                type: "gpii.psp.repeater.element",
+                container: "{that}.container",
+                sources: "{repeater}.model.elements",
+                options: {
+                    // repeat by array
+                    index: "{source}",
+                    item:  "{sourcePath}",
+
+                    markup: {
+                        // TODO think about moving inside
+                        container: "@expand:gpii.psp.repeater.getIndexedContainerMarkup({repeater}.options.dynamicContainerMarkup, {that}.options.index)",
+                        // generated dynamicaly using the current item
+                        element: "@expand:{repeater}.getMarkup({that}.options.item, {that}.options.index)"
+                    },
+
+                    listeners: {
+                        onCreate: {
+                            this: "console",
+                            method: "log",
+                            args: [ 
+                                "Element Created",
+                                "{that}.options.item"
+                            ]
+                        }
+                    }
+                }
+            }
+        }
+    });
+
+    gpii.psp.repeater.getIndexedContainerMarkup = function (markup, containerIndex) {
+        // Remove the "." prefix
+        var containerClass = fluid.stringTemplate(markup.containerClassPrefix, { id: containerIndex });
+        return fluid.stringTemplate(markup.container, { containerClass: containerClass });
+    };
+
+
+    // setting
+    // <div class="flc-setting"> %body </div>
+    // <span></span>
+    // <div> <span><> </div>
+    gpii.getMarkup = function (settingMarkup, widgetMarkups, item) {
+//        var widgetType = getWidgetType(item); // TODO
+//        return fluid.stringTemplate(settingMarkup, {body: widgetMarkups[widgetType]});
+        return fluid.stringTemplate(settingMarkup, {body: widgetMarkups});
+    }
+
+
+        var e = gpii.psp.repeater(".flc-splash", {
+            model: {
+                elements: [1, 2, 3]
+            },
+            // handlerType: "some",
+            markup: "<span class=\"%containerClass\">%sub</span>",
+            sub: "Hello",
+
+            invokers: {
+                getMarkup: {
+                    funcName: "gpii.getMarkup",
+                    args: ["{that}.options.markup", "{that}.options.sub", "{arguments}.0"]
+                }
+            }
+        });
+        console.log("Result:", e);
+
+
     /**
      * Utility function for retrieving the last sub-element of a container
      * @param container {jQuery} The jQuery container object
@@ -41,6 +275,10 @@
             container.remove();
         }
     };
+
+
+
+
 
     /**
      * Creates the binding with the already rendered DOM elements.
@@ -466,7 +704,7 @@
             }
         },
         dynamicComponents: {
-            settingVisualizer: {
+            settingVisualizer: { // handler
                 type: "gpii.psp.settingVisualizer",
                 container: "{that}.container",
                 createOnEvent: "onSettingCreated",
