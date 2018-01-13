@@ -39,7 +39,7 @@
         value: "b",
         solutionName: "solutions1",
 
-        icon: "../../../../icons/gear-cloud-black.png",
+        icon: "../../icons/gear-cloud-black.png",
         liveness: "manualRestart",
         memory: false,
 
@@ -51,17 +51,93 @@
         }
     };
 
+    var textfieldSettingFixture = {
+        path: "textfieldPath",
+        value: "Someee",
+
+        icon: "../../icons/gear-cloud-white.png",
+        liveness: "live",
+
+        schema: {
+            type: "text",
+            title: "Text input",
+            description: "Text input description"
+        }
+    };
+
+    var switchSettingFixture = {
+        path: "invertColorsPath",
+        value: true,
+
+        icon: "../../icons/gear-cloud-black.png",
+        liveness: "liveRestart",
+        memory: true,
+
+        schema: {
+            type: "boolean",
+            title: "Invert colors",
+            description: "Invert colors description"
+        }
+    };
+
+    var stepperSettingFixture = {
+        path: "zoomPath",
+        value: 1,
+
+        icon: "../../icons/gear-cloud-black.png",
+        liveness: "OSRestart",
+
+        schema: {
+            type: "number",
+            title: "Zoom",
+            description: "Zoom description",
+            min: 0.5,
+            max: 4,
+            divisibleBy: 0.1
+        }
+    };
+
+    var multipickerSettingFixture = {
+        path: "ttsTrackingPath",
+        value: ["mouse", "focus"],
+
+        icon: "../../icons/gear-cloud-white.png",
+        liveness: "manualRestart",
+
+        schema: {
+            type: "array",
+            title: "TTS tracking mode",
+            description: "TTS tracking mode description",
+            "enum":  ["mouse", "caret", "focus"]
+        }
+    };
+
+    var allSettingTypesFixture = [dropdownSettingFixture, {
+        path: "settingTwoPath",
+        value: "c",
+        solutionName: "solutions2",
+
+        icon: "../../icons/gear-cloud-black.png",
+
+        schema: {
+            type: "string",
+            "enum": ["b", "c", "d", "e"],
+            title: "Setting two title",
+            description: "Setting two description"
+        }
+    }, textfieldSettingFixture, switchSettingFixture, stepperSettingFixture, multipickerSettingFixture];
+
+
 
 
     $(function () {
         // gpii.psp();
-        
+
         console.log("Here");
         var e = gpii.psp.settingsPanel("#flc-settingsList", {
             model: {
-                settings: [
-                    dropdownSettingFixture
-                ]
+                settings: allSettingTypesFixture
+                
             }
         });
         console.log("Result:", e);

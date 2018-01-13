@@ -61,13 +61,13 @@
             onElementRendered: {
                 events: {
                     onContainerRendered: "onContainerRendered",
-                    onMarkupRendered: "onMarkupRendered"
+                    onMarkupRendered:    "onMarkupRendered"
                 },
                 args: ["{that}.model.renderedContainer"]
             },
 
             onContainerRendered: null,
-            onMarkupRendered: null
+            onMarkupRendered:    null
         },
         listeners: {
             "onDestroy.clearInjectedMarkup": {
@@ -136,13 +136,10 @@
 
     /*
 
+        Generates something similar to:
       <div class="flc-element-1">
             // markup
-            // setting markup
-            // widget
       </div>
-
-    <div class="group/setting"> <inner setting/widget> </div>
 
      */
     fluid.defaults("gpii.psp.repeater.element", {
@@ -190,13 +187,11 @@
 
 
     /*
-
-        handlerType: "gpii.psp.groupElement" | "gpii.psp.settingElement"
-        getMarkup
-        items
-        container class
-
-
+        Expects:
+            handlerType: "gpii.psp.groupElement" | "gpii.psp.settingElement"
+            getMarkup
+            items
+            container class
      */
     fluid.defaults("gpii.psp.repeater", {
         gradeNames: "fluid.viewComponent",
@@ -218,7 +213,7 @@
         },
 
         dynamicContainerMarkup: {
-            container: "<div class=\"%containerClass\"></div>",
+            container:            "<div class=\"%containerClass\"></div>",
             containerClassPrefix: "flc-dynamicElement-%id"      // preferably altered by the parent
         },
 
@@ -255,25 +250,22 @@
         }
     });
 
+    /**
+     * Constructs the markup for the indexed container - sets proper index.
+     *
+     * @param markup {Object}
+     * @param markup.containerClassPrefix {String} The class prefix for the indexed container.
+     *   Should have a `id` interpolated expression.
+     * @param markup.container {String} The markup which is to be interpolated with the container index.
+     *   Should have a `containerClass` interpolated expression.
+     * @param containerIndex {Number} The index for the container
+     * @returns {String}
+     */
     gpii.psp.repeater.getIndexedContainerMarkup = function (markup, containerIndex) {
         // Remove the "." prefix
         var containerClass = fluid.stringTemplate(markup.containerClassPrefix, { id: containerIndex });
         return fluid.stringTemplate(markup.container, { containerClass: containerClass });
     };
-
-
-    // setting
-    // <div class="flc-setting"> %body </div>
-    // <span></span>
-    // <div> <span><> </div>
-    // TODO DEV
-    gpii.getMarkup = function (settingMarkup, widgetMarkups, item) {
-        // var widgetType = getWidgetType(item); // TODO
-        // return fluid.stringTemplate(settingMarkup, {body: widgetMarkups[widgetType]});
-        return fluid.stringTemplate(settingMarkup, {body: widgetMarkups});
-    };
-
-
 
 
 
@@ -504,183 +496,8 @@
         }
     };
 
-
-    /**
-     * Renders all related markup for a setting:
-     * - container;
-     * - setting markup;
-     * - widget markup
-     * It also removes the injected markup on destroy
-     * Expects: markup
-     * Saves the newly created setting outer container internally
-     */
-    fluid.defaults("gpii.psp.settingRenderer", {
-        gradeNames: "fluid.viewComponent",
-
-        markup: {
-            container: null,
-            setting: null,
-            widget: null
-        },
-
-        model: {
-            // Save the container created
-            settingContainer: null
-        },
-        events: {
-            onSettingContainerRendered: null,
-            onSettingMarkupRendered: null,
-            onWidgetMarkupRendered: null
-        },
-        listeners: {
-            "onDestroy.clearInjectedMarkup": {
-                funcName: "gpii.psp.utils.removeContainer",
-                args: "{that}.model.settingContainer"
-            }
-        },
-        components: {
-            /*
-             * Render the outer most container for the setting
-             */
-            renderSettingContainer: {
-                type: "fluid.viewComponent",
-                container: "{that}.container",
-                options: {
-                    listeners: {
-                        "onCreate.render": {
-                            this: "{that}.container",
-                            method: "append",
-                            args: ["{settingRenderer}.options.markup.container"]
-                        },
-                        "onCreate.updateContainer": {
-                            funcName: "{settingRenderer}.setContainer",
-                            args: "@expand:gpii.psp.utils.getContainerLastChild({that}.container)",
-                            priority: "after:render"
-                        },
-                        "onCreate.notify": {
-                            funcName: "{settingRenderer}.events.onSettingContainerRendered.fire",
-                            // Get the newly created container
-                            priority: "after:updateContainer"
-                        }
-                    }
-                }
-            },
-            /**
-             * Renders the setting markup inside the dedicated container
-             */
-            renderSettingMarkup: {
-                type: "fluid.viewComponent",
-                container: "{that}.model.settingContainer",
-                createOnEvent: "onSettingContainerRendered",
-                options: {
-                    widgetContainerClass: ".flc-widget",
-                    listeners: {
-                        "onCreate.render": {
-                            this: "{that}.container",
-                            method: "append",
-                            args: "{settingRenderer}.options.markup.setting"
-                        },
-                        "onCreate.notify": {
-                            funcName: "{settingRenderer}.events.onSettingMarkupRendered.fire",
-                            /*
-                             * Get the widget container.
-                             * Should match single element (jQuery returns an array of matches)
-                             */
-                            args: "@expand:$({that}.options.widgetContainerClass, {that}.container)",
-                            priority: "after:render"
-                        }
-                    }
-                }
-            },
-            /*
-             * Render widget related markup
-             */
-            renderWidgetMarkup: {
-                type: "fluid.viewComponent",
-                // the widget container
-                container: "{arguments}.0",
-                createOnEvent: "onSettingMarkupRendered",
-                options: {
-                    listeners: {
-                        "onCreate.render": {
-                            this: "{that}.container",
-                            method: "append",
-                            args: "{settingRenderer}.options.markup.widget"
-                        },
-                        "onCreate.notify": {
-                            funcName: "{settingRenderer}.events.onWidgetMarkupRendered.fire",
-                            priority: "after:render"
-                        }
-                    }
-                }
-            }
-        },
-        invokers: {
-            setContainer: {
-                changePath: "settingContainer",
-                value: "{arguments}.0"
-            }
-        }
-    });
-
-    /**
-     * Handles visualization of single setting.
-     * Expects: markup for the all containers and the widget; widgetConfig needed for the setting; the setting
-     */
-    fluid.defaults("gpii.psp.settingVisualizer",  {
-        gradeNames: "fluid.viewComponent",
-
-        setting: null,
-        widgetConfig: null,
-        markup: {
-            container: null,
-            setting: null,
-            widget: null
-        },
-
-        events: {
-            onSettingRendered: null,
-            onRestartRequired: null,
-
-            onSettingAltered: null,  // provided by parent component
-            onSettingUpdated: null  // provided by parent component
-        },
-
-        components: {
-            settingRenderer: {
-                type: "gpii.psp.settingRenderer",
-                container: "{that}.container",
-
-                options: {
-                    markup: "{settingVisualizer}.options.markup",
-                    listeners: {
-                        "onWidgetMarkupRendered.notify": {
-                            funcName: "{settingVisualizer}.events.onSettingRendered.fire",
-                            // pass the created by the subcomponent container
-                            args: "{that}.model.settingContainer"
-                        }
-                    }
-                }
-            },
-            settingPresenter: {
-                type: "gpii.psp.settingPresenter",
-                createOnEvent: "onSettingRendered",
-                container: "{arguments}.0",
-                options: {
-                    widgetConfig: "{settingVisualizer}.options.widgetConfig",
-                    model: "{settingVisualizer}.options.setting",
-                    events: {
-                        onSettingAltered: "{settingVisualizer}.events.onSettingAltered",
-                        onSettingUpdated: "{settingVisualizer}.events.onSettingUpdated",
-                        onRestartRequired: "{settingVisualizer}.events.onRestartRequired"
-                    }
-                }
-            }
-        }
-    });
-
-
     /*
+     * TODO
      * With markup given, visualizes the list of settings passed - rendering and binding of each.
      * Expects:
      *   - settings list;
@@ -719,29 +536,6 @@
                 ]
             }
         }
-
-        /*
-        dynamicComponents: {
-
-            settingVisualizer: { // handler
-                type: "gpii.psp.settingVisualizer",
-                container: "{that}.container",
-                createOnEvent: "onSettingCreated",
-                options: {
-                    settingIndex: "{arguments}.0",
-                    setting: "{arguments}.1",
-
-                    events: {
-                        onSettingAltered: "{settingsPanel}.events.onSettingAltered",
-                        onSettingUpdated: "{settingsPanel}.events.onSettingUpdated",
-                        onRestartRequired: "{settingsPanel}.events.onRestartRequired"
-                    },
-
-                    widgetConfig: "@expand:{settingsVisualizer}.options.widgetExemplars.getExemplarBySchemaType({that}.options.setting.schema.type)"
-                }
-            }
-        }
-        */
     });
 
     gpii.psp.settingsVisualizer.getMarkup = function (markup, widgetExemplars, setting) {
@@ -751,23 +545,6 @@
         return fluid.stringTemplate(markup.setting, {widgetMarkup: widgetMarkup});
     };
 
-    /**
-     * Constructs the markup for the indexed container - sets proper index.
-     *
-     * @param markup {Object}
-     * @param markup.containerClassPrefix {String} The class prefix for the indexed container.
-     *   Should have a `id` interpolated expression.
-     * @param markup.container {String} The markup which is to be interpolated with the container index.
-     *   Should have a `containerClass` interpolated expression.
-     * @param containerIndex {Number} The index for the container
-     * @returns {String}
-     */
-    // XXX
-    gpii.psp.settingsVisualizer.getIndexedContainerMarkup = function (markup, containerIndex) {
-        // Remove the "." prefix
-        var containerClass = fluid.stringTemplate(markup.containerClassPrefix, { id: containerIndex });
-        return fluid.stringTemplate(markup.container, { containerClass: containerClass });
-    };
 
     /**
      * The top most component for representation of list of settings.
