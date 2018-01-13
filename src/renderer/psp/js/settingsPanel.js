@@ -148,9 +148,9 @@
     fluid.defaults("gpii.psp.repeater.element", {
         gradeNames: "fluid.viewComponent",
 
-        item:        null, // XXX I really wished this was in the model
-        index:       null,
-        handlerType: null, // the items to be repeated
+        item:           null, // XXX I really wished this was in the model
+        index:          null,
+        handlerOptions: null,
 
         markup: {
             container: null,
@@ -175,13 +175,14 @@
                 }
             },
             handler: {
-                type: "{that}.options.handlerType",
+                type: "{that}.options.handlerOptions.type",
                 createOnEvent: "onElementRendered",
                 container: "{arguments}.0",
                 options: {
                     model: {
                         item: "{element}.options.item"
-                    }
+                    },
+                    parent: "{element}.options.handlerOptions.parent"
                 }
             }
         }
@@ -189,19 +190,24 @@
 
 
     /*
-     
+
         handlerType: "gpii.psp.groupElement" | "gpii.psp.settingElement"
-        
+        getMarkup
+        items
+        container class
+
 
      */
     fluid.defaults("gpii.psp.repeater", {
         gradeNames: "fluid.viewComponent",
 
         model: {
-            elements: [] // the items to be repeated
+            items: [] // the items to be repeated
         },
-        handlerType: null, // the items to be repeated
-        markup:      null,    // the markup for the repeated items
+        handlerOptions: {
+            type:   null,
+            parent: null
+        },
 
         invokers: {
             // TODO docs
@@ -220,12 +226,12 @@
             element: {
                 type: "gpii.psp.repeater.element",
                 container: "{that}.container",
-                sources: "{repeater}.model.elements",
+                sources: "{repeater}.model.items",
                 options: {
                     // repeat by array
-                    index: "{source}",
-                    item:  "{sourcePath}",
-                    handlerType: "{repeater}.options.handlerType",
+                    index: "{sourcePath}",
+                    item:  "{source}",
+                    handlerOptions: "{repeater}.options.handlerOptions",
 
                     markup: {
                         // TODO think about moving inside
@@ -238,7 +244,7 @@
                         onCreate: {
                             this: "console",
                             method: "log",
-                            args: [ 
+                            args: [
                                 "Element Created",
                                 "{that}.options.item"
                             ]
@@ -260,12 +266,12 @@
     // <div class="flc-setting"> %body </div>
     // <span></span>
     // <div> <span><> </div>
+    // TODO DEV
     gpii.getMarkup = function (settingMarkup, widgetMarkups, item) {
-//        var widgetType = getWidgetType(item); // TODO
-//        return fluid.stringTemplate(settingMarkup, {body: widgetMarkups[widgetType]});
+        // var widgetType = getWidgetType(item); // TODO
+        // return fluid.stringTemplate(settingMarkup, {body: widgetMarkups[widgetType]});
         return fluid.stringTemplate(settingMarkup, {body: widgetMarkups});
-    }
-
+    };
 
 
 
@@ -276,6 +282,7 @@
      * Expects: widget configuration and model
      */
     fluid.defaults("gpii.psp.settingPresenter", {
+        // TODO repreater handler base component
         gradeNames: "fluid.viewComponent",
         selectors: {
             icon: ".flc-icon",
@@ -299,23 +306,29 @@
             appRestartRequired: "%solutionName - You changed this setting,\nwhich requires the app to restart."
         },
         model: {
-            path: null,
-            icon: null,
-            solutionName: null,
-            value: null,
-            schema: null,
-            liveness: null, // "live", "liveRestart", "manualRestart", "OSRestart"
-            memory: null
+            item: {}, // passed by repeater
+            // TODO DEV
+            path:         "{that}.model.item.path",
+            icon:         "{that}.model.item.icon",
+            solutionName: "{that}.model.item.solutionName",
+            value:        "{that}.model.item.value",
+            schema:       "{that}.model.item.schema",
+            liveness:     "{that}.model.item.liveness", // "live", "liveRestart", "manualRestart", "OSRestart"
+            memory:       "{that}.model.item.memory"
         },
-        widgetConfig: {
-            widgetOptions: null,
-            grade: null
+        members: {
+            // Keep a reference to the parent component
+            // This way the parent (options provider) can be dynamically decided
+            parent: "{{that}.options.parent}"
         },
+        // TODO tried with "gpii.psp.settingsVisualizer" but it won't work
+        // looks like this is not used 
+        widgetConfig: "@expand:{that}.parent.options.widgetExemplars.getExemplarBySchemaType({that}.model.item.schema.type)",
 
         events: {
-            onSettingUpdated: null,
-            onSettingAltered: null,
-            onRestartRequired: null
+            onSettingUpdated:  "{that}.parent.events.onSettingUpdated",
+            onSettingAltered:  "{that}.parent.events.onSettingAltered",
+            onRestartRequired: "{that}.parent.events.onRestartRequired"
         },
 
         components: {
@@ -334,6 +347,15 @@
             }
         },
         listeners: {
+            "onCreate.log": {
+                this: "console",
+                method: "log",
+                args: [
+                    "Handler Created",
+                    "{that}"
+                ]
+            },
+
             "onCreate.setIcon": {
                 this: "{that}.dom.icon",
                 method: "attr",
@@ -666,35 +688,41 @@
      *   - markup
      */
     fluid.defaults("gpii.psp.settingsVisualizer", {
-        gradeNames: "fluid.viewComponent",
+        gradeNames: "gpii.psp.repeater",
 
         model: {
-            settings: null
+            items: null // settings
         },
-        widgetExemplars: [],
+
+        handlerOptions: {
+            type:   "gpii.psp.settingPresenter",
+            parent: "{that}"
+        },
+
+        widgetExemplars: null, // passed from parent
         markup: {
             setting: null
             // per widget exemplar property
         },
         dynamicContainerMarkup: {
-            container: "<div class=\"%containerClass\"></div>",
             containerClassPrefix: "flc-settingListRow-%id"
         },
-        events: {
-            onSettingCreated: null
-        },
-        modelListeners: {
-            settings: {
-                func: "{that}.updateSettingsPresentations",
-                args: ["{that}", "{that}.model.settings"]
-            }
-        },
+
         invokers: {
-            updateSettingsPresentations: {
-                funcName: "gpii.psp.settingsVisualizer.updateSettingsPresentations"
+            getMarkup: {
+                funcName: "gpii.psp.settingsVisualizer.getMarkup",
+                args: [
+                    "{that}.options.markup",
+                    "{that}.options.widgetExemplars",
+                    "{arguments}.0",
+                    "{arguments}.1"
+                ]
             }
-        },
+        }
+
+        /*
         dynamicComponents: {
+
             settingVisualizer: { // handler
                 type: "gpii.psp.settingVisualizer",
                 container: "{that}.container",
@@ -709,16 +737,19 @@
                         onRestartRequired: "{settingsPanel}.events.onRestartRequired"
                     },
 
-                    widgetConfig: "@expand:{settingsVisualizer}.options.widgetExemplars.getExemplarBySchemaType({that}.options.setting.schema.type)",
-                    markup: {
-                        container: "@expand:gpii.psp.settingsVisualizer.getIndexedContainerMarkup({settingsVisualizer}.options.dynamicContainerMarkup, {that}.options.settingIndex)",
-                        setting: "{settingsVisualizer}.options.markup.setting", // markup.setting",
-                        widget: "@expand:gpii.psp.getProperty({settingsVisualizer}.options.markup, {that}.options.widgetConfig.options.grade)"
-                    }
+                    widgetConfig: "@expand:{settingsVisualizer}.options.widgetExemplars.getExemplarBySchemaType({that}.options.setting.schema.type)"
                 }
             }
         }
+        */
     });
+
+    gpii.psp.settingsVisualizer.getMarkup = function (markup, widgetExemplars, setting) {
+        var widgetConfig = widgetExemplars.getExemplarBySchemaType(setting.schema.type);
+        var widgetMarkup = markup[widgetConfig.options.grade];
+
+        return fluid.stringTemplate(markup.setting, {widgetMarkup: widgetMarkup});
+    };
 
     /**
      * Constructs the markup for the indexed container - sets proper index.
@@ -731,24 +762,11 @@
      * @param containerIndex {Number} The index for the container
      * @returns {String}
      */
+    // XXX
     gpii.psp.settingsVisualizer.getIndexedContainerMarkup = function (markup, containerIndex) {
         // Remove the "." prefix
         var containerClass = fluid.stringTemplate(markup.containerClassPrefix, { id: containerIndex });
         return fluid.stringTemplate(markup.container, { containerClass: containerClass });
-    };
-
-    /**
-     * Simple getter for the property that supports complex keys containing '.' (dots).
-     */
-    gpii.psp.getProperty = function (obj, property) {
-        return obj && obj[property];
-    };
-
-
-    gpii.psp.settingsVisualizer.updateSettingsPresentations = function (that, settings) {
-        settings.forEach(function (setting, settingIndex) {
-            that.events.onSettingCreated.fire(settingIndex, setting);
-        });
     };
 
     /**
@@ -796,7 +814,12 @@
                     widgetExemplars: "{settingsExemplars}.widgetExemplars",
                     markup: "@expand:gpii.psp.settingsPanel.flattenResources({resourcesLoader}.resources)",
                     model: {
-                        settings: "{settingsPanel}.model.settings"
+                        items: "{settingsPanel}.model.settings"
+                    },
+                    events: {
+                        onSettingAltered: "{settingsPanel}.events.onSettingAltered",
+                        onSettingUpdated: "{settingsPanel}.events.onSettingUpdated",
+                        onRestartRequired: "{settingsPanel}.events.onRestartRequired"
                     }
                 }
             }

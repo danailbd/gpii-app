@@ -34,24 +34,34 @@
         }
     });
 
+    var dropdownSettingFixture = {
+        path: "settingOnePath",
+        value: "b",
+        solutionName: "solutions1",
+
+        icon: "../../../../icons/gear-cloud-black.png",
+        liveness: "manualRestart",
+        memory: false,
+
+        schema: {
+            type: "string",
+            "enum": ["a", "b", "c", "d"],
+            title: "Setting one title",
+            description: "Setting one description"
+        }
+    };
+
 
 
     $(function () {
         // gpii.psp();
         
-        var e = gpii.psp.repeater(".flc-splash", {
+        console.log("Here");
+        var e = gpii.psp.settingsPanel("#flc-settingsList", {
             model: {
-                elements: [1, 2, 3]
-            },
-            handlerType: "gpii.some",
-            markup: "<span class=\"flc-some\">%body</span>",
-            sub: "Hello",
-
-            invokers: {
-                getMarkup: {
-                    funcName: "gpii.getMarkup",
-                    args: ["{that}.options.markup", "{that}.options.sub", "{arguments}.0"]
-                }
+                settings: [
+                    dropdownSettingFixture
+                ]
             }
         });
         console.log("Result:", e);
