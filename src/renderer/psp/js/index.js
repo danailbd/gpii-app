@@ -136,10 +136,15 @@
         console.log("Here");
         var e = gpii.psp.settingsPanel("#flc-settingsList", {
             model: {
-                settings: allSettingTypesFixture
-                
+                settingGroups: [{
+                    label: "g1",
+                    settings: [
+                        multipickerSettingFixture, stepperSettingFixture
+                    ]
+                }]
             }
         });
+
         console.log("Result:", e);
     });
 })(fluid);

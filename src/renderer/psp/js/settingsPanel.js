@@ -201,7 +201,7 @@
         },
         handlerOptions: {
             type:   null,
-            parent: null
+            parent: "{that}"
         },
 
         invokers: {
@@ -496,6 +496,91 @@
         }
     };
 
+
+    fluid.defaults("gpii.psp.settingGroupPresenter", {
+        gradeNames: "fluid.viewComponent",
+
+        selectors: {
+            // TODO set label  
+            label: ".flc-label",
+            settings: ".flc-settings" // the settings container
+        },
+
+        model: {
+            item:     {}, // from the repeater
+            label:    "{that}.model.item.label",
+            settings: "{that}.model.item.settings"
+        },
+
+        components: {
+            settings: {
+                type: "gpii.psp.settingsVisualizer",
+                container: "{that}.dom.settings",
+                options: {
+                    // TODO
+                    markup:          "{settingGroupsVisualizer}.options.markup",
+                    widgetExemplars: "{settingGroupsVisualizer}.options.widgetExemplars",
+
+                    model: {
+                        items: "{settingGroupPresenter}.model.settings"
+                    }
+                }
+            }
+        },
+
+        listeners: {
+            "onCreate.setLabel": {
+                this: "{that}.dom.label",
+                method: "text",
+                args: "{that}.model.label"
+            }
+        }
+    });
+
+
+    fluid.defaults("gpii.psp.settingGroupsVisualizer", {
+        gradeNames: "gpii.psp.repeater",
+
+        /// Expected from parent
+        model: {
+            items: null // settingGroups
+        },
+
+        widgetExemplars: null, // passed from parent
+        markup: { // from parent
+            // setting: null
+            // per widget exemplar property
+            //
+            /// XXX possibly not needed
+            group: "<div class=\"flc-label\"></div><div class=\"flc-settings\"></div>"
+        },
+
+        /// Override 'gpii.psp.repeater'
+        handlerOptions: {
+            type:   "gpii.psp.settingGroupPresenter"
+            // TODO events for settingsVisualizer
+        },
+
+        dynamicContainerMarkup: {
+            containerClassPrefix: "flc-settingGroup-%id"
+        },
+
+        invokers: {
+            getMarkup: {
+                funcName: "gpii.psp.settingGroupsVisualizer.getMarkup",
+                args: [
+                    "{that}.options.markup",
+                    "{arguments}.0",
+                    "{arguments}.1"
+                ]
+            }
+        }
+    });
+
+    gpii.psp.settingGroupsVisualizer.getMarkup = function (markup/*, group */) {
+        return fluid.stringTemplate(markup.group);
+    };
+
     /*
      * TODO
      * With markup given, visualizes the list of settings passed - rendering and binding of each.
@@ -523,6 +608,13 @@
         },
         dynamicContainerMarkup: {
             containerClassPrefix: "flc-settingListRow-%id"
+        },
+
+        /// XXX temp to make it work
+        events: {
+            onSettingAltered:  null,
+            onSettingUpdated:  null,
+            onRestartRequired: null
         },
 
         invokers: {
@@ -554,7 +646,7 @@
     fluid.defaults("gpii.psp.settingsPanel", {
         gradeNames: "fluid.viewComponent",
         model: {
-            settings: []
+            settingGroups: []
         },
         components: {
             settingsExemplars: {
@@ -584,14 +676,14 @@
             },
             // Represents the list of the settings component
             settingsVisualizer: {
-                type: "gpii.psp.settingsVisualizer",
+                type: "gpii.psp.settingGroupsVisualizer",
                 createOnEvent: "onTemplatesLoaded",
                 container: "{that}.container",
                 options: {
                     widgetExemplars: "{settingsExemplars}.widgetExemplars",
                     markup: "@expand:gpii.psp.settingsPanel.flattenResources({resourcesLoader}.resources)",
                     model: {
-                        items: "{settingsPanel}.model.settings"
+                        items: "{settingsPanel}.model.settingGroups"
                     },
                     events: {
                         onSettingAltered: "{settingsPanel}.events.onSettingAltered",
