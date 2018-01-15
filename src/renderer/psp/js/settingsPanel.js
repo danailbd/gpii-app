@@ -277,13 +277,15 @@
         // TODO repreater handler base component
         gradeNames: "fluid.viewComponent",
         selectors: {
-            icon: ".flc-icon",
+            icon: ".flc-icon:eq(0)",
             solutionName: ".flc-solutionName",
-            title: ".flc-title",
+            title: ".flc-title:eq(0)",
             titleLabel: ".flc-titleLabel",
-            memoryIcon: ".flc-memoryIcon",
+            memoryIcon: ".flc-memoryIcon:eq(0)",
             restartIcon: ".flc-restartIcon",
-            widget: ".flc-widget"
+            widget: ".flc-widget",
+            
+            subsettings: ".flc-subsettings"
         },
         styles: {
             osRestartIcon: "fl-icon-osRestart",
@@ -329,6 +331,18 @@
                 container: "{that}.dom.widget",
                 // XXX currently, we exploit a misbehavior of expanding the `model` options, even if there's been expansion
                 options: "{settingPresenter}.options.widgetConfig.options.widgetOptions"
+            },
+            subsettings: {
+                type: "gpii.psp.settingsVisualizer",
+                container: "{that}.dom.subsettings",
+                options: {
+                    markup:          "{settingGroupsVisualizer}.options.markup",
+                    widgetExemplars: "{settingGroupsVisualizer}.options.widgetExemplars",
+
+                    model: {
+                        items: "{settingPresenter}.model.item.subsettings"
+                    }
+                }
             }
         },
         modelListeners: {
@@ -344,7 +358,7 @@
                 method: "log",
                 args: [
                     "Handler Created",
-                    "{that}"
+                    "{that}.dom.icon"
                 ]
             },
 
@@ -557,8 +571,14 @@
 
         /// Override 'gpii.psp.repeater'
         handlerOptions: {
-            type:   "gpii.psp.settingGroupPresenter"
+            type:   "gpii.psp.settingGroupPresenter",
+            events: {
+                /// TODO if not {that}, this could work
+                // 
+            },
+
             // TODO events for settingsVisualizer
+            //
         },
 
         dynamicContainerMarkup: {

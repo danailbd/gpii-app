@@ -62,7 +62,10 @@
             type: "text",
             title: "Text input",
             description: "Text input description"
-        }
+        },
+        subsettings: [
+            switchSettingFixture
+        ]
     };
 
     var switchSettingFixture = {
@@ -101,6 +104,7 @@
         path: "ttsTrackingPath",
         value: ["mouse", "focus"],
 
+        memory: true,
         icon: "../../icons/gear-cloud-white.png",
         liveness: "manualRestart",
 
@@ -109,7 +113,10 @@
             title: "TTS tracking mode",
             description: "TTS tracking mode description",
             "enum":  ["mouse", "caret", "focus"]
-        }
+        },
+        subsettings: [
+            stepperSettingFixture
+        ]
     };
 
     var allSettingTypesFixture = [dropdownSettingFixture, {
@@ -128,6 +135,18 @@
     }, textfieldSettingFixture, switchSettingFixture, stepperSettingFixture, multipickerSettingFixture];
 
 
+    var group1 = {
+            label: "g1",
+            settings: [
+                multipickerSettingFixture
+            ]
+        },
+        group2 = {
+            label: "g2",
+            settings: [
+                textfieldSettingFixture
+            ]
+        };
 
 
     $(function () {
@@ -136,12 +155,7 @@
         console.log("Here");
         var e = gpii.psp.settingsPanel("#flc-settingsList", {
             model: {
-                settingGroups: [{
-                    label: "g1",
-                    settings: [
-                        multipickerSettingFixture, stepperSettingFixture
-                    ]
-                }]
+                settingGroups: [group1]//, group2]
             }
         });
 
