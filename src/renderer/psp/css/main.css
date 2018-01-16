@@ -104,10 +104,19 @@ iframe.fl-heightChangeListener {
 
 .fl-settingsList .flc-setting {
     display: flex;
+    flex-wrap: wrap;
 }
 
 .fl-settingsList .flc-setting > * {
-    flex: 1;
+    width: 50%;
+}
+
+.fl-settingsList .flc-setting .flc-subsettings {
+    width: 100%;
+}
+
+.fl-settingsList .flc-subsettings .flc-setting > *:first-child {
+    padding-left: 30px;
 }
 
 .fl-settingsList .flc-setting .flc-icon {
