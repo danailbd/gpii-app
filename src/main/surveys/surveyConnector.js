@@ -78,43 +78,25 @@ var fluid = require("infusion"),
  * object of the payload above without the need for any further actions on the PSP's side.
  */
 fluid.defaults("gpii.app.surveyConnector", {
-    gradeNames: ["fluid.modelComponent", "gpii.app.ws"],
+    gradeNames: ["fluid.modelComponent"],
 
     model: {
         machineId: null,
         userId: null
     },
-    ignoreErrors: true,
-
-    listeners: {
-        "onCreate.connect": "{that}.connect",
-        "onMessageReceived.parseMessage": {
-            funcName: "gpii.app.surveyConnector.parseMessage",
-            args: [
-                "{that}.events",
-                "{arguments}.0" // message
-            ]
-        }
-    },
 
     events: {
-        /*
-         * A survey payload is received.
-         */
         onSurveyRequired: null,
-        /*
-         * A list of survey triggers that are to be registered
-         */
         onTriggerDataReceived: null
     },
 
     invokers: {
         requestTriggers: {
-            funcName: "gpii.app.surveyConnector.requestTriggers",
+            funcName: "fluid.identity",
             args: ["{that}", "{that}.model"]
         },
         notifyTriggerOccurred: {
-            funcName: "gpii.app.surveyConnector.notifyTriggerOccurred",
+            funcName: "fluid.identity",
             args: [
                 "{that}",
                 "{arguments}.0" // trigger
@@ -123,27 +105,27 @@ fluid.defaults("gpii.app.surveyConnector", {
     }
 });
 
-/**
- * Responsible for parsing messages received via the ws member of the component.
- * @param events {Object} Map of events to be used for the various server requests
- * @param message {Object} The received message
- */
-gpii.app.surveyConnector.parseMessage = function (events, message) {
-    // Single key payload
-    var type = message.type,
-        value = message.value;
-
-    switch (type) {
-    case "survey":
-        events.onSurveyRequired.fire(value);
-        break;
-    case "surveyTrigger":
-        events.onTriggerDataReceived.fire(value);
-        break;
-    default:
-        fluid.log(fluid.logLevel.WARN, "SurveyConnector - Unrecognized message type:", message);
+fluid.defaults("gpii.app.staticSurveyConnector", {
+    gradeNames: ["gpii.app.surveyConnector"],
+    members: {
+        triggerFixture: "@expand:fluid.require({that}.options.paths.triggerFixture)",
+        surveyFixture: "@expand:fluid.require({that}.options.paths.surveyFixture)"
+    },
+    invokers: {
+        requestTriggers: {
+            funcName: "gpii.app.staticSurveyConnector.requestTriggers",
+            args: ["{that}"]
+        },
+        notifyTriggerOccurred: {
+            funcName: "gpii.app.staticSurveyConnector.notifyTriggerOccurred",
+            args: ["{that}"]
+        }
+    },
+    paths: {
+        triggerFixture: "%gpii-app/testData/survey/triggers.json",
+        surveyFixture: "%gpii-app/testData/survey/survey.json"
     }
-};
+});
 
 /**
  * Notify the survey server that a user have keyed in.
@@ -152,11 +134,8 @@ gpii.app.surveyConnector.parseMessage = function (events, message) {
  * @param keyedInData.userId {String} The id of the keyed in user
  * @param keyedInData.machineId {String} The id of the keyed in user's machine
  */
-gpii.app.surveyConnector.requestTriggers = function (that, keyedInData) {
-    that.send({
-        type: "triggersRequest",
-        value: keyedInData
-    });
+gpii.app.staticSurveyConnector.requestTriggers = function (that) {
+    that.events.onTriggerDataReceived.fire(that.triggerFixture);
 };
 
 /**
@@ -164,9 +143,6 @@ gpii.app.surveyConnector.requestTriggers = function (that, keyedInData) {
  * @param that {Component} The `gpii.app.surveyConnector` instance
  * @param trigger {Object} Data corresponding to the successful trigger
  */
-gpii.app.surveyConnector.notifyTriggerOccurred = function (that, trigger) {
-    that.send({
-        type: "triggerOccurred",
-        value: trigger
-    });
+gpii.app.staticSurveyConnector.notifyTriggerOccurred = function (that) {
+    that.events.onSurveyRequired.fire(that.surveyFixture);
 };
