@@ -28,7 +28,7 @@ fluid.defaults("gpii.app.surveyManager", {
 
     components: {
         surveyConnector: {
-            type: "gpii.app.staticSurveyConnector",
+            type: "gpii.app.surveyConnector",
             options: {
                 model: {
                     machineId: "{app}.machineId",
