@@ -35,7 +35,7 @@ var fluid = require("infusion"),
  * In the future, when a user keyes in, the `surveyConnector` would request the survey triggers
  * by issuing a request to the corresponding server route with the following JSON parameter:
  *     {
- *         userId: <keyedInUserToken> // the token of the currently keyed in user
+ *         keyedInUserToken: <keyedInUserToken> // the token of the currently keyed in user
  *         machineId: <machineId> // the installation id of the OS
  *     }
  *
@@ -77,7 +77,7 @@ fluid.defaults("gpii.app.surveyConnector", {
 
     model: {
         machineId: null,
-        userId: null
+        keyedInUserToken: null
     },
 
     events: {
@@ -102,6 +102,9 @@ fluid.defaults("gpii.app.surveyConnector", {
 
 fluid.defaults("gpii.app.staticSurveyConnector", {
     gradeNames: ["gpii.app.surveyConnector"],
+    // TODO: Move this to options once the `json-rules-engine` module is not used.
+    // It seems that `fluid.require` does not parse arrays in the way expected by
+    // `json-rules-engine`.
     members: {
         triggerFixture: "@expand:fluid.require({that}.options.paths.triggerFixture)",
         surveyFixture: "@expand:fluid.require({that}.options.paths.surveyFixture)"
@@ -133,10 +136,13 @@ gpii.app.staticSurveyConnector.requestTriggers = function (that) {
 
 /**
  * Should be called when a trigger's conditions are met. As a result, a static
- * payload for the survey to be displayed will be sent via the `onSurveyRequired`
- * event.
+ * payload (with keyedInUserToken and machineId added as query paramenters) for
+ * the survey to be displayed will be sent via the `onSurveyRequired` event.
  * @param that {Component} The `gpii.app.staticSurveyConnector` instance.
  */
 gpii.app.staticSurveyConnector.notifyTriggerOccurred = function (that) {
-    that.events.onSurveyRequired.fire(that.surveyFixture);
+    var fixture = that.surveyFixture;
+    fixture.url = fluid.stringTemplate(fixture.url +
+        "?keyedInUserToken=%keyedInUserToken&machineId=%machineId", that.model);
+    that.events.onSurveyRequired.fire(fixture);
 };
