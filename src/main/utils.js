@@ -83,3 +83,80 @@ gpii.app.notifyWindow = function (browserWindow, messageChannel, message) {
         browserWindow.webContents.send(messageChannel, message);
     }
 };
+
+/**
+ * Collect all subcomponents for the given component
+ * @param that {Component} The components holder
+ * @return {Component[]} The list of subcomponents
+ */
+gpii.app.getSubcomponents = function (that) {
+    return fluid
+        .values(that)
+        .filter(fluid.isComponent);
+};
+
+
+/*
+ * A simple wrapper for the native timeout. Responsible for clearing the interval
+ * upon component destruction.
+ */
+fluid.defaults("gpii.app.timer", {
+    gradeNames: ["fluid.modelComponent"],
+
+    model: {
+        timer: null
+    },
+
+    listeners: {
+        "onDestroy.clearTimer": "{that}.clear"
+    },
+
+    events: {
+        onTimerFinished: null
+    },
+
+    invokers: {
+        start: {
+            funcName: "timer",
+            args: [
+                "@expand:setTimeout({that}.events.onTimerFinished.fire, {arguments}.0)"
+            ]
+        },
+        clear: {
+            funcName: "clearTimeout",
+            args: "{that}.model.timer"
+        }
+    }
+});
+
+
+/*
+ * A simple wrapper for the native interval. Responsible for clearing the interval
+ * upon component destruction.
+ */
+fluid.defaults("gpii.app.interval", {
+    gradeNames: ["fluid.modelComponent"],
+
+    model: {
+        interval: null
+    },
+
+    listeners: {
+        "onDestroy.clearInterval": "{that}.clear"
+    },
+
+    events: {
+        onIntervalTick: null
+    },
+
+    invokers: {
+        start: {
+            changePath: "interval",
+            value: "@expand:setInterval({that}.events.onIntervalTick.fire, {arguments}.0)"
+        },
+        clear: {
+            funcName: "clearInterval",
+            args: "{that}.model.interval"
+        }
+    }
+});
