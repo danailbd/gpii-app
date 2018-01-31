@@ -23,7 +23,6 @@ require("./surveyConnector.js");
 fluid.defaults("gpii.app.surveyManager", {
     gradeNames: ["fluid.component"],
     events: {
-        onSurveyWSConnected: null,
         onSurveyRequired: null
     },
 
@@ -32,11 +31,10 @@ fluid.defaults("gpii.app.surveyManager", {
             type: "gpii.app.surveyConnector",
             options: {
                 model: {
-                    machineId: "{app}.model.machineId",
-                    userId: "{app}.model.keyedInUserToken"
+                    machineId: "{app}.machineId",
+                    keyedInUserToken: "{app}.model.keyedInUserToken"
                 },
                 events: {
-                    onConnected: "{surveyManager}.events.onSurveyWSConnected",
                     onSurveyRequired: "{surveyManager}.events.onSurveyRequired"
                 },
                 listeners: {

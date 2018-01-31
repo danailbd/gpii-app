@@ -30,8 +30,9 @@ require("./utils.js");
  * NOTE: The generated URL is always relative to the working
  * directory of the application (`module.terms()`)
  *
- * It also provides a simple interface for show/hide operations of
- * the window and handles Electron objects cleanup upon destruction.
+ * It also provides show/hide operations of the window through interaction
+ * with the `isShown` property of the component
+ * and handles Electron objects cleanup upon destruction.
  *
  * Requires:
  * - (optional) `attrs` - used as raw options for `BrowserWindow` generation.
@@ -46,7 +47,11 @@ require("./utils.js");
  *   `fileSuffixPath = "waitDialog/index.html"`
  */
 fluid.defaults("gpii.app.dialog", {
-    gradeNames: ["fluid.component"],
+    gradeNames: ["fluid.modelComponent"],
+
+    model: {
+        isShown: false
+    },
 
     config: {
         attrs: {        // raw attributes used in `BrowserWindow` generation
@@ -76,10 +81,17 @@ fluid.defaults("gpii.app.dialog", {
                 funcName: "gpii.app.dialog.makeDialog",
                 args: [
                     "{that}.options.config.attrs",
-                    "@expand:{that}.getWindowPosition()",
+                    "@expand:{that}.getDesiredWindowPosition()",
                     "{that}.options.config.url"
                 ]
             }
+        }
+    },
+    modelListeners: {
+        isShown: {
+            funcName: "gpii.app.dialog.toggle",
+            args: ["{that}", "{change}.value"],
+            namespace: "impl"
         }
     },
     listeners: {
@@ -89,8 +101,8 @@ fluid.defaults("gpii.app.dialog", {
         }
     },
     invokers: {
-        getWindowPosition: {
-            funcName: "gpii.app.getWindowPosition",
+        getDesiredWindowPosition: {
+            funcName: "gpii.app.getDesiredWindowPosition",
             args: [
                 "{that}.options.config.attrs.width",
                 "{that}.options.config.attrs.height"
@@ -98,16 +110,7 @@ fluid.defaults("gpii.app.dialog", {
         },
         resetWindowPosition: {
             funcName: "gpii.app.setWindowPosition",
-            args: ["{that}.dialog", "@expand:{that}.getWindowPosition()"]
-        },
-        // Simple default behaviour
-        show: {
-            funcName: "gpii.app.dialog.show",
-            args: ["{that}"]
-        },
-        hide: {
-            this: "{that}.dialog",
-            method: "hide"
+            args: ["{that}.dialog", "@expand:{that}.getDesiredWindowPosition()"]
         },
         close: {
             this: "{that}.dialog",
@@ -142,8 +145,8 @@ gpii.app.dialog.buildFileUrl = function (prefixPath, suffixPath) {
  * dialog every time a new message should be displayed.
  * @param windowOptions {Object} The raw Electron `BrowserWindow` settings
  * @param position {Object} The desired position for the component
- * @param positoins.x {Number}
- * @param positoins.y {Number}
+ * @param position.x {Number}
+ * @param position.y {Number}
  * @param url {String} The URL to be loaded in the `BrowserWindow`
  * @return {BrowserWindow} The Electron `BrowserWindow` component
  */
@@ -156,12 +159,19 @@ gpii.app.dialog.makeDialog = function (windowOptions, position, url) {
 };
 
 /**
- * Resets the position and shows the current dialog (`BrowserWindow`).
+ * Default show/hide behaviour of the electron `BrowserWindow` dialog, depending
+ * on the `isShown` flag state.
+ * In case it is shown, resets the position and shows the current dialog (`BrowserWindow`).
  * The reset is needed in order to handle cases such as resolution or
  * DPI settings changes.
  * @param dialog {Component} The diolog component to be shown
+ * @param isShown {Boolean} Whether the window has to be shown
  */
-gpii.app.dialog.show = function (dialog) {
-    dialog.resetWindowPosition();
-    dialog.dialog.show();
+gpii.app.dialog.toggle = function (dialog, isShown) {
+    if (isShown) {
+        dialog.resetWindowPosition();
+        dialog.dialog.show();
+    } else {
+        dialog.dialog.hide();
+    }
 };

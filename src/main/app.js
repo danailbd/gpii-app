@@ -17,7 +17,6 @@
 var fluid   = require("infusion");
 var gpii    = fluid.registerNamespace("gpii");
 var request = require("request");
-var machineInfo = require("node-machine-id");
 
 require("./ws.js");
 require("./factsManager.js");
@@ -62,22 +61,27 @@ require("electron").app.on("window-all-closed", fluid.identity);
 fluid.defaults("gpii.app", {
     gradeNames: "fluid.modelComponent",
     model: {
-        machineId: null,
         keyedInUserToken: null,
         snapsetName: null,
-        showDialog: false,
         preferences: {
             sets: [],
             activeSet: null
         }
     },
+    members: {
+        machineId: "@expand:{that}.installID.getMachineID()"
+    },
     components: {
         networkCheck: { // Network check component to meet GPII-2349
             type: "gpii.app.networkCheck"
         },
+        installID: {
+            type: "gpii.installID",
+            priority: "after:networkCheck"
+        },
         factsManager: {
             type: "gpii.app.factsManager",
-            priority: "after:networkCheck"
+            priority: "after:installID"
         },
         rulesEngine: {
             type: "gpii.app.rulesEngine",
@@ -91,11 +95,6 @@ fluid.defaults("gpii.app", {
         surveyManager: {
             type: "gpii.app.surveyManager",
             priority: "after:rulesEngine",
-            options: {
-                events: {
-                    onSurveyWSConnected: "{app}.events.onSurveyWSConnected"
-                }
-            }
         },
         dialogManager: {
             type: "gpii.app.dialogManager",
@@ -142,8 +141,11 @@ fluid.defaults("gpii.app", {
             createOnEvent: "onPSPPrerequisitesReady",
             priority: "after:psp",
             options: {
-                model: {
-                    showDialog: "{app}.model.showDialog"
+                modelListeners: {
+                    "{lifecycleManager}.model.logonChange": {
+                        changePath: "{that}.model.isShown",
+                        value: "{change}.value.inProgress"
+                    }
                 }
             }
         },
@@ -254,21 +256,25 @@ fluid.defaults("gpii.app", {
                         ]
                     },
                     "{psp}.events.onRestartNow": [{
-                        func: "{restartDialog}.hide"
+                        changePath: "{restartDialog}.model.isShown",
+                        args: false
                     }, {
                         listener: "{settingsBroker}.applyPendingChanges"
                     }],
                     "{psp}.events.onUndoChanges": [{
-                        func: "{restartDialog}.hide"
+                        changePath: "{restartDialog}.model.isShown",
+                        args: false
                     }, {
                         listener: "{settingsBroker}.undoPendingChanges"
                     }],
                     "{psp}.events.onRestartLater": {
-                        func: "{restartDialog}.hide"
+                        changePath: "{restartDialog}.model.isShown",
+                        args: false
                     },
 
                     "{restartDialog}.events.onClosed": {
-                        func: "{restartDialog}.hide"
+                        changePath: "{restartDialog}.model.isShown",
+                        args: false
                     },
 
                     // Handle setting interactions (undo, restart now, settings interaction)
@@ -318,34 +324,20 @@ fluid.defaults("gpii.app", {
     events: {
         onPSPPrerequisitesReady: {
             events: {
-                onMachineIdFetched: "onMachineIdFetched",
                 onGPIIReady: "onGPIIReady",
                 onAppReady: "onAppReady",
-                onPSPChannelConnected: "onPSPChannelConnected",
-                onSurveyWSConnected: "onSurveyWSConnected"
+                onPSPChannelConnected: "onPSPChannelConnected"
             }
         },
-        onMachineIdFetched: null,
         onGPIIReady: null,
         onAppReady: null,
         onPSPChannelConnected: null,
-        onSurveyWSConnected: null,
         onPSPReady: null,
 
         onKeyedIn: null,
         onKeyedOut: null
     },
-    modelListeners: {
-        "{lifecycleManager}.model.logonChange": {
-            funcName: "{that}.updateShowDialog",
-            args: ["{change}.value.inProgress"]
-        }
-    },
     listeners: {
-        "onCreate.fetchMachineId": {
-            listener: "gpii.app.fetchMachineId",
-            args: ["{that}"]
-        },
         "onCreate.appReady": {
             listener: "gpii.app.fireAppReady",
             args: ["{that}.events.onAppReady.fire"]
@@ -377,10 +369,6 @@ fluid.defaults("gpii.app", {
     invokers: {
         updateKeyedInUserToken: {
             changePath: "keyedInUserToken",
-            value: "{arguments}.0"
-        },
-        updateShowDialog: {
-            changePath: "showDialog",
             value: "{arguments}.0"
         },
         updatePreferences: {
@@ -415,22 +403,6 @@ fluid.defaults("gpii.app", {
 });
 
 /**
- * Retrieves the id of the machine on which the PSP is running and sets it in the
- * model. In case the machine id cannot be obtained, this will not prevent the app
- * from starting.
- * @param psp {Component} The `gpii.app.psp` component.
- */
-gpii.app.fetchMachineId = function (that) {
-    machineInfo.machineId().then(function (machineId) {
-        that.applier.change("machineId", machineId);
-        that.events.onMachineIdFetched.fire();
-    }, function (error) {
-        fluid.log(fluid.logLevel.WARN, "Error obtaining machine id: " + error);
-        that.events.onMachineIdFetched.fire();
-    });
-};
-
-/**
  * Either hides or shows the warning in the PSP.
  *
  * @param psp {Component} The `gpii.app.psp` component
@@ -458,7 +430,7 @@ gpii.app.hideRestartDialogIfNeeded = function (restartDialog, isPspShown, pendin
     if (isPspShown || (pendingChanges && pendingChanges.length === 0)) {
         // ensure the dialog is hidden
         // NOTE: this may have no effect in case the dialog is already hidden
-        restartDialog.hide();
+        restartDialog.applier.change("isShown", false);
     }
 };
 
@@ -573,11 +545,8 @@ gpii.app.handleUncaughtException = function (that, err) {
         }
     };
 
-    // Update the showDialog model in order for the dialog to show for the
-    // next user who tries to key in.
-    that.updateShowDialog(false);
-    // Immediately hide the loading dialog.
-    that.waitDialog.dialog.hide();
+    // Restore the state of the wait dialog
+    that.waitDialog.applier.change("isShown", false);
 
     if (err.code) {
         var error = handledErrors[err.code];
