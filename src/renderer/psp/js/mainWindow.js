@@ -86,7 +86,7 @@
             preferences: {
                 sets: [],
                 activeSet: null,
-                settings: []
+                settingGroups: []
             }
         },
         selectors: {
@@ -144,7 +144,7 @@
                 createOnEvent: "{mainWindow}.events.onPreferencesUpdated",
                 options: {
                     model: {
-                        settings: "{mainWindow}.model.preferences.settings"
+                        settingGroups: "{mainWindow}.model.preferences.settingGroups"
                     },
                     events: {
                         onSettingAltered: "{mainWindow}.events.onSettingAltered",

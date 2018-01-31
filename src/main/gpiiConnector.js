@@ -17,6 +17,8 @@
 require("./utils.js");
 
 var fluid = require("infusion");
+var settingGroups = fluid.require("%gpii-app/testData/grouping/settingGroups.json");
+
 var gpii = fluid.registerNamespace("gpii");
 
 /**
@@ -90,6 +92,11 @@ gpii.app.gpiiConnector.parseMessage = function (gpiiConnector, message) {
 
     if ((operation === "ADD" && path.length === 0) ||
             operation === "DELETE") {
+
+        //XXX For testing purposes only.
+        if (operation === "ADD") {
+            payload = settingGroups.payload;
+        }
         /*
          * Preferences change update has been received
          */
@@ -161,27 +168,33 @@ gpii.app.extractPreferencesData = function (message) {
     var value = message.value || {},
         preferences = value.preferences || {},
         contexts = preferences.contexts,
-        settingControls = value.settingControls,
         sets = [],
         activeSet = value.activeContextName || null,
-        settings = [];
+        settingGroups = [];
 
     if (contexts) {
         sets = fluid.hashToArray(contexts, "path");
     }
 
-    if (settingControls) {
-        settings = fluid.values(
-            fluid.transform(settingControls, function (settingDescriptor, settingKey) {
-                return gpii.app.createSettingModel(settingKey, settingDescriptor);
-            })
-        );
+    if (value.settingGroups) {
+        settingGroups = fluid.transform(value.settingGroups, function (settingGroup) {
+            var settings = fluid.values(
+                    fluid.transform(settingGroup.settingControls, function (settingDescriptor, settingKey) {
+                    return gpii.app.createSettingModel(settingKey, settingDescriptor);
+                })
+            );
+
+            return {
+                label: settingGroup.label,
+                settings: settings
+            };
+        });
     }
 
     return {
         sets: sets,
         activeSet: activeSet,
-        settings: settings
+        settingGroups: settingGroups
     };
 };
 
@@ -236,7 +249,7 @@ gpii.app.dev.gpiiConnector.mockPreferences = function (preferences) {
     }
 
     if (preferences) {
-        applyManualLivenessFlag(preferences.settings);
-        applyOsLivenessFlag(preferences.settings);
+        // applyManualLivenessFlag(preferences.settings);
+        // applyOsLivenessFlag(preferences.settings);
     }
 };

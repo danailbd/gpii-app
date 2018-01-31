@@ -25,16 +25,23 @@
     width: 100%;
 }
 
+.fl-settingsList *[class^="flc-settingGroup"] {
+    padding: 0 4px;
+}
+
 .fl-settingsList *[class^="flc-settingListRow"] {
-    padding: 4px;
+    padding: 4px 0;
+}
+
+.fl-settingsList *[class^="flc-settingGroup"] {
     border-bottom: 2px solid var(--main-theme-background-color);
 }
 
-.fl-settingsList *[class^="flc-settingListRow"]:nth-child(even) {
+.fl-settingsList *[class^="flc-settingGroup"]:nth-child(even) {
     background-color: #f4f9ff;
 }
 
-.fl-settingsList *[class^="flc-settingListRow"]:last-child {
+.fl-settingsList *[class^="flc-settingGroup"]:last-child {
     border-bottom: none;
 }
 

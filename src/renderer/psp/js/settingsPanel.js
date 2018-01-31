@@ -500,7 +500,6 @@
         gradeNames: "fluid.viewComponent",
 
         selectors: {
-            // TODO set label  
             label: ".flc-label",
             settings: ".flc-settings" // the settings container
         },
