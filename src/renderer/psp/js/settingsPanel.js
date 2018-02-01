@@ -342,11 +342,14 @@
             }
         },
         modelListeners: {
-            value: {
+            value: [{
                 funcName: "{that}.events.onSettingAltered.fire",
                 args: ["{that}.model", "{change}.oldValue"],
                 excludeSource: ["init", "psp.mainWindow"]
-            }
+            }, {
+                funcName: "gpii.psp.settingPresenter.onValueChanged",
+                args: ["{that}", "{change}.value", "{that}.dom.subsettings"]
+            }]
         },
         listeners: {
             "onCreate.setSolutionName": {
@@ -392,6 +395,12 @@
             }
         }
     });
+
+    gpii.psp.settingPresenter.onValueChanged = function (that, value, subsettingsElement) {
+        if (that.model.schema.type === "boolean") {
+            subsettingsElement.toggle(value);
+        }
+    };
 
     /**
      * Notifies the corresponding widget components about an update on the setting
