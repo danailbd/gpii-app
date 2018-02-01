@@ -180,9 +180,9 @@ gpii.app.extractPreferencesData = function (message) {
         settingGroups = fluid.transform(value.settingGroups, function (settingGroup) {
             var settings = fluid.values(
                     fluid.transform(settingGroup.settingControls, function (settingDescriptor, settingKey) {
-                    return gpii.app.createSettingModel(settingKey, settingDescriptor);
-                })
-            );
+                        return gpii.app.createSettingModel(settingKey, settingDescriptor);
+                    })
+                );
 
             return {
                 label: settingGroup.label,

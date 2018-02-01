@@ -283,7 +283,6 @@
             memoryIcon: ".flc-memoryIcon:eq(0)",
             restartIcon: ".flc-restartIcon",
             widget: ".flc-widget",
-            
             subsettings: ".flc-subsettings"
         },
         styles: {
@@ -313,7 +312,7 @@
             parent: "{{that}.options.parent}"
         },
         // TODO tried with "gpii.psp.settingsVisualizer" but it won't work
-        // looks like this is not used 
+        // looks like this is not used
         widgetConfig: "@expand:{that}.parent.options.widgetExemplars.getExemplarBySchemaType({that}.model.item.schema.type)",
 
         events: {
@@ -510,6 +509,16 @@
             settings: "{that}.model.item.settings"
         },
 
+        members: {
+            parent: "{{that}.options.parent}"
+        },
+
+        events: {
+            onSettingUpdated:  "{that}.parent.events.onSettingUpdated",
+            onSettingAltered:  "{that}.parent.events.onSettingAltered",
+            onRestartRequired: "{that}.parent.events.onRestartRequired"
+        },
+
         components: {
             settings: {
                 type: "gpii.psp.settingsVisualizer",
@@ -521,6 +530,12 @@
 
                     model: {
                         items: "{settingGroupPresenter}.model.settings"
+                    },
+
+                    events: {
+                        onSettingAltered: "{settingGroupPresenter}.events.onSettingAltered",
+                        onSettingUpdated:  "{settingGroupPresenter}.events.onSettingUpdated",
+                        onRestartRequired: "{settingGroupPresenter}.events.onRestartRequired"
                     }
                 }
             }
@@ -544,25 +559,20 @@
             items: null // settingGroups
         },
 
+        events: {
+            onSettingAltered: null,
+            onSettingUpdated: null,
+            onRestartRequired: null
+        },
+
         widgetExemplars: null, // passed from parent
         markup: { // from parent
-            // setting: null
-            // per widget exemplar property
-            //
-            /// XXX possibly not needed
             group: "<div class=\"flc-label\"></div><div class=\"flc-settings\"></div>"
         },
 
-        /// Override 'gpii.psp.repeater'
         handlerOptions: {
             type:   "gpii.psp.settingGroupPresenter",
-            events: {
-                /// TODO if not {that}, this could work
-                // 
-            },
-
-            // TODO events for settingsVisualizer
-            //
+            parent: "{that}"
         },
 
         dynamicContainerMarkup: {
