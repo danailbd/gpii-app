@@ -316,9 +316,9 @@
         widgetConfig: "@expand:{that}.parent.options.widgetExemplars.getExemplarBySchemaType({that}.model.item.schema.type)",
 
         events: {
-            onSettingUpdated:  "{that}.parent.events.onSettingUpdated",
-            onSettingAltered:  "{that}.parent.events.onSettingAltered",
-            onRestartRequired: "{that}.parent.events.onRestartRequired"
+            onSettingUpdated: "{settingsPanel}.events.onSettingUpdated",
+            onSettingAltered: "{settingsPanel}.events.onSettingAltered",
+            onRestartRequired: "{settingsPanel}.events.onRestartRequired"
         },
 
         components: {
@@ -509,16 +509,6 @@
             settings: "{that}.model.item.settings"
         },
 
-        members: {
-            parent: "{{that}.options.parent}"
-        },
-
-        events: {
-            onSettingUpdated:  "{that}.parent.events.onSettingUpdated",
-            onSettingAltered:  "{that}.parent.events.onSettingAltered",
-            onRestartRequired: "{that}.parent.events.onRestartRequired"
-        },
-
         components: {
             settings: {
                 type: "gpii.psp.settingsVisualizer",
@@ -530,12 +520,6 @@
 
                     model: {
                         items: "{settingGroupPresenter}.model.settings"
-                    },
-
-                    events: {
-                        onSettingAltered: "{settingGroupPresenter}.events.onSettingAltered",
-                        onSettingUpdated:  "{settingGroupPresenter}.events.onSettingUpdated",
-                        onRestartRequired: "{settingGroupPresenter}.events.onRestartRequired"
                     }
                 }
             }
@@ -557,12 +541,6 @@
         /// Expected from parent
         model: {
             items: null // settingGroups
-        },
-
-        events: {
-            onSettingAltered: null,
-            onSettingUpdated: null,
-            onRestartRequired: null
         },
 
         widgetExemplars: null, // passed from parent
@@ -622,13 +600,6 @@
         },
         dynamicContainerMarkup: {
             containerClassPrefix: "flc-settingListRow-%id"
-        },
-
-        /// XXX temp to make it work
-        events: {
-            onSettingAltered:  null,
-            onSettingUpdated:  null,
-            onRestartRequired: null
         },
 
         invokers: {
@@ -698,11 +669,6 @@
                     markup: "@expand:gpii.psp.settingsPanel.flattenResources({resourcesLoader}.resources)",
                     model: {
                         items: "{settingsPanel}.model.settingGroups"
-                    },
-                    events: {
-                        onSettingAltered: "{settingsPanel}.events.onSettingAltered",
-                        onSettingUpdated: "{settingsPanel}.events.onSettingUpdated",
-                        onRestartRequired: "{settingsPanel}.events.onRestartRequired"
                     }
                 }
             }
