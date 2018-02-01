@@ -29,6 +29,10 @@
     padding: 0 4px;
 }
 
+.fl-settingsList *[class^="flc-settingGroup"] .fl-groupName {
+    font-weight: bold;
+}
+
 .fl-settingsList *[class^="flc-settingListRow"] {
     padding: 4px 0;
 }

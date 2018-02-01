@@ -94,7 +94,7 @@ gpii.app.gpiiConnector.parseMessage = function (gpiiConnector, message) {
             operation === "DELETE") {
 
         //XXX For testing purposes only.
-        if (operation === "ADD") {
+        if (operation === "ADD" && payload.value) {
             payload = settingGroups.payload;
         }
         /*
@@ -174,7 +174,7 @@ gpii.app.extractPreferencesData = function (message) {
     if (value.settingGroups) {
         settingGroups = fluid.transform(value.settingGroups, function (settingGroup) {
             return {
-                label: settingGroup.label,
+                name: settingGroup.name,
                 settings: gpii.app.extractSettings(settingGroup)
             };
         });

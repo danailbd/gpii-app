@@ -10,7 +10,6 @@
          "activeContextName":"gpii-default",
          "settingGroups": [
             {
-               "label": "Magnifier",
                "settingControls": {
                   "http://registry\\.gpii\\.net/common/magnifierEnabled":{
                      "value":true,
@@ -33,7 +32,7 @@
                         "http://registry\\.gpii\\.net/common/magnifierPosition":{  
                            "value":"Lens",
                            "schema":{  
-                              "title":"Magnifier position",
+                              "title":"Position",
                               "description":"Position of the magnified area",
                               "type":"string",
                               "enum":[  
@@ -52,7 +51,7 @@
                }
             },
             {
-               "label": "Hight Contrast",
+               "name": "Colors",
                "settingControls": {
                   "http://registry\\.gpii\\.net/applications/com\\.microsoft\\.windows\\.highContrast.http://registry\\.gpii\\.net/common/highContrastEnabled":{  
                      "value":true,
@@ -61,27 +60,27 @@
                         "description":"Whether to enable/disable High Contrast",
                         "type":"boolean"
                      },
-                     "solutionName":"Windows High Contrast"
-                  },
-                  "http://registry\\.gpii\\.net/applications/com\\.microsoft\\.windows\\.highContrast.http://registry\\.gpii\\.net/common/highContrastTheme":{  
-                     "value":"white-black",
-                     "schema":{  
-                        "title":"High Contrast theme",
-                        "description":"High Contrast Theme",
-                        "type":"string",
-                        "enum":[  
-                           "black-white",
-                           "white-black",
-                           "yellow-black",
-                           "black-yellow"
-                        ]
-                     },
-                     "solutionName":"Windows High Contrast"
+                     "settingControls":{
+                        "http://registry\\.gpii\\.net/applications/com\\.microsoft\\.windows\\.highContrast.http://registry\\.gpii\\.net/common/highContrastTheme":{  
+                           "value":"white-black",
+                           "schema":{  
+                              "title":"High Contrast theme",
+                              "description":"High Contrast Theme",
+                              "type":"string",
+                              "enum":[  
+                                 "black-white",
+                                 "white-black",
+                                 "yellow-black",
+                                 "black-yellow"
+                              ]
+                           }
+                        }
+                     }
                   }
                }
             },
             {
-               "label": "UIO+",
+               "name": "UIO+",
                "settingControls": {
                   "http://registry\\.gpii\\.net/applications/net\\.gpii\\.uioPlus.http://registry\\.gpii\\.net/common/supportTool":{  
                      "value":[  
@@ -94,8 +93,7 @@
                         "enum":[  
                            "dictionary"
                         ]
-                     },
-                     "solutionName":"UIO+"
+                     }
                   },
                   "http://registry\\.gpii\\.net/applications/net\\.gpii\\.uioPlus.http://registry\\.gpii\\.net/common/highContrastEnabled":{  
                      "value":true,
@@ -103,8 +101,7 @@
                         "title":"High Contrast",
                         "description":"Whether to enable/disable High Contrast",
                         "type":"boolean"
-                     },
-                     "solutionName":"UIO+"
+                     }
                   },
                   "http://registry\\.gpii\\.net/applications/net\\.gpii\\.uioPlus.http://registry\\.gpii\\.net/common/highContrastTheme":{  
                      "value":"white-black",
@@ -118,8 +115,7 @@
                            "yellow-black",
                            "black-yellow"
                         ]
-                     },
-                     "solutionName":"UIO+"
+                     }
                   }
                }
             }

@@ -499,13 +499,13 @@
         gradeNames: "fluid.viewComponent",
 
         selectors: {
-            label: ".flc-label",
-            settings: ".flc-settings" // the settings container
+            name: ".flc-groupName",
+            settings: ".flc-settings:eq(0)" // the settings container
         },
 
         model: {
             item:     {}, // from the repeater
-            label:    "{that}.model.item.label",
+            name:     "{that}.model.item.name",
             settings: "{that}.model.item.settings"
         },
 
@@ -527,9 +527,9 @@
 
         listeners: {
             "onCreate.setLabel": {
-                this: "{that}.dom.label",
+                this: "{that}.dom.name",
                 method: "text",
-                args: "{that}.model.label"
+                args: "{that}.model.name"
             }
         }
     });
@@ -545,7 +545,7 @@
 
         widgetExemplars: null, // passed from parent
         markup: { // from parent
-            group: "<div class=\"flc-label\"></div><div class=\"flc-settings\"></div>"
+            group: "<div class=\"flc-groupName fl-groupName\"></div><div class=\"flc-settings\"></div>"
         },
 
         handlerOptions: {
