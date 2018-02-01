@@ -133,26 +133,21 @@ gpii.app.gpiiConnector.updateActivePrefSet = function (gpiiConnector, newPrefSet
     });
 };
 
-/**
- * Creates a setting view model to be used in the settings window.
- * @param key {String} The name of the setting. Must be unique as
- * subsequent requests to the GPII API will use this key as identifier.
- * @param settingDescriptor {Object} A descriptor for the given setting
- * containing its title, description and constraints regarding its value.
- * @return {Object} The view model for the setting.
- */
-gpii.app.createSettingModel = function (key, settingDescriptor) {
-    return {
-        path: key,
-        value: settingDescriptor.value,
-        solutionName: settingDescriptor.solutionName,
-
-        schema: settingDescriptor.schema,
+gpii.app.extractSettings = function (parent) {
+    return fluid.hashToArray(parent.settingControls, "path", function (setting, settingDescriptor) {
+        setting.value = settingDescriptor.value;
+        setting.solutionName = settingDescriptor.solutionName;
+        setting.schema = settingDescriptor.schema;
 
         // XXX hardcoded as they're not currently supported by the API (pcpChannel)
-        liveness: settingDescriptor.liveness || "live",
-        memory: fluid.isValue(settingDescriptor.memory) ? settingDescriptor.memory : true
-    };
+        setting.liveness = settingDescriptor.liveness || "live";
+        setting.memory = fluid.isValue(settingDescriptor.memory) ? settingDescriptor.memory : true;
+
+        // Call recursively for the subsettings
+        if (settingDescriptor.settingControls) {
+            setting.settings = gpii.app.extractSettings(settingDescriptor);
+        }
+    });
 };
 
 /**
@@ -178,15 +173,9 @@ gpii.app.extractPreferencesData = function (message) {
 
     if (value.settingGroups) {
         settingGroups = fluid.transform(value.settingGroups, function (settingGroup) {
-            var settings = fluid.values(
-                    fluid.transform(settingGroup.settingControls, function (settingDescriptor, settingKey) {
-                        return gpii.app.createSettingModel(settingKey, settingDescriptor);
-                    })
-                );
-
             return {
                 label: settingGroup.label,
-                settings: settings
+                settings: gpii.app.extractSettings(settingGroup)
             };
         });
     }

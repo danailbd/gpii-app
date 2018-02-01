@@ -336,7 +336,7 @@
                     widgetExemplars: "{settingGroupsVisualizer}.options.widgetExemplars",
 
                     model: {
-                        items: "{settingPresenter}.model.item.subsettings"
+                        items: "{settingPresenter}.model.item.settings"
                     }
                 }
             }

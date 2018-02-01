@@ -12,31 +12,41 @@
             {
                "label": "Magnifier",
                "settingControls": {
-                  "http://registry\\.gpii\\.net/common/magnification":{  
-                     "value":2,
-                     "schema":{  
-                        "title":"Magnification",
-                        "description":"Level of magnification",
-                        "type":"number",
-                        "min":1,
-                        "divisibleBy":0.1
-                     }
-                  },
-                  "http://registry\\.gpii\\.net/common/magnifierPosition":{  
-                     "value":"Lens",
-                     "schema":{  
-                        "title":"Magnifier position",
-                        "description":"Position of the magnified area",
-                        "type":"string",
-                        "enum":[  
-                           "FullScreen",
-                           "Lens",
-                           "LeftHalf",
-                           "RightHalf",
-                           "TopHalf",
-                           "BottomHalf",
-                           "Custom"
-                        ]
+                  "http://registry\\.gpii\\.net/common/magnifierEnabled":{
+                     "value":true,
+                     "schema":{
+                        "title":"Magnifier",
+                        "description":"Magnifier",
+                        "type":"boolean"
+                     },
+                     "settingControls": {
+                        "http://registry\\.gpii\\.net/common/magnification":{  
+                           "value":2,
+                           "schema":{  
+                              "title":"Magnification",
+                              "description":"Level of magnification",
+                              "type":"number",
+                              "min":1,
+                              "divisibleBy":0.1
+                           }
+                        },
+                        "http://registry\\.gpii\\.net/common/magnifierPosition":{  
+                           "value":"Lens",
+                           "schema":{  
+                              "title":"Magnifier position",
+                              "description":"Position of the magnified area",
+                              "type":"string",
+                              "enum":[  
+                                 "FullScreen",
+                                 "Lens",
+                                 "LeftHalf",
+                                 "RightHalf",
+                                 "TopHalf",
+                                 "BottomHalf",
+                                 "Custom"
+                              ]
+                           }
+                        }
                      }
                   }
                }
