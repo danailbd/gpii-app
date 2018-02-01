@@ -220,25 +220,24 @@ fluid.defaults("gpii.app.dev.gpiiConnector", {
  * for development.
  */
 gpii.app.dev.gpiiConnector.mockPreferences = function (preferences) {
-    function applyManualLivenessFlag(settings) {
-        settings.forEach(function (setting) {
+    function applyLivenessFlag(settings) {
+        fluid.each(settings, function (setting) {
             // XXX a workaround as the Magnifier settings are missing the `solutionName` property
             if (setting.path.match("common\/magnifi")) {
                 setting.liveness = "manualRestart";
-            }
-        });
-    }
-
-    function applyOsLivenessFlag(settings) {
-        settings.forEach(function (setting) {
-            if (setting.path.match("common\/speechControl")) {
+            } else if (setting.path.match("common\/speechControl")) {
                 setting.liveness = "OSRestart";
+            }
+
+            if (setting.settings) {
+                applyLivenessFlag(setting.settings);
             }
         });
     }
 
     if (preferences) {
-        // applyManualLivenessFlag(preferences.settings);
-        // applyOsLivenessFlag(preferences.settings);
+        fluid.each(preferences.settingGroups, function (settingGroup) {
+            applyLivenessFlag(settingGroup.settings);
+        });
     }
 };

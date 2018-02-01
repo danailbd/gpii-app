@@ -277,13 +277,13 @@
         // TODO repreater handler base component
         gradeNames: "fluid.viewComponent",
         selectors: {
-            solutionName: ".flc-solutionName",
+            solutionName: ".flc-solutionName:eq(0)",
             title: ".flc-title:eq(0)",
-            titleLabel: ".flc-titleLabel",
+            titleLabel: ".flc-titleLabel:eq(0)",
             memoryIcon: ".flc-memoryIcon:eq(0)",
-            restartIcon: ".flc-restartIcon",
-            widget: ".flc-widget",
-            subsettings: ".flc-subsettings"
+            restartIcon: ".flc-restartIcon:eq(0)",
+            widget: ".flc-widget:eq(0)",
+            subsettings: ".flc-subsettings:eq(0)"
         },
         styles: {
             osRestartIcon: "fl-icon-osRestart",
