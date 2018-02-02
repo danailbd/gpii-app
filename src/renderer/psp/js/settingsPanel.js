@@ -553,8 +553,8 @@
         },
 
         widgetExemplars: null, // passed from parent
-        markup: { // from parent
-            group: "<div class=\"flc-groupName fl-groupName\"></div><div class=\"flc-settings\"></div>"
+        markup: {
+            group: null
         },
 
         handlerOptions: {
@@ -655,6 +655,9 @@
                         },
                         settingsVisualizerExemplar: {
                             type: "gpii.psp.exemplar.settingsVisualizer"
+                        },
+                        settingGroupsVisualizerExemplar: {
+                            type: "gpii.psp.exemplar.settingGroupsVisualizer"
                         }
                     }
                 }
@@ -662,7 +665,16 @@
             resourcesLoader: {
                 type: "fluid.resourceLoader",
                 options: {
-                    resources: "@expand:gpii.psp.settingsPanel.getResourcesToFetch({settingsExemplars}.settingsVisualizerExemplar, {settingsExemplars}.widgetExemplarsList)",
+                    resources: {
+                        expander: {
+                            funcName: "gpii.psp.settingsPanel.getResourcesToFetch",
+                            args: [
+                                "{settingsExemplars}.settingGroupsVisualizerExemplar",
+                                "{settingsExemplars}.settingsVisualizerExemplar",
+                                "{settingsExemplars}.widgetExemplarsList"
+                            ]
+                        }
+                    },
                     listeners: {
                         onResourcesLoaded: "{settingsPanel}.events.onTemplatesLoaded"
                     }
@@ -721,7 +733,7 @@
      *   Note: it has a fixed key.
      * @param widgetExemplarsList {Object[]} The list of `gpii.psp.exemplar`-s
      */
-    gpii.psp.settingsPanel.getResourcesToFetch = function (settingExemplar, widgetExemplarsList) {
+    gpii.psp.settingsPanel.getResourcesToFetch = function (settingGroupExemplar, settingExemplar, widgetExemplarsList) {
         function getWidgetResources(exemplars) {
             return exemplars.reduce(function (markup, exemplar) {
                 markup[exemplar.options.grade] = exemplar.options.template;
@@ -730,6 +742,7 @@
         }
 
         var settingsVisualizerMarkup = {
+            group: settingGroupExemplar.options.template,
             setting:  settingExemplar.options.template
         };
         var widgetsMarkup = getWidgetResources(widgetExemplarsList);
