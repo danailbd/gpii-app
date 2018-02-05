@@ -171,6 +171,55 @@
         return fluid.stringTemplate(labels.restartText, { solutions: solutionNames.join(", ")});
     };
 
+    fluid.defaults("gpii.psp.restartMessage", {
+        gradeNames: ["gpii.psp.baseRestartWarning"],
+        model: {
+            settings: []
+        },
+        modelRelay: {
+            pendingChanges: {
+                target: "pendingChanges",
+                singleTransform: {
+                    type: "fluid.transforms.free",
+                    func: "gpii.psp.restartMessage.getPendingChanges",
+                    args: ["{settingsPanel}.model.pendingChanges", "{that}.model.settings"]
+                }
+            }
+        },
+        modelListeners: {
+            solutionNames: {
+                funcName: "gpii.psp.restartMessage.toggle",
+                args: ["{change}.value", "{that}.container"]
+            }
+        }
+    });
+
+    gpii.psp.restartMessage.hasUpdatedSetting = function (pendingChange, settings) {
+        return fluid.find_if(settings, function (setting) {
+            // Check if the pending change applies to the setting itself
+            if (setting.path === pendingChange.path) {
+                return true;
+            }
+
+            // Check if the pending change applies to any of the setting's subsettings
+            if (setting.settings) {
+                return gpii.psp.restartMessage.hasUpdatedSetting(pendingChange, setting.settings);
+            }
+
+            return false;
+        }, false);
+    };
+
+    gpii.psp.restartMessage.getPendingChanges = function (pendingChanges, settings) {
+        return pendingChanges.filter(function (pendingChange) {
+            return gpii.psp.restartMessage.hasUpdatedSetting(pendingChange, settings);
+        });
+    };
+
+    gpii.psp.restartMessage.toggle = function (solutionNames, container) {
+        container.toggle(solutionNames.length > 0);
+    };
+
     /**
      * A component used at the bottom of the PSP (between the settings list and
      * the footer) to indicate that there are pending setting changes. Has dynamic

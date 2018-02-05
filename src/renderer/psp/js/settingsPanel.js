@@ -553,42 +553,6 @@
         }
     });
 
-    fluid.defaults("gpii.psp.restartMessage", {
-        gradeNames: ["fluid.viewComponent"],
-        model: {
-            settings: []
-        },
-        modelListeners: {
-            "{settingsPanel}.model.pendingChanges": {
-                funcName: "gpii.psp.restartMessage.toggle",
-                args: ["{change}.value", "{that}.model.settings", "{that}.container"]
-            }
-        }
-    });
-
-    gpii.psp.restartMessage.hasPendingChange = function (pendingChanges, settings) {
-        return !!fluid.find_if(pendingChanges, function (pendingChange) {
-            return fluid.find_if(settings, function (setting) {
-                // Check if the pending change applies to the setting itself
-                if (setting.path === pendingChange.path) {
-                    return true;
-                }
-
-                // Check if the pending change applies to any of the setting's subsettings
-                if (setting.settings) {
-                    return gpii.psp.restartMessage.hasPendingChange(pendingChanges, setting.settings);
-                }
-
-                return false;
-            }, false);
-        }, false);
-    };
-
-    gpii.psp.restartMessage.toggle = function (pendingChanges, settings, container) {
-        var hasPendingChange = gpii.psp.restartMessage.hasPendingChange(pendingChanges, settings);
-        container.toggle(hasPendingChange);
-    };
-
     fluid.defaults("gpii.psp.settingGroupsVisualizer", {
         gradeNames: "gpii.psp.repeater",
 
