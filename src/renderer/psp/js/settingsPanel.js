@@ -352,11 +352,12 @@
             }]
         },
         listeners: {
-            "onCreate.setSolutionName": {
-                this: "{that}.dom.solutionName",
-                method: "text",
-                args: "{that}.model.solutionName"
-            },
+            // TODO: Perhaps this won't be needed in the new approach.
+            // "onCreate.setSolutionName": {
+            //     this: "{that}.dom.solutionName",
+            //     method: "text",
+            //     args: "{that}.model.solutionName"
+            // },
             "onCreate.setTitle": {
                 this: "{that}.dom.title",
                 method: "text",
@@ -510,7 +511,7 @@
         selectors: {
             name: ".flc-groupName",
             settings: ".flc-settings:eq(0)",
-            restartMessage: ".flc-restartMessage"
+            restartWarning: ".flc-restartWarning"
         },
 
         model: {
@@ -533,9 +534,9 @@
                     }
                 }
             },
-            restartMessage: {
-                type: "gpii.psp.restartMessage",
-                container: "{that}.dom.restartMessage",
+            restartWarning: {
+                type: "gpii.psp.restartWarning",
+                container: "{that}.dom.restartWarning",
                 options: {
                     model: {
                         settings: "{settingGroupPresenter}.model.settings"

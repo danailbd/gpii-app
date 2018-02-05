@@ -171,7 +171,7 @@
         return fluid.stringTemplate(labels.restartText, { solutions: solutionNames.join(", ")});
     };
 
-    fluid.defaults("gpii.psp.restartMessage", {
+    fluid.defaults("gpii.psp.restartWarning", {
         gradeNames: ["gpii.psp.baseRestartWarning"],
         model: {
             settings: []
@@ -181,20 +181,20 @@
                 target: "pendingChanges",
                 singleTransform: {
                     type: "fluid.transforms.free",
-                    func: "gpii.psp.restartMessage.getPendingChanges",
+                    func: "gpii.psp.restartWarning.getPendingChanges",
                     args: ["{settingsPanel}.model.pendingChanges", "{that}.model.settings"]
                 }
             }
         },
         modelListeners: {
             solutionNames: {
-                funcName: "gpii.psp.restartMessage.toggle",
+                funcName: "gpii.psp.restartWarning.toggle",
                 args: ["{change}.value", "{that}.container"]
             }
         }
     });
 
-    gpii.psp.restartMessage.hasUpdatedSetting = function (pendingChange, settings) {
+    gpii.psp.restartWarning.hasUpdatedSetting = function (pendingChange, settings) {
         return fluid.find_if(settings, function (setting) {
             // Check if the pending change applies to the setting itself
             if (setting.path === pendingChange.path) {
@@ -203,126 +203,20 @@
 
             // Check if the pending change applies to any of the setting's subsettings
             if (setting.settings) {
-                return gpii.psp.restartMessage.hasUpdatedSetting(pendingChange, setting.settings);
+                return gpii.psp.restartWarning.hasUpdatedSetting(pendingChange, setting.settings);
             }
 
             return false;
         }, false);
     };
 
-    gpii.psp.restartMessage.getPendingChanges = function (pendingChanges, settings) {
+    gpii.psp.restartWarning.getPendingChanges = function (pendingChanges, settings) {
         return pendingChanges.filter(function (pendingChange) {
-            return gpii.psp.restartMessage.hasUpdatedSetting(pendingChange, settings);
+            return gpii.psp.restartWarning.hasUpdatedSetting(pendingChange, settings);
         });
     };
 
-    gpii.psp.restartMessage.toggle = function (solutionNames, container) {
+    gpii.psp.restartWarning.toggle = function (solutionNames, container) {
         container.toggle(solutionNames.length > 0);
-    };
-
-    /**
-     * A component used at the bottom of the PSP (between the settings list and
-     * the footer) to indicate that there are pending setting changes. Has dynamic
-     * showing/hiding behaviour dependent on the list of pending changes.
-     * Currently it is shown always when there is at least one pending change.
-     */
-    fluid.defaults("gpii.psp.restartWarning", {
-        gradeNames: ["gpii.psp.baseRestartWarning"],
-
-        modelRelay: {
-            restartIcon: {
-                target: "restartIcon",
-                singleTransform: {
-                    type: "fluid.transforms.free",
-                    func: "gpii.psp.restartWarning.getRestartIcon",
-                    args: ["{that}.options.labels", "{that}.model.solutionNames", "{that}.options.styles"]
-                }
-            }
-        },
-
-        modelListeners: {
-            solutionNames: {
-                funcName: "gpii.psp.restartWarning.toggleVisibility",
-                args: ["{that}", "{that}.container", "{change}.value"]
-            },
-            restartIcon: {
-                funcName: "gpii.psp.restartWarning.updateIcon",
-                args: ["{that}.dom.restartIcon", "{change}.value", "{that}.options.styles"]
-            }
-        },
-
-        selectors: {
-            restartIcon: ".flc-restartIcon",
-            heightChangeListener: "#flc-restartHeightChangeListener"
-        },
-
-        components: {
-            heightChangeListener: {
-                type: "gpii.psp.heightChangeListener",
-                container: "{that}.dom.heightChangeListener",
-                options: {
-                    events: {
-                        onHeightChanged: "{restartWarning}.events.onHeightChanged"
-                    }
-                }
-            }
-        },
-
-        events: {
-            onHeightChanged: null
-        },
-
-        styles: {
-            osRestartIcon: "fl-icon-osRestart",
-            applicationRestartIcon: "fl-icon-appRestart"
-        }
-    });
-
-    /**
-     * Shows or hides the restart warning based on whether there is at least one solution
-     * name available. Also, it notifies that the height of the component has changed.
-     * @param restartWarning {Component} The `gpii.psp.restartWarning` instance.
-     * @param container {jQuery} The jQuery object representing the container of the
-     * restart warning.
-     * @param solutionNames {Array} the solutions names or titles corresponding to the
-     * applications that need to be restarted.
-     */
-    gpii.psp.restartWarning.toggleVisibility = function (restartWarning, container, solutionNames) {
-        if (solutionNames.length === 0) {
-            container.hide();
-        } else {
-            container.show();
-        }
-
-        // Fire manually the height changed event because the listener is not
-        // triggered when the warning has already been hidden.
-        restartWarning.events.onHeightChanged.fire();
-    };
-
-    /**
-     * Returns the CSS class which is to be applied to the icon in the component based
-     * on whether an application or the whole OS needs to be restarted.
-     * @param labels {Object} An object containing various labels used throughout
-     * the component.
-     * @param solutionNames {Array} the solutions names or titles corresponding to the
-     * applications that need to be restarted.
-     * @param styles {Object} An object containing the CSS classes used in the component.
-     * @return the CSS class to be applied to the icon.
-     */
-    gpii.psp.restartWarning.getRestartIcon = function (labels, solutionNames, styles) {
-        return solutionNames[0] === labels.os ? styles.osRestartIcon : styles.applicationRestartIcon;
-    };
-
-    /**
-     * Updates the icon in the component based on the passed CSS class.
-     * @param restartIcon {jQuery} A jQuery object corresponding to the restart icon.
-     * @param restartIconClass {String} the CSS class to be applied to the icon.
-     * @param styles {Object} An object containing the CSS classes used in the component.
-     */
-    gpii.psp.restartWarning.updateIcon = function (restartIcon, restartIconClass, styles) {
-        restartIcon
-            .removeClass(styles.osRestartIcon)
-            .removeClass(styles.applicationRestartIcon)
-            .addClass(restartIconClass);
     };
 })(fluid);

@@ -18,6 +18,7 @@
                         "description":"Magnifier",
                         "type":"boolean"
                      },
+                     "solutionName": "Magnifier",
                      "settingControls": {
                         "http://registry\\.gpii\\.net/common/magnification":{  
                            "value":2,
@@ -27,7 +28,8 @@
                               "type":"number",
                               "min":1,
                               "divisibleBy":0.1
-                           }
+                           },
+                           "solutionName": "Magnifier"
                         },
                         "http://registry\\.gpii\\.net/common/magnifierPosition":{  
                            "value":"Lens",
@@ -44,7 +46,8 @@
                                  "BottomHalf",
                                  "Custom"
                               ]
-                           }
+                           },
+                           "solutionName": "Magnifier"
                         }
                      }
                   }
@@ -60,6 +63,7 @@
                         "description":"Whether to enable/disable High Contrast",
                         "type":"boolean"
                      },
+                     "solutionName": "Windows: High Contrast",
                      "settingControls":{
                         "http://registry\\.gpii\\.net/applications/com\\.microsoft\\.windows\\.highContrast.http://registry\\.gpii\\.net/common/highContrastTheme":{  
                            "value":"white-black",
@@ -73,7 +77,8 @@
                                  "yellow-black",
                                  "black-yellow"
                               ]
-                           }
+                           },
+                           "solutionName": "Windows: High Contrast"
                         }
                      }
                   }
@@ -93,7 +98,8 @@
                         "enum":[  
                            "dictionary"
                         ]
-                     }
+                     },
+                     "solutionName": "UIO+"
                   },
                   "http://registry\\.gpii\\.net/applications/net\\.gpii\\.uioPlus.http://registry\\.gpii\\.net/common/highContrastEnabled":{  
                      "value":true,
@@ -101,7 +107,8 @@
                         "title":"High Contrast",
                         "description":"Whether to enable/disable High Contrast",
                         "type":"boolean"
-                     }
+                     },
+                     "solutionName": "UIO+"
                   },
                   "http://registry\\.gpii\\.net/applications/net\\.gpii\\.uioPlus.http://registry\\.gpii\\.net/common/highContrastTheme":{  
                      "value":"white-black",
@@ -115,7 +122,8 @@
                            "yellow-black",
                            "black-yellow"
                         ]
-                     }
+                     },
+                     "solutionName": "UIO+"
                   }
                }
             }
