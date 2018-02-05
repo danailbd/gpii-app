@@ -143,29 +143,19 @@
                 container: "{that}.dom.settingsList",
                 createOnEvent: "{mainWindow}.events.onPreferencesUpdated",
                 options: {
+                    listeners: {
+                        "{mainWindow}.events.onRestartRequired": {
+                            funcName: "{that}.updatePendingChanges"
+                        }
+                    },
                     model: {
                         settingGroups: "{mainWindow}.model.preferences.settingGroups"
                     },
                     events: {
                         onSettingAltered: "{mainWindow}.events.onSettingAltered",
                         onSettingUpdated: "{mainWindow}.events.onSettingUpdated",
-                        onRestartRequired: "{mainWindow}.events.onRestartRequired"
-                    }
-                }
-            },
-            restartWarning: {
-                type: "gpii.psp.restartWarning",
-                container: "{that}.dom.restartWarning",
-                options: {
-                    listeners: {
-                        onHeightChanged: {
-                            funcName: "{mainWindow}.onContentHeightChanged"
-                        },
-                        "{mainWindow}.events.onRestartRequired": {
-                            funcName: "{that}.updatePendingChanges"
-                        }
-                    },
-                    events: {
+                        onRestartRequired: "{mainWindow}.events.onRestartRequired",
+
                         onRestartNow: "{mainWindow}.events.onRestartNow",
                         onRestartLater: "{mainWindow}.events.onRestartLater",
                         onUndoChanges: "{mainWindow}.events.onUndoChanges"

@@ -509,7 +509,8 @@
 
         selectors: {
             name: ".flc-groupName",
-            settings: ".flc-settings:eq(0)" // the settings container
+            settings: ".flc-settings:eq(0)",
+            restartMessage: ".flc-restartMessage"
         },
 
         model: {
@@ -531,6 +532,15 @@
                         items: "{settingGroupPresenter}.model.settings"
                     }
                 }
+            },
+            restartMessage: {
+                type: "gpii.psp.restartMessage",
+                container: "{that}.dom.restartMessage",
+                options: {
+                    model: {
+                        settings: "{settingGroupPresenter}.model.settings"
+                    }
+                }
             }
         },
 
@@ -543,6 +553,41 @@
         }
     });
 
+    fluid.defaults("gpii.psp.restartMessage", {
+        gradeNames: ["fluid.viewComponent"],
+        model: {
+            settings: []
+        },
+        modelListeners: {
+            "{settingsPanel}.model.pendingChanges": {
+                funcName: "gpii.psp.restartMessage.toggle",
+                args: ["{change}.value", "{that}.model.settings", "{that}.container"]
+            }
+        }
+    });
+
+    gpii.psp.restartMessage.hasPendingChange = function (pendingChanges, settings) {
+        return !!fluid.find_if(pendingChanges, function (pendingChange) {
+            return fluid.find_if(settings, function (setting) {
+                // Check if the pending change applies to the setting itself
+                if (setting.path === pendingChange.path) {
+                    return true;
+                }
+
+                // Check if the pending change applies to any of the setting's subsettings
+                if (setting.settings) {
+                    return gpii.psp.restartMessage.hasPendingChange(pendingChanges, setting.settings);
+                }
+
+                return false;
+            }, false);
+        }, false);
+    };
+
+    gpii.psp.restartMessage.toggle = function (pendingChanges, settings, container) {
+        var hasPendingChange = gpii.psp.restartMessage.hasPendingChange(pendingChanges, settings);
+        container.toggle(hasPendingChange);
+    };
 
     fluid.defaults("gpii.psp.settingGroupsVisualizer", {
         gradeNames: "gpii.psp.repeater",
@@ -640,6 +685,7 @@
     fluid.defaults("gpii.psp.settingsPanel", {
         gradeNames: "fluid.viewComponent",
         model: {
+            pendingChanges: [],
             settingGroups: []
         },
         components: {
@@ -699,6 +745,12 @@
             onSettingAltered: null,
             onSettingUpdated: null, // passed from outside
             onRestartRequired: null
+        },
+        invokers: {
+            updatePendingChanges: {
+                changePath: "pendingChanges",
+                value: "{arguments}.0"
+            }
         }
     });
 
