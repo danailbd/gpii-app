@@ -540,6 +540,11 @@
                 options: {
                     model: {
                         settings: "{settingGroupPresenter}.model.settings"
+                    },
+                    events: {
+                        onRestartNow: "{settingsPanel}.events.onRestartNow",
+                        onRestartLater: "{settingsPanel}.events.onRestartLater",
+                        onUndoChanges: "{settingsPanel}.events.onUndoChanges"
                     }
                 }
             }
@@ -709,7 +714,11 @@
             onTemplatesLoaded: null,
             onSettingAltered: null,
             onSettingUpdated: null, // passed from outside
-            onRestartRequired: null
+            onRestartRequired: null,
+
+            onRestartNow: null,
+            onRestartLater: null,
+            onUndoChanges: null
         },
         invokers: {
             updatePendingChanges: {
