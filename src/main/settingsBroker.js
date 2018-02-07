@@ -72,7 +72,10 @@ fluid.defaults("gpii.app.settingsBroker", {
         },
         applyPendingChanges: {
             funcName: "gpii.app.settingsBroker.applyPendingChanges",
-            args: ["{that}", "{that}.model.pendingChanges"]
+            args: [
+                "{that}",
+                "{arguments}.0" // changesToApply
+            ]
         },
         clearPendingChanges: {
             changePath: "pendingChanges",
@@ -80,7 +83,17 @@ fluid.defaults("gpii.app.settingsBroker", {
         },
         undoPendingChanges: {
             funcName: "gpii.app.settingsBroker.undoPendingChanges",
-            args: ["{that}", "{that}.model.pendingChanges"]
+            args: [
+                "{that}",
+                "{arguments}.0" // changesToUndo
+            ]
+        },
+        removePendingChanges: {
+            funcName: "gpii.app.settingsBroker.removePendingChanges",
+            args: [
+                "{that}",
+                "{arguments}.0" // changesToRemove
+            ]
         }
     },
     events: {
@@ -133,11 +146,14 @@ gpii.app.settingsBroker.enqueue = function (settingsBroker, setting) {
  * @param settingsBroker {Component} An instance of `gpii.app.settingsBroker`.
  * @param pendingChanges {Array} An array containing all pending setting changes.
  */
-gpii.app.settingsBroker.applyPendingChanges = function (settingsBroker, pendingChanges) {
-    fluid.each(pendingChanges, function (pendingChange) {
+gpii.app.settingsBroker.applyPendingChanges = function (settingsBroker, changesToApply) {
+    changesToApply = changesToApply || settingsBroker.model.pendingChanges;
+
+    fluid.each(changesToApply, function (pendingChange) {
         settingsBroker.applySetting(pendingChange);
     });
-    settingsBroker.clearPendingChanges();
+
+    settingsBroker.removePendingChanges(changesToApply);
 };
 
 /**
@@ -148,12 +164,27 @@ gpii.app.settingsBroker.applyPendingChanges = function (settingsBroker, pendingC
  * @param settingsBroker {Component} An instance of `gpii.app.settingsBroker`.
  * @param pendingChanges {Array} An array containing all pending setting changes.
  */
-gpii.app.settingsBroker.undoPendingChanges = function (settingsBroker, pendingChanges) {
-    fluid.each(pendingChanges, function (pendingChange) {
+gpii.app.settingsBroker.undoPendingChanges = function (settingsBroker, changesToUndo) {
+    changesToUndo = changesToUndo || settingsBroker.model.pendingChanges;
+
+    fluid.each(changesToUndo, function (pendingChange) {
         pendingChange = fluid.extend(true, pendingChange, {
             value: pendingChange.oldValue
         });
         settingsBroker.undoSetting(pendingChange);
     });
-    settingsBroker.clearPendingChanges();
+
+    settingsBroker.removePendingChanges(changesToUndo);
+};
+
+gpii.app.settingsBroker.removePendingChanges = function (settingsBroker, changesToRemove) {
+    var pendingChanges = settingsBroker.model.pendingChanges;
+
+    pendingChanges = pendingChanges.filter(function (pendingChange) {
+        return !fluid.find_if(changesToRemove, function (changeToRemove) {
+            return pendingChange.path === changeToRemove.path;
+        }, false);
+    });
+
+    settingsBroker.applier.change("pendingChanges", pendingChanges);
 };

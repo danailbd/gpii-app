@@ -229,16 +229,16 @@ gpii.app.initPSPWindowIPC = function (app, psp) {
      * "Restart Required" functionality events
      */
 
-    ipcMain.on("onRestartNow", function () {
-        psp.events.onRestartNow.fire();
+    ipcMain.on("onRestartNow", function (event, pendingChanges) {
+        psp.events.onRestartNow.fire(pendingChanges);
     });
 
     ipcMain.on("onRestartLater", function () {
         psp.events.onRestartLater.fire();
     });
 
-    ipcMain.on("onUndoChanges", function () {
-        psp.events.onUndoChanges.fire();
+    ipcMain.on("onUndoChanges", function (event, pendingChanges) {
+        psp.events.onUndoChanges.fire(pendingChanges);
     });
 };
 

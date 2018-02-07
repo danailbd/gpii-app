@@ -124,7 +124,10 @@
             },
             restartNow: {
                 func: "{that}.sendMessage",
-                args: ["onRestartNow"]
+                args: [
+                    "onRestartNow",
+                    "{arguments}.0" // pendingChanges
+                ]
             },
             restartLater: {
                 func: "{that}.sendMessage",
@@ -132,7 +135,10 @@
             },
             undoChanges: {
                 func: "{that}.sendMessage",
-                args: ["onUndoChanges"]
+                args: [
+                    "onUndoChanges",
+                    "{arguments}.0" // pendingChanges
+                ]
             }
         }
     });

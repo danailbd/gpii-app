@@ -75,7 +75,11 @@
                 options: {
                     label: "{baseRestartWarning}.options.labels.undo",
                     invokers: {
-                        onClick: "{baseRestartWarning}.events.onUndoChanges.fire"
+                        onClick: {
+                            this: "{baseRestartWarning}.events.onUndoChanges",
+                            method: "fire",
+                            args: ["{baseRestartWarning}.model.pendingChanges"]
+                        }
                     }
                 }
             },
@@ -85,7 +89,11 @@
                 options: {
                     label: "{baseRestartWarning}.options.labels.restartNow",
                     invokers: {
-                        onClick: "{baseRestartWarning}.events.onRestartNow.fire"
+                        onClick: {
+                            this: "{baseRestartWarning}.events.onRestartNow",
+                            method: "fire",
+                            args: ["{baseRestartWarning}.model.pendingChanges"]
+                        }
                     }
                 }
             },
@@ -116,9 +124,9 @@
             osRestartText: "Windows needs to restart to apply your changes",
             restartText: "To apply your changes, the following applications need to restart: %solutions",
 
-            undo: "Cancel\n(Undo Changes)",
+            undo: "Undo",
             restartNow: "Restart Now",
-            restartLater: "Close and\nRestart Later"
+            restartLater: "Restart Later"
         }
     });
 
