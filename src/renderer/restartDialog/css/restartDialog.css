@@ -82,6 +82,10 @@ body {
     padding: 0;
 }
 
+.fl-popup .fl-popup-contentText ul li {
+    margin: 0;
+}
+
 .flc-popup-bodyText {
     white-space: pre-wrap;
 }
