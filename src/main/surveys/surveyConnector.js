@@ -138,8 +138,7 @@ gpii.app.staticSurveyConnector.requestTriggers = function (that) {
  * @param that {Component} The `gpii.app.staticSurveyConnector` instance.
  */
 gpii.app.staticSurveyConnector.notifyTriggerOccurred = function (that) {
-    var fixture = that.options.config.surveyFixture,
-        url = fluid.stringTemplate(fixture.url, that.model);
-    fixture.url = fluid.module.resolvePath(url);
+    var fixture = that.options.config.surveyFixture;
+    fixture.url = fluid.stringTemplate(fixture.url, that.model);
     that.events.onSurveyRequired.fire(fixture);
 };

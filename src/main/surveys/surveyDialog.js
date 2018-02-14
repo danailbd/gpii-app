@@ -101,9 +101,9 @@ fluid.defaults("gpii.app.surveyDialog", {
             listener: "gpii.app.surveyDialog.openSurvey",
             args: ["{that}", "{that}.options.config"]
         },
-        "onSurveyClose.closeSurvey": {
-            funcName: "{that}.close"
-        },
+        // "onSurveyClose.closeSurvey": {
+        //     funcName: "{that}.close"
+        // },
         "onDestroy.removeSurveyWindowIPC": {
             listener: "gpii.app.surveyDialog.removeSurveyWindowIPC"
         }

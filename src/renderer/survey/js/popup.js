@@ -93,10 +93,6 @@
         });
     };
 
-    // Example test commands:
-    // "document.getElementsByClassName('flc-breakOut')[0].click()"
-    // "document.getElementsByClassName('flc-closeBtn')[0].click()"
-    // "var elem = document.createElement('div'); elem.id = 'EndOfSurvey'; document.body.appendChild(elem);"
     gpii.survey.popup.executeCommand = function (that, webview, command) {
         // Check if the command can be executed immediately
         if (that.loaded) {
