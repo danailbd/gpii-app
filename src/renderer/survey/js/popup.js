@@ -30,6 +30,9 @@
      */
     fluid.defaults("gpii.survey.popup", {
         gradeNames: ["fluid.viewComponent"],
+        members: {
+            loaded: false
+        },
         selectors: {
             webview: ".flc-surveyContent"
         },
@@ -43,9 +46,21 @@
                     "{that}.dom.webview",
                     "{arguments}.0" // options
                 ]
+            },
+            executeCommand: {
+                funcName: "gpii.survey.popup.executeCommand",
+                args: [
+                    "{that}",
+                    "{that}.dom.webview",
+                    "{arguments}.0" // command
+                ]
             }
         },
         listeners: {
+            "onCreate.initLoadedListener": {
+                funcName: "gpii.survey.popup.initLoadedListener",
+                args: ["{that}", "{that}.dom.webview"]
+            },
             "onCreate.notifySurveyCreated": {
                 funcName: "{that}.events.onIPCMessage.fire",
                 args: ["onSurveyCreated"]
@@ -67,6 +82,35 @@
             "/css/webview.css"
         ]
     });
+
+    gpii.survey.popup.initLoadedListener = function (that, webview) {
+        webview.on("did-start-loading", function () {
+            that.loaded = false;
+        });
+
+        webview.on("dom-ready", function () {
+            that.loaded = true;
+        });
+    };
+
+    // Example test commands:
+    // "document.getElementsByClassName('flc-breakOut')[0].click()"
+    // "document.getElementsByClassName('flc-closeBtn')[0].click()"
+    // "var elem = document.createElement('div'); elem.id = 'EndOfSurvey'; document.body.appendChild(elem);"
+    gpii.survey.popup.executeCommand = function (that, webview, command) {
+        // Check if the command can be executed immediately
+        if (that.loaded) {
+            console.log("immediately", command);
+            webview[0].executeJavaScript(command);
+            return;
+        }
+
+        // Or if it needs to wait for the webview first to load.
+        webview.one("dom-ready", function () {
+            console.log("delayed", command);
+            webview[0].executeJavaScript(command);
+        });
+    };
 
     /**
      * Changes the URL of the page which is to be loaded in the webview.
