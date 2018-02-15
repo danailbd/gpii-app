@@ -34,6 +34,15 @@ var surveyDialogFixture = {
     }
 };
 
+// JavaScript commands to be executed in the webview
+var clickBreakOutLink = "document.querySelector(\"a.flc-breakOut[target=_blank]\").click()",
+    clickNonBreakOutLink = "document.querySelector(\"a.flc-nonBreakOut\").click()",
+    clickCloseButton = "document.querySelector(\".flc-closeBtn\").click()",
+    addEndOfSurveyElement =
+        "var elem = document.createElement(\"div\");" +
+        "elem.id = \"EndOfSurvey\";" +
+        "document.body.appendChild(elem);";
+
 /**
  * Returns a survey fixtute whose url is resolved to a path on the local file
  * system. The predefined values of the fixture can be overridden further by
@@ -79,14 +88,11 @@ gpii.tests.webview.testDefs = {
             listener: "fluid.identity"
         }, {
             func: "{that}.app.dialogManager.survey.surveyDialog.executeCommand",
-            args: ["document.querySelector(\"a.flc-breakOut[target=_blank]\").click()"]
+            args: [clickBreakOutLink]
         }, {
             event: "{that}.app.dialogManager.survey.surveyDialog.events.onSurveyClose",
-            listener: "jqUnit.assertFalse",
-            args: [
-                "Survey was closed by clicking on the break-out link",
-                "{that}.app.dialogManager.survey.surveyDialog.model.isShown"
-            ]
+            listener: "jqUnit.assert",
+            args: ["Survey was closed by clicking on the break-out link"]
         }
     ], [ // Test that the survey will not close when clicking on a non-break-out link
         {
@@ -97,7 +103,7 @@ gpii.tests.webview.testDefs = {
             listener: "fluid.identity"
         }, {
             func: "{that}.app.dialogManager.survey.surveyDialog.executeCommand",
-            args: ["document.querySelector(\"a.flc-nonBreakOut\").click()"]
+            args: [clickNonBreakOutLink]
         }, {
             func: "jqUnit.assertTrue",
             args: [
@@ -114,14 +120,11 @@ gpii.tests.webview.testDefs = {
             listener: "fluid.identity"
         }, {
             func: "{that}.app.dialogManager.survey.surveyDialog.executeCommand",
-            args: ["document.querySelector(\".flc-closeBtn\").click()"]
+            args: [clickCloseButton]
         }, {
             event: "{that}.app.dialogManager.survey.surveyDialog.events.onSurveyClose",
-            listener: "jqUnit.assertFalse",
-            args: [
-                "Survey was closed by clicking on the close button within the content",
-                "{that}.app.dialogManager.survey.surveyDialog.model.isShown"
-            ]
+            listener: "jqUnit.assert",
+            args: ["Survey was closed by clicking on the close button within the content"]
         }
     ], [ // Test closing the survey when a DOM element with id "EndOfSurvey" element appears in the survey.
         {
@@ -132,14 +135,11 @@ gpii.tests.webview.testDefs = {
             listener: "fluid.identity"
         }, {
             func: "{that}.app.dialogManager.survey.surveyDialog.executeCommand",
-            args: ["var elem = document.createElement(\"div\"); elem.id = \"EndOfSurvey\"; document.body.appendChild(elem);"]
+            args: [addEndOfSurveyElement]
         }, {
             event: "{that}.app.dialogManager.survey.surveyDialog.events.onSurveyClose",
-            listener: "jqUnit.assertFalse",
-            args: [
-                "Survey was closed automatically when its end has been reached",
-                "{that}.app.dialogManager.survey.surveyDialog.model.isShown"
-            ]
+            listener: "jqUnit.assert",
+            args: ["Survey was closed automatically when its end has been reached"]
         }
     ], [ // Test that the survey will not close if it does not need to close on submit
         {
@@ -150,7 +150,7 @@ gpii.tests.webview.testDefs = {
             listener: "fluid.identity"
         }, {
             func: "{that}.app.dialogManager.survey.surveyDialog.executeCommand",
-            args: ["var elem = document.createElement(\"div\"); elem.id = \"EndOfSurvey\"; document.body.appendChild(elem);"]
+            args: [addEndOfSurveyElement]
         }, {
             func: "jqUnit.assertTrue",
             args: [

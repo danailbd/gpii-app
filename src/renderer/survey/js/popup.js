@@ -57,8 +57,8 @@
             }
         },
         listeners: {
-            "onCreate.initLoadedListener": {
-                funcName: "gpii.survey.popup.initLoadedListener",
+            "onCreate.initLoadListener": {
+                funcName: "gpii.survey.popup.initLoadListener",
                 args: ["{that}", "{that}.dom.webview"]
             },
             "onCreate.notifySurveyCreated": {
@@ -86,15 +86,12 @@
     /**
      * Sets up listeners which track whether the webview has fully loaded.
      * If so, the `loaded` property of the `gpii.survey.popup` component is
-     * set to true. If the webview has loaded, any JavaScript statement can
-     * be directly invoked in the webivew. Otherwise, there is a need to
-     * queue the invocation to occur when the `dom-ready` event is fired.
-     * See `gpii.survey.popup.executeCommand` for details about this.
+     * set to true.
      * @param that {Component} The `gpii.survey.popup` instance.
      * @param webview {jQuery} The jQuery object corresponding to the
      * webview element.
      */
-    gpii.survey.popup.initLoadedListener = function (that, webview) {
+    gpii.survey.popup.initLoadListener = function (that, webview) {
         webview.on("did-start-loading", function () {
             that.loaded = false;
         });
