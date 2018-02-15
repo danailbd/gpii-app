@@ -22,7 +22,7 @@ require("../src/main/app.js");
 fluid.registerNamespace("gpii.tests.webview.testDefs");
 
 var surveyDialogFixture = {
-    url: "%gpii-app/testData/survey/webview.html",
+    url: "%gpii-app/tests/fixtures/webview.html",
     closeOnSubmit: true,
     window: {
         width: 800,
@@ -47,11 +47,21 @@ gpii.tests.webview.testDefs = {
         configName: "gpii.tests.dev.config",
         configPath: "tests/configs"
     },
+    distributeOptions: {
+        target: "{that surveyDialog}.options.listeners",
+        record: {
+            // Do nothing when the survey is closed because otherwise the test framework
+            // cannot intercept the `onSurveyClose` event.
+            "onSurveyClose.closeSurvey": {
+                funcName: fluid.identity
+            }
+        }
+    },
     gradeNames: ["gpii.test.common.testCaseHolder"],
     sequence: [{
         func: "{that}.app.keyIn",
         args: ["snapset_1a"]
-    }, [
+    }, [ // Test closing the survey using the break-out link
         {
             func: "{that}.app.dialogManager.show",
             args: ["survey", gpii.tests.webview.getSurveyFixture()]
@@ -60,13 +70,13 @@ gpii.tests.webview.testDefs = {
             listener: "fluid.identity"
         }, {
             func: "{that}.app.dialogManager.survey.surveyDialog.executeCommand",
-            args: ["document.getElementsByClassName('flc-breakOut')[0].click()"]
+            args: ["document.querySelector(\"a.flc-breakOut[target=_blank]\").click()"]
         }, {
             event: "{that}.app.dialogManager.survey.surveyDialog.events.onSurveyClose",
             listener: "jqUnit.assert",
             args: ["Survey was closed by clicking on the break-out link"]
         }
-    ], [
+    ], [ // Test closing the survey using a close button within the content of the survey
         {
             func: "{that}.app.dialogManager.show",
             args: ["survey", gpii.tests.webview.getSurveyFixture()]
@@ -75,13 +85,13 @@ gpii.tests.webview.testDefs = {
             listener: "fluid.identity"
         }, {
             func: "{that}.app.dialogManager.survey.surveyDialog.executeCommand",
-            args: ["document.getElementsByClassName('flc-closeBtn')[0].click()"]
+            args: ["document.querySelector(\".flc-closeBtn\").click()"]
         }, {
             event: "{that}.app.dialogManager.survey.surveyDialog.events.onSurveyClose",
             listener: "jqUnit.assert",
             args: ["Survey was closed by clicking on the close button within the content"]
         }
-    ], [
+    ], [ // Test closing the survey when a DOM element with id "EndOfSurvey" element appears in the survey.
         {
             func: "{that}.app.dialogManager.show",
             args: ["survey", gpii.tests.webview.getSurveyFixture()]
@@ -90,13 +100,13 @@ gpii.tests.webview.testDefs = {
             listener: "fluid.identity"
         }, {
             func: "{that}.app.dialogManager.survey.surveyDialog.executeCommand",
-            args: ["var elem = document.createElement('div'); elem.id = 'EndOfSurvey'; document.body.appendChild(elem);"]
+            args: ["var elem = document.createElement(\"div\"); elem.id = \"EndOfSurvey\"; document.body.appendChild(elem);"]
         }, {
             event: "{that}.app.dialogManager.survey.surveyDialog.events.onSurveyClose",
             listener: "jqUnit.assert",
             args: ["Survey was closed automatically when its end has been reached"]
         }
     ], {
-            func: "{that}.app.keyOut"
+        func: "{that}.app.keyOut"
     }]
 };
