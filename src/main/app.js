@@ -99,28 +99,6 @@ fluid.defaults("gpii.app", {
         surveyManager: {
             type: "gpii.app.surveyManager"
         },
-        dialogManager: {
-            type: "gpii.app.dialogManager",
-            createOnEvent: "onPSPPrerequisitesReady",
-            options: {
-                model: {
-                    keyedInUserToken: "{app}.model.keyedInUserToken"
-                },
-                listeners: {
-                    "{surveyManager}.events.onSurveyRequired": {
-                        func: "{that}.show",
-                        args: ["survey", "{arguments}.0"] // the raw payload
-                    }
-                },
-                modelListeners: {
-                    "{lifecycleManager}.model.logonChange": {
-                        func: "{that}.toggle",
-                        args: ["waitDialog", "{change}.value.inProgress"],
-                        excludeSource: "init"
-                    }
-                }
-            }
-        },
         gpiiConnector: {
             type: "gpii.app.gpiiConnector",
             createOnEvent: "onGPIIReady",
@@ -143,10 +121,6 @@ fluid.defaults("gpii.app", {
                 }
             }
         },
-        restartDialog: {
-            type: "gpii.app.dialog.restartDialog",
-            createOnEvent: "onPSPPrerequisitesReady"
-        },
         settingsBroker: {
             type: "gpii.app.settingsBroker",
             createOnEvent: "onPSPPrerequisitesReady",
@@ -158,8 +132,63 @@ fluid.defaults("gpii.app", {
                     "{psp}.events.onSettingAltered": {
                         listener: "{that}.enqueue"
                     },
+                    "{psp}.events.onRestartNow": {
+                        listener: "{that}.applyPendingChanges"
+                    },
+                    "{psp}.events.onUndoChanges": {
+                        listener: "{that}.undoPendingChanges"
+                    },
                     "{psp}.events.onActivePreferenceSetAltered": {
                         listener: "{that}.clearPendingChanges"
+                    },
+                    onRestartRequired : {
+                        funcName: "gpii.app.togglePspRestartWarning",
+                        args: [
+                            "{psp}",
+                            "{arguments}.0" // pendingChanges
+                        ]
+                    }
+                }
+            }
+        },
+        dialogManager: {
+            type: "gpii.app.dialogManager",
+            createOnEvent: "onPSPPrerequisitesReady",
+            options: {
+                model: {
+                    keyedInUserToken: "{app}.model.keyedInUserToken"
+                },
+                listeners: {
+                    "{surveyManager}.events.onSurveyRequired": {
+                        func: "{that}.show",
+                        args: ["survey", "{arguments}.0"] // the raw payload
+                    },
+                    // "{psp}.events.onRestartNow": {
+                    //     func: "{that}.hide",
+                    //     args: ["restartDialog"]
+                    // },
+                    // "{psp}.events.onUndoChanges": {
+                    //     func: "{that}.hide",
+                    //     args: ["restartDialog"]
+                    // },
+                    "{psp}.events.onRestartLater": {
+                        func: "{that}.hide",
+                        args: ["restartDialog"]
+                    }
+                },
+                modelListeners: {
+                    "{lifecycleManager}.model.logonChange": {
+                        func: "{that}.toggle",
+                        args: ["waitDialog", "{change}.value.inProgress"],
+                        excludeSource: "init"
+                    },
+                    "{psp}.model.isShown": {
+                        funcName: "gpii.app.toggleRestartDialog",
+                        args: ["{that}", "{change}.value", "{settingsBroker}.model.pendingChanges"]
+                    },
+                    "{settingsBroker}.model.pendingChanges": {
+                        funcName: "gpii.app.toggleRestartDialog",
+                        args: ["{that}", "{psp}.model.isShown", "{change}.value"]
                     }
                 }
             }
@@ -212,87 +241,6 @@ fluid.defaults("gpii.app", {
                         args: [
                             "onSettingUpdated",
                             "{arguments}.0" // message
-                        ]
-                    }
-                }
-            }
-        },
-        /**
-         * Responsible for toggling the "need restart" warnings both
-         * in the psp or as a dialog.
-         */
-        restartWarningController: {
-            type: "fluid.modelComponent",
-            createOnEvent: "onPSPPrerequisitesReady",
-            options: {
-                model: {
-                    isPspShown: "{psp}.model.isShown"
-                },
-                modelListeners: {
-                    // Hide restart dialog whenever PSP is shown
-                    "isPspShown": {
-                        func: "{that}.hideRestartDialogIfNeeded",
-                        args: "{change}.value"
-                    }
-                },
-
-                listeners: {
-                    "{psp}.events.onClosed": {
-                        // show if possible
-                        func: "{restartDialog}.showIfNeeded",
-                        args: [
-                            "{settingsBroker}.model.pendingChanges"
-                        ]
-                    },
-                    "{psp}.events.onRestartNow": [{
-                        changePath: "{restartDialog}.model.isShown",
-                        args: false
-                    }, {
-                        listener: "{settingsBroker}.applyPendingChanges"
-                    }],
-                    "{psp}.events.onUndoChanges": [{
-                        changePath: "{restartDialog}.model.isShown",
-                        args: false
-                    }, {
-                        listener: "{settingsBroker}.undoPendingChanges"
-                    }],
-                    "{psp}.events.onRestartLater": {
-                        changePath: "{restartDialog}.model.isShown",
-                        args: false
-                    },
-
-                    "{restartDialog}.events.onClosed": {
-                        changePath: "{restartDialog}.model.isShown",
-                        args: false
-                    },
-
-                    // Handle setting interactions (undo, restart now, settings interaction)
-                    "{settingsBroker}.events.onRestartRequired" : [{
-                        func: "{that}.hideRestartDialogIfNeeded",
-                        args: [
-                            "{that}.model.isPspShown",
-                            "{arguments}.0" // pendingChanges
-                        ]
-                    },{
-                        func: "{that}.togglePspRestartWarning",
-                        args: ["{arguments}.0"] // pendingChanges
-                    }]
-                },
-
-                invokers: {
-                    hideRestartDialogIfNeeded: {
-                        funcName: "gpii.app.hideRestartDialogIfNeeded",
-                        args: [
-                            "{restartDialog}",
-                            "{arguments}.0", // isPspShown
-                            "{arguments}.1"  // pendingChanges
-                        ]
-                    },
-                    togglePspRestartWarning: {
-                        funcName: "gpii.app.togglePspRestartWarning",
-                        args: [
-                            "{psp}",
-                            "{arguments}.0" // pendingChanges
                         ]
                     }
                 }
@@ -395,7 +343,6 @@ fluid.defaults("gpii.app", {
  * @param pendingChanges {Object[]} A list of the current state of pending changes
  */
 gpii.app.togglePspRestartWarning = function (psp, pendingChanges) {
-
     if (pendingChanges.length === 0) {
         psp.hideRestartWarning();
     } else {
@@ -412,11 +359,11 @@ gpii.app.togglePspRestartWarning = function (psp, pendingChanges) {
  * @param isPspShown {Boolean} Whether the psp window is shown
  * @param pendingChanges {Object[]} A list of the current state of pending changes
  */
-gpii.app.hideRestartDialogIfNeeded = function (restartDialog, isPspShown, pendingChanges) {
-    if (isPspShown || (pendingChanges && pendingChanges.length === 0)) {
-        // ensure the dialog is hidden
-        // NOTE: this may have no effect in case the dialog is already hidden
-        restartDialog.applier.change("isShown", false);
+gpii.app.toggleRestartDialog = function (dialogManager, isPspShown, pendingChanges) {
+    if (!isPspShown && pendingChanges && pendingChanges.length > 0) {
+        dialogManager.show("restartDialog", pendingChanges);
+    } else {
+        dialogManager.hide("restartDialog");
     }
 };
 
