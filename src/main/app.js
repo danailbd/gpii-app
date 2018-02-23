@@ -28,7 +28,6 @@ require("./restartDialog.js");
 require("./settingsBroker.js");
 require("./surveys/surveyManager.js");
 require("./tray.js");
-require("./waitDialog.js");
 
 require("./networkCheck.js");
 
@@ -112,6 +111,13 @@ fluid.defaults("gpii.app", {
                         func: "{that}.show",
                         args: ["survey", "{arguments}.0"] // the raw payload
                     }
+                },
+                modelListeners: {
+                    "{lifecycleManager}.model.logonChange": {
+                        func: "{that}.toggle",
+                        args: ["waitDialog", "{change}.value.inProgress"],
+                        excludeSource: "init"
+                    }
                 }
             }
         },
@@ -134,18 +140,6 @@ fluid.defaults("gpii.app", {
             options: {
                 model: {
                     keyedInUserToken: "{app}.model.keyedInUserToken"
-                }
-            }
-        },
-        waitDialog: {
-            type: "gpii.app.waitDialog",
-            createOnEvent: "onPSPPrerequisitesReady",
-            options: {
-                modelListeners: {
-                    "{lifecycleManager}.model.logonChange": {
-                        changePath: "{that}.model.isShown",
-                        value: "{change}.value.inProgress"
-                    }
                 }
             }
         },
@@ -540,8 +534,7 @@ gpii.app.handleUncaughtException = function (that, errorsDescription, error) {
         return;
     }
 
-    // Restore the state of the wait dialog
-    that.waitDialog.applier.change("isShown", false);
+    that.dialogManager.hide("waitDialog");
     that.dialogManager.show("error", errorOptions);
 
     if (errDetails.fatal) {
