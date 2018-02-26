@@ -163,7 +163,7 @@ fluid.defaults("gpii.app.dialogManager", {
             type: "gpii.app.error"
         },
         restartDialog: {
-            type: "gpii.app.dialog.restartDialog" // TODO: Rename.
+            type: "gpii.app.dialog.restartDialog"
         },
 
         queue: {
