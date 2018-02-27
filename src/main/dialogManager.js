@@ -120,10 +120,6 @@ gpii.app.dialogManager.queue.enqueue = function (that, options) {
  * In order to show/hide/close a dialog, the IoCSS selector of the particular
  * component needs to be provided as an argument of the corresponding function.
  */
-// XXX: Currently only the survey dialog is managed by the dialogManager. As a
-// refactoring step, in the future the rest of the dialogs will be controlled by
-// this manager, as well. See https://issues.gpii.net/browse/GPII-2817 for more
-// information.
 fluid.defaults("gpii.app.dialogManager", {
     gradeNames: ["fluid.modelComponent"],
 
