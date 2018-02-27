@@ -138,7 +138,7 @@ fluid.defaults("gpii.app.dialogManager", {
         record: {
             isShown: {
                 funcName: "gpii.app.dialogManager.errorDialogToggled",
-                args: ["{dialogManager}.queue", "{change}.value"],
+                args: ["{dialogManager}.errorQueue", "{change}.value"],
                 excludeSource: "init"
             }
         }
@@ -166,7 +166,7 @@ fluid.defaults("gpii.app.dialogManager", {
             type: "gpii.app.dialog.restartDialog"
         },
 
-        queue: {
+        errorQueue: {
             type: "gpii.app.dialogManager.queue",
             options: {
                 listeners: {
@@ -227,12 +227,12 @@ fluid.defaults("gpii.app.dialogManager", {
 /**
  * Invoked whenever an error dialog has changed its visibility (i.e. it has
  * either be shown or hidden).
- * @param queue {Component} The `gpii.app.dialogManager.queue` instance.
+ * @param errorQueue {Component} The `gpii.app.dialogManager.queue` instance.
  * @param isShown {Boolean} Whether the error dialog is shown or not.
  */
-gpii.app.dialogManager.errorDialogToggled = function (queue, isShown) {
+gpii.app.dialogManager.errorDialogToggled = function (errorQueue, isShown) {
     if (!isShown) {
-        queue.processNext();
+        errorQueue.processNext();
     }
 };
 
@@ -282,7 +282,7 @@ gpii.app.dialogManager.show = function (dialogManager, selector, options) {
     var dialog = dialogManager.get(selector);
     if (dialog) {
         if (dialog.typeName === dialogManager.options.sequentialDialogsGrade) {
-            dialogManager.queue.enqueue(options);
+            dialogManager.errorQueue.enqueue(options);
         } else {
             dialog.show(options);
         }
