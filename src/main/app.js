@@ -109,8 +109,14 @@ fluid.defaults("gpii.app", {
             createOnEvent: "onGPIIReady",
             options: {
                 listeners: {
+                    "onSnapsetNameUpdated.updateSnapsetName": "{app}.updateSnapsetName",
                     "onPreferencesUpdated.updateSets": "{app}.updatePreferences",
-                    "onSnapsetNameUpdated.updateSnapsetName": "{app}.updateSnapsetName"
+
+                    "{settingsBroker}.events.onSettingApplied": {
+                        listener: "{that}.updateSetting",
+                        args: ["{arguments}.0"], // setting
+                        excludeSource: ["settingsBroker.undo"]
+                    }
                 },
                 events: {
                     onConnected: "{app}.events.onPSPChannelConnected"
@@ -159,6 +165,39 @@ fluid.defaults("gpii.app", {
                     }
                 },
                 listeners: {
+                    "onActivePreferenceSetAltered.notifyChannel": {
+                        listener: "{gpiiConnector}.updateActivePrefSet",
+                        args: ["{arguments}.0"] // newPrefSet
+                    },
+
+                    "{gpiiConnector}.events.onPreferencesUpdated": {
+                        listener: "{that}.notifyPSPWindow",
+                        args: [
+                            "onPreferencesUpdated",
+                            "{arguments}.0" // message
+                        ]
+                    },
+
+                    "{gpiiConnector}.events.onSettingUpdated": {
+                        listener: "{that}.notifyPSPWindow",
+                        args: [
+                            "onSettingUpdated",
+                            "{arguments}.0" // message
+                        ]
+                    },
+
+                    "{settingsBroker}.events.onSettingApplied": [{
+                        listener: "{that}.notifyPSPWindow",
+                        args: [
+                            "onSettingUpdated",
+                            "{arguments}.0" // message
+                        ]
+                    }],
+
+                    /*
+                     * Restart Warning related listeners
+                     */
+
                     onClosed: {
                         funcName: "gpii.app.showRestartDialogIfNeeded",
                         args: ["{dialogManager}", "{settingsBroker}.model.pendingChanges"]
@@ -218,49 +257,6 @@ fluid.defaults("gpii.app", {
                 },
                 events: {
                     onActivePreferenceSetAltered: "{psp}.events.onActivePreferenceSetAltered"
-                }
-            }
-        },
-        /*
-         * A helper component used as mediator for handling communication
-         * between the PSP and gpiiConnector components.
-         */
-        channelMediator: {
-            type: "fluid.component",
-            createOnEvent: "onPSPPrerequisitesReady",
-            options: {
-                listeners: {
-                    "{settingsBroker}.events.onSettingApplied": [{
-                        listener: "{gpiiConnector}.updateSetting",
-                        args: ["{arguments}.0"], // setting
-                        excludeSource: ["settingsBroker.undo"]
-                    }, {
-                        listener: "{psp}.notifyPSPWindow",
-                        args: [
-                            "onSettingUpdated",
-                            "{arguments}.0" // message
-                        ]
-                    }],
-
-                    "{psp}.events.onActivePreferenceSetAltered": {
-                        listener: "{gpiiConnector}.updateActivePrefSet",
-                        args: ["{arguments}.0"] // newPrefSet
-                    },
-
-                    "{gpiiConnector}.events.onPreferencesUpdated": {
-                        listener: "{psp}.notifyPSPWindow",
-                        args: [
-                            "onPreferencesUpdated",
-                            "{arguments}.0" // message
-                        ]
-                    },
-                    "{gpiiConnector}.events.onSettingUpdated": {
-                        listener: "{psp}.notifyPSPWindow",
-                        args: [
-                            "onSettingUpdated",
-                            "{arguments}.0" // message
-                        ]
-                    }
                 }
             }
         }
