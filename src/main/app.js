@@ -154,34 +154,50 @@ fluid.defaults("gpii.app", {
                 },
                 modelListeners: {
                     isShown: {
-                        funcName: "gpii.app.toggleRestartDialog",
-                        args: ["{dialogManager}", "{change}.value", "{settingsBroker}.model.pendingChanges"],
-                        excludeSource: "init"
+                        funcName: "gpii.app.hideRestartDialogIfNeeded",
+                        args: ["{dialogManager}", "{change}.value"]
                     }
                 },
                 listeners: {
+                    onClosed: {
+                        funcName: "gpii.app.showRestartDialogIfNeeded",
+                        args: ["{dialogManager}", "{settingsBroker}.model.pendingChanges"]
+                    },
+
                     onSettingAltered: {
                         listener: "{settingsBroker}.enqueue"
                     },
+
                     onRestartNow: [{
                         func: "{dialogManager}.hide",
                         args: ["restartDialog"]
                     }, {
+                        func: "{that}.hide"
+                    }, {
                         listener: "{settingsBroker}.applyPendingChanges"
                     }],
+
                     onUndoChanges: [{
                         func: "{dialogManager}.hide",
                         args: ["restartDialog"]
                     }, {
                         listener: "{settingsBroker}.undoPendingChanges"
                     }],
-                    onRestartLater: {
+
+                    onRestartLater: [{
                         func: "{dialogManager}.hide",
                         args: ["restartDialog"]
-                    },
-                    onActivePreferenceSetAltered: {
+                    }, {
+                        func: "{that}.hide"
+                    }],
+
+                    onActivePreferenceSetAltered: [{
+                        func: "{dialogManager}.hide",
+                        args: ["restartDialog"]
+                    }, {
                         listener: "{settingsBroker}.clearPendingChanges"
-                    },
+                    }],
+
                     "{settingsBroker}.events.onRestartRequired": {
                         funcName: "gpii.app.togglePspRestartWarning",
                         args: [
@@ -199,6 +215,9 @@ fluid.defaults("gpii.app", {
                 model: {
                     keyedInUserToken: "{gpii.app}.model.keyedInUserToken",
                     pendingChanges: "{settingsBroker}.model.pendingChanges"
+                },
+                events: {
+                    onActivePreferenceSetAltered: "{psp}.events.onActivePreferenceSetAltered"
                 }
             }
         },
@@ -350,17 +369,24 @@ gpii.app.togglePspRestartWarning = function (psp, pendingChanges) {
 };
 
 /**
- * Shows the restart dialog if the PSP is not being shown and there is at least
- * one pending change. Otherwise, the restart dialog will be hidden.
+ * Hides the restart dialog if the PSP is being shown.
  * @param dialogManager {Component} The `gpii.app.dialogManager` instance
- * @param isPspShown {Boolean} Whether the psp window is shown
- * @param pendingChanges {Object[]} A list of the current state of pending changes
+ * @param isPspShown {Boolean} Whether the psp window is being shown
  */
-gpii.app.toggleRestartDialog = function (dialogManager, isPspShown, pendingChanges) {
-    if (!isPspShown && pendingChanges.length > 0) {
-        dialogManager.show("restartDialog", pendingChanges);
-    } else {
+gpii.app.hideRestartDialogIfNeeded = function (dialogManager, isPspShown) {
+    if (isPspShown) {
         dialogManager.hide("restartDialog");
+    }
+};
+
+/**
+ * Shows the restart dialog if there is at least one pending change.
+ * @param dialogManager {Component} The `gpii.app.dialogManager` instance
+ * @param pendingChanges {Object[]} A list containing the current pending changes
+ */
+gpii.app.showRestartDialogIfNeeded = function (dialogManager, pendingChanges) {
+    if (pendingChanges.length > 0) {
+        dialogManager.show("restartDialog", pendingChanges);
     }
 };
 

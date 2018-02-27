@@ -98,11 +98,7 @@ fluid.defaults("gpii.app.dialog.restartDialog", {
     },
 
     events: {
-        onClosed: null,
-
-        onRestartNow: null,   // provided by parent component
-        onRestartLater: null, // provided by parent component
-        onUndoChanges: null   // provided by parent component
+        onClosed: null
     },
 
     listeners: {
