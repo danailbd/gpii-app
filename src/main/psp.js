@@ -236,6 +236,7 @@ fluid.defaults("gpii.app.psp", {
             funcName: "gpii.app.psp.resize",
             args: [
                 "{that}",
+                "{that}.options.attrs.width",
                 "{arguments}.0", // contentHeight
                 "{that}.options.attrs.height",
                 "{arguments}.1"  // forceResize
@@ -407,26 +408,29 @@ gpii.app.psp.hide = function (psp) {
  * if its current height is the same as the new height. This behaviour can be
  * overridden using the `forceResize` parameter.
  * @param psp {Object} A `gpii.app.psp` instance.
+ * @param width {Number} The desired width of the BrowserWindow.
  * @param contentHeight {Number} The new height of the BrowserWindow's content.
  * @param minHeight {Number} The minimum height which the BrowserWindow must have.
  * @param forceResize {Boolean} Whether to resize the window even if the current
  * height of the `BrowserWindow` is the same as the new one. Useful when screen
  * DPI is changed as a result of the application of a user's preferences.
  */
-gpii.app.psp.resize = function (psp, contentHeight, minHeight, forceResize) {
+gpii.app.psp.resize = function (psp, width, contentHeight, minHeight, forceResize) {
     var pspWindow = psp.pspWindow,
         wasShown = psp.model.isShown,
         screenSize = electron.screen.getPrimaryDisplay().workAreaSize,
         windowSize = pspWindow.getSize(),
-        windowWidth = windowSize[0],
         initialHeight = windowSize[1],
         windowHeight = Math.min(screenSize.height, Math.max(contentHeight, minHeight));
 
+    // XXX: This check will never yield true until the electron issue related to the
+    // DPI is fixed (https://github.com/electron/electron/issues/10862). Keeping it
+    // because it is an optimization which may help in the future.
     if (initialHeight === windowHeight && !forceResize) {
         return;
     }
 
-    pspWindow.setSize(Math.ceil(windowWidth), Math.ceil(windowHeight));
+    pspWindow.setSize(Math.ceil(width), Math.ceil(windowHeight));
 
     if (wasShown) {
         psp.show();
