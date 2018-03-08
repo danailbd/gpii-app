@@ -16,6 +16,7 @@
 "use strict";
 
 var fluid         = require("infusion");
+var electron      = require("electron");
 var BrowserWindow = require("electron").BrowserWindow;
 
 var gpii  = fluid.registerNamespace("gpii");
@@ -95,9 +96,27 @@ fluid.defaults("gpii.app.dialog", {
             namespace: "impl"
         }
     },
+    events: {
+        onDisplayMetricsChanged: null
+    },
     listeners: {
         "onCreate.positionWindow": {
             func: "{that}.resetWindowPosition"
+        },
+        "onCreate.addDisplayMetricsListener": {
+            func: "gpii.app.dialog.addDisplayMetricsListener",
+            args: ["{that}"]
+        },
+        "onDisplayMetricsChanged.handleDisplayMetricsChange": {
+            func: "gpii.app.dialog.handleDisplayMetricsChange",
+            args: [
+                "{that}",
+                "{arguments}.2" // changedMetrics
+            ]
+        },
+        "onDestroy.removeDisplayMetricsListener": {
+            func: "gpii.app.dialog.removeDisplayMetricsListener",
+            args: ["{that}"]
         },
         "onDestroy.cleanupElectron": {
             this: "{that}.dialog",
@@ -135,6 +154,22 @@ fluid.defaults("gpii.app.dialog", {
         }
     }
 });
+
+gpii.app.dialog.addDisplayMetricsListener = function (that) {
+    electron.screen.on("display-metrics-changed", that.events.onDisplayMetricsChanged.fire);
+};
+
+gpii.app.dialog.handleDisplayMetricsChange = function (that, changedMetrics) {
+    if (changedMetrics.indexOf("workArea") > -1) {
+        var windowSize = that.dialog.getSize(),
+            contentHeight = windowSize[1];
+        that.resize(that.options.config.attrs.width, contentHeight);
+    }
+};
+
+gpii.app.dialog.removeDisplayMetricsListener = function (that) {
+    electron.screen.removeListener("display-metrics-changed", that.events.onDisplayMetricsChanged.fire);
+};
 
 /**
  * Builds a file URL inside the application **Working Directory**.
@@ -194,6 +229,9 @@ gpii.app.dialog.toggle = function (dialog, isShown) {
  * @param windowHeight {Number} The new height for the window
  */
 gpii.app.dialog.resize = function (that, windowWidth, windowHeight) {
+    var screenSize = electron.screen.getPrimaryDisplay().workAreaSize;
+    windowHeight = Math.min(screenSize.height, windowHeight);
+
     that.dialog.setSize(Math.ceil(windowWidth), Math.ceil(windowHeight));
     that.resetWindowPosition();
 };
