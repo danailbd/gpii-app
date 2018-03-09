@@ -155,18 +155,36 @@ fluid.defaults("gpii.app.dialog", {
     }
 });
 
+/**
+ * Registers a listener to be called whenever the `display-metrics-changed`
+ * event is emitted by the electron screen.
+ * @param that {Component} The `gpii.app.dialog` component.
+ */
 gpii.app.dialog.addDisplayMetricsListener = function (that) {
     electron.screen.on("display-metrics-changed", that.events.onDisplayMetricsChanged.fire);
 };
 
+/**
+ * Handle electron's display-metrics-changed event by resizing the dialog if
+ * necessary.
+ * @param that {Component} The `gpii.app.dialog` component.
+ * @param changedMetrics {Array} An array of strings that describe the changes.
+ * Possible changes are `bounds`, `workArea`, `scaleFactor` and `rotation`
+ */
 gpii.app.dialog.handleDisplayMetricsChange = function (that, changedMetrics) {
-    if (changedMetrics.indexOf("workArea") > -1) {
-        var windowSize = that.dialog.getSize(),
-            contentHeight = windowSize[1];
-        that.resize(that.options.config.attrs.width, contentHeight);
+    if (changedMetrics.indexOf("scaleFactor") > -1) {
+        var attrs = that.options.config.attrs;
+        that.resize(attrs.width, attrs.height);
     }
 };
 
+/**
+ * Removes the listener for the `display-metrics-changed` event. This should
+ * be done when the component gets destroyed in order to avoid memory leaks,
+ * as some dialogs are created and destroyed dynamically (i.e. before the
+ * PSP application terminates).
+ * @param that {Component} The `gpii.app.dialog` component.
+ */
 gpii.app.dialog.removeDisplayMetricsListener = function (that) {
     electron.screen.removeListener("display-metrics-changed", that.events.onDisplayMetricsChanged.fire);
 };

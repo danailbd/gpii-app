@@ -300,10 +300,11 @@ gpii.app.psp.show = function (psp) {
  * changes are `bounds`, `workArea`, `scaleFactor` and `rotation`
  */
 gpii.app.psp.handleDisplayMetricsChange = function (psp, event, display, changedMetrics) {
-    if (changedMetrics.indexOf("workArea") > -1) {
-        var windowSize = psp.pspWindow.getSize(),
-            contentHeight = windowSize[1];
-        psp.resize(contentHeight, true);
+    if (changedMetrics.indexOf("scaleFactor") > -1) {
+        // Use the initial size of the PSP when the DPI is changed. The PSP will resize
+        // one more time when the heightChangeListener kicks in. For more information,
+        // take a look at https://github.com/electron/electron/issues/10862.
+        psp.resize(psp.options.attrs.height);
     }
 };
 
@@ -404,31 +405,17 @@ gpii.app.psp.hide = function (psp) {
 /**
  * Resizes the PSP window and positions it appropriately based on the new height
  * of its content. Makes sure that the window is no higher than the available
- * height of the work area in the primary display. The window will not be resized
- * if its current height is the same as the new height. This behaviour can be
- * overridden using the `forceResize` parameter.
+ * height of the work area in the primary display.
  * @param psp {Object} A `gpii.app.psp` instance.
  * @param width {Number} The desired width of the BrowserWindow.
  * @param contentHeight {Number} The new height of the BrowserWindow's content.
  * @param minHeight {Number} The minimum height which the BrowserWindow must have.
- * @param forceResize {Boolean} Whether to resize the window even if the current
- * height of the `BrowserWindow` is the same as the new one. Useful when screen
- * DPI is changed as a result of the application of a user's preferences.
  */
-gpii.app.psp.resize = function (psp, width, contentHeight, minHeight, forceResize) {
+gpii.app.psp.resize = function (psp, width, contentHeight, minHeight) {
     var pspWindow = psp.pspWindow,
         wasShown = psp.model.isShown,
         screenSize = electron.screen.getPrimaryDisplay().workAreaSize,
-        windowSize = pspWindow.getSize(),
-        initialHeight = windowSize[1],
         windowHeight = Math.min(screenSize.height, Math.max(contentHeight, minHeight));
-
-    // XXX: This check will never yield true until the electron issue related to the
-    // DPI is fixed (https://github.com/electron/electron/issues/10862). Keeping it
-    // because it is an optimization which may help in the future.
-    if (initialHeight === windowHeight && !forceResize) {
-        return;
-    }
 
     pspWindow.setSize(Math.ceil(width), Math.ceil(windowHeight));
 
