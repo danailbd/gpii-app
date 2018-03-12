@@ -101,7 +101,7 @@ fluid.defaults("gpii.app.dialog", {
     },
     listeners: {
         "onCreate.positionWindow": {
-            func: "{that}.resetWindowPosition"
+            func: "{that}.positionWindow"
         },
         "onCreate.addDisplayMetricsListener": {
             func: "gpii.app.dialog.addDisplayMetricsListener",
@@ -124,13 +124,9 @@ fluid.defaults("gpii.app.dialog", {
         }
     },
     invokers: {
-        getDesiredWindowPosition: {
-            funcName: "gpii.app.getDesiredWindowPosition",
+        positionWindow: {
+            funcName: "gpii.app.positionWindow",
             args: ["{that}.dialog"]
-        },
-        resetWindowPosition: {
-            funcName: "gpii.app.setWindowPosition",
-            args: ["{that}.dialog", "@expand:{that}.getDesiredWindowPosition()"]
         },
         resize: {
             funcName: "gpii.app.dialog.resize",
@@ -233,7 +229,7 @@ gpii.app.dialog.makeDialog = function (windowOptions, url) {
  */
 gpii.app.dialog.toggle = function (dialog, isShown) {
     if (isShown) {
-        dialog.resetWindowPosition();
+        dialog.positionWindow();
         dialog.dialog.show();
     } else {
         dialog.dialog.hide();
@@ -247,11 +243,8 @@ gpii.app.dialog.toggle = function (dialog, isShown) {
  * @param windowHeight {Number} The new height for the window
  */
 gpii.app.dialog.resize = function (that, windowWidth, windowHeight) {
-    var screenSize = electron.screen.getPrimaryDisplay().workAreaSize;
-    windowHeight = Math.min(screenSize.height, windowHeight);
-
-    that.dialog.setSize(Math.ceil(windowWidth), Math.ceil(windowHeight));
-    that.resetWindowPosition();
+    var bounds = gpii.app.getDesiredWindowBounds(windowWidth, windowHeight);
+    that.dialog.setBounds(bounds);
 };
 
 /**

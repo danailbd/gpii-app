@@ -414,13 +414,18 @@ gpii.app.psp.hide = function (psp) {
 gpii.app.psp.resize = function (psp, width, contentHeight, minHeight) {
     var pspWindow = psp.pspWindow,
         wasShown = psp.model.isShown,
-        screenSize = electron.screen.getPrimaryDisplay().workAreaSize,
-        windowHeight = Math.min(screenSize.height, Math.max(contentHeight, minHeight));
-
-    pspWindow.setSize(Math.ceil(width), Math.ceil(windowHeight));
+        height = Math.max(contentHeight, minHeight),
+        bounds = gpii.app.getDesiredWindowBounds(width, height);
 
     if (wasShown) {
-        psp.show();
+        // The coordinates and the dimensions of the PSP must be set with a single
+        // call to setBounds instead of by invoking setSize and setPosition in a
+        // row. Due to https://github.com/electron/electron/issues/10862.
+        pspWindow.setBounds(bounds);
+    } else {
+        // Setting only the size here because setting the bounds will actually
+        // move the PSP `BrowserWindow` to the screen (i.e. make it visible).
+        pspWindow.setSize(bounds.width, bounds.height);
     }
 };
 
