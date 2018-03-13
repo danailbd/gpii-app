@@ -300,10 +300,18 @@ gpii.app.psp.show = function (psp) {
  * changes are `bounds`, `workArea`, `scaleFactor` and `rotation`
  */
 gpii.app.psp.handleDisplayMetricsChange = function (psp, event, display, changedMetrics) {
-    if (changedMetrics.indexOf("scaleFactor") > -1) {
+    // In older versions of Electron (e.g. 1.4.1) whenever the DPI was changed, one
+    // `display-metrics-changed` event was fired. In newer versions (e.g. 1.8.1) the
+    // `display-metrics-changed` event is fired multiple times. The change of the DPI
+    // appears to be applied at different times on different machines. On some as soon
+    // as the first `display-metrics-changed` event is fired, the DPI changes are
+    // applied. On others, this is not the case until the event is fired again. That is
+    // why the resizing should happen only the second (or third) time the
+    // `display-metrics-changed` event is fired in which case the changedMetrics argument
+    // will not include the `scaleFactor` string.
+    if (changedMetrics.indexOf("scaleFactor") === -1) {
         // Use the initial size of the PSP when the DPI is changed. The PSP will resize
-        // one more time when the heightChangeListener kicks in. For more information,
-        // take a look at https://github.com/electron/electron/issues/10862.
+        // one more time when the heightChangeListener kicks in.
         psp.resize(psp.options.attrs.height);
     }
 };

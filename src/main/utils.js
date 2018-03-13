@@ -68,17 +68,6 @@ gpii.app.positionWindow = function (dialogWindow) {
 };
 
 /**
- * Sets the position of the Electorn `BrowserWindow` element.
- * @param dialogWindow {BrowserWindow} The window which is to be positioned
- * @param position {Object} The position where the window to be placed
- * @param position.x {Number}
- * @param position.y {Number}
- */
-gpii.app.setWindowPosition = function (dialogWindow, position) {
-    dialogWindow.setPosition(position.x, position.y);
-};
-
-/**
  * A function which capitalizes its input text. It does nothing
  * if the provided argument is `null` or `undefined`.
  * @param text {String} The input text.
