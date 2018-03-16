@@ -35,7 +35,18 @@
         model: {
             pendingChanges: [],
             solutionNames: [],
-            restartText: ""
+            restartText: "",
+
+            messages: {
+                restartTitle: null,
+                osRestartText: null,
+                restartText: null,
+                restartQuestion: null,
+
+                undo: null,
+                restartLater: null,
+                restartNow: null
+            }
         },
 
         // XXX dev
@@ -65,7 +76,7 @@
                     type: "fluid.transforms.free",
                     func: "gpii.psp.baseRestartWarning.generateRestartText",
                     args: [
-                        "{messageBundles}.model.messages",
+                        "{that}.model.messages",
                         "{that}.options.labels.os",
                         "{that}.model.solutionNames"
                     ]
@@ -91,7 +102,7 @@
                 container: "{that}.dom.undo",
                 options: {
                     model: {
-                        label: "{messageBundles}.model.messages.gpii_app_restartWarning_undo"
+                        label: "{baseRestartWarning}.model.messages.undo"
                     },
                     invokers: {
                         onClick: "{baseRestartWarning}.events.onUndoChanges.fire"
@@ -103,7 +114,7 @@
                 container: "{that}.dom.restartNow",
                 options: {
                     model: {
-                        label: "{messageBundles}.model.messages.gpii_app_restartWarning_restartNow"
+                        label: "{baseRestartWarning}.model.messages.restartNow"
                     },
                     invokers: {
                         onClick: "{baseRestartWarning}.events.onRestartNow.fire"
@@ -115,7 +126,7 @@
                 container: "{that}.dom.restartLater",
                 options: {
                     model: {
-                        label: "{messageBundles}.model.messages.gpii_app_restartWarning_restartLater"
+                        label: "{baseRestartWarning}.model.messages.restartLater"
                     },
                     invokers: {
                         onClick: "{baseRestartWarning}.events.onRestartLater.fire"
@@ -188,11 +199,11 @@
         }
 
         if (solutionNames[0] === osLabel) {
-            return messages.gpii_app_restartWarning_osRestartText;
+            return messages.osRestartText;
         }
 
-        if (messages.gpii_app_restartWarning_restartText) {
-            return fluid.stringTemplate(messages.gpii_app_restartWarning_restartText, { solutions: solutionNames.join(", ")});
+        if (messages.restartText) {
+            return fluid.stringTemplate(messages.restartText, { solutions: solutionNames.join(", ")});
         }
     };
 

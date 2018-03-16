@@ -32,9 +32,7 @@ fluid.defaults("gpii.app.messageBundles", {
 
     defaultLocale: "en_us",
 
-    // compiledMessageBundles: {
-
-    // },
+    // messageBundles: <%= compiledMessageBundles %>,
     messageBundles: {
         "en_us": {
             // TODO naming
@@ -73,6 +71,10 @@ fluid.defaults("gpii.app.messageBundles", {
     modelListeners: {
         "locale": {
             func: "{that}.updateMessages"
+        },
+        messages: {
+            funcName: "gpii.app.messageBundles.distributeMessages",
+            args: ["{that}", "{change}.value"]
         }
     },
 
@@ -80,7 +82,7 @@ fluid.defaults("gpii.app.messageBundles", {
         // XXX DEV
         onCreate: {
             this: "console",
-            method: 'log',
+            method: "log",
             args: "===========HERE=============="
         }
     },
@@ -97,7 +99,6 @@ fluid.defaults("gpii.app.messageBundles", {
         }
     }
 });
-
 
 /**
  * Make a bulk update of the currently set translations
@@ -121,3 +122,38 @@ gpii.app.messageBundles.updateMessages = function (that, messageBundles, locale,
     that.applier.change("messages", messages);
 };
 
+gpii.app.messageBundles.getComponentName = function (messageKey) {
+    var keyDelimiterIndex = messageKey.lastIndexOf("_"),
+        componentSegment = messageKey.slice(0, keyDelimiterIndex);
+    return componentSegment.replace(/_/g, ".");
+};
+
+gpii.app.messageBundles.getSimpleMessageKey = function (messageKey) {
+    var keyDelimiterIndex = messageKey.lastIndexOf("_");
+    return messageKey.slice(keyDelimiterIndex + 1);
+};
+
+gpii.app.messageBundles.getMessagesGroupedByComponent = function (messages) {
+    var groupedMessages = {};
+
+    fluid.each(messages, function (value, key) {
+        var componentName = gpii.app.messageBundles.getComponentName(key),
+            simpleMessageKey = gpii.app.messageBundles.getSimpleMessageKey(key),
+            messageObj = {};
+
+        messageObj[simpleMessageKey] = value;
+        groupedMessages[componentName] = fluid.extend(true, groupedMessages[componentName], messageObj);
+    });
+
+    return groupedMessages;
+};
+
+gpii.app.messageBundles.distributeMessages = function (that, messages) {
+    var groupedMessages = gpii.app.messageBundles.getMessagesGroupedByComponent(messages);
+    fluid.each(groupedMessages, function (bundle, componentName) {
+        var components = fluid.queryIoCSelector(fluid.rootComponent, componentName);
+        fluid.each(components, function (component) {
+            component.applier.change("messages", bundle);
+        });
+    });
+};

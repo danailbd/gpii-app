@@ -112,12 +112,12 @@
             "labels.restartTitle": {
                 this: "{that}.dom.title",
                 method: "text",
-                args: "{messageBundles}.model.messages.gpii_app_restartWarning_restartTitle"
+                args: "{that}.model.messages.restartTitle"
             },
             "labels.restartQuestion": {
                 this: "{that}.dom.restartQuestion",
                 method: "text",
-                args: "{messageBundles}.model.messages.gpii_app_restartWarning_restartQuestion"
+                args: "{that}.model.messages.restartQuestion"
             },
             solutionNames: {
                 funcName: "gpii.restartDialog.restartWarning.modifySolutionNamesList",

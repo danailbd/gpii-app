@@ -63,7 +63,8 @@ fluid.defaults("gpii.app", {
         preferences: {
             sets: [],
             activeSet: null
-        }
+        },
+        locale: null
     },
     // prerequisites
     members: {
@@ -71,7 +72,13 @@ fluid.defaults("gpii.app", {
     },
     components: {
         messageBundles: {
-            type: "gpii.app.messageBundles"
+            type: "gpii.app.messageBundles",
+            createOnEvent: "onPSPReady",
+            options: {
+                model: {
+                    locale: "{app}.model.locale"
+                }
+            }
         },
         errorHandler: {
             type: "gpii.app.errorHandler",
