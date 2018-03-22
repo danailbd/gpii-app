@@ -86,9 +86,8 @@ gpii.app.messageBundles.updateMessages = function (that, messageBundles, locale,
 };
 
 gpii.app.messageBundles.getComponentName = function (messageKey) {
-    var keyDelimiterIndex = messageKey.lastIndexOf("_"),
-        componentSegment = messageKey.slice(0, keyDelimiterIndex);
-    return componentSegment.replace(/_/g, ".");
+    var keyDelimiterIndex = messageKey.lastIndexOf("_");
+    return messageKey.slice(0, keyDelimiterIndex);
 };
 
 gpii.app.messageBundles.getSimpleMessageKey = function (messageKey) {
@@ -105,9 +104,8 @@ gpii.app.messageBundles.getMessagesGroupedByComponent = function (messages) {
             messageObj = {};
 
         messageObj[simpleMessageKey] = value;
-        groupedMessages[componentName] = fluid.extend(true, groupedMessages[componentName], messageObj);
+        groupedMessages[componentName] = fluid.extend(true, {}, groupedMessages[componentName], messageObj);
     });
-
     return groupedMessages;
 };
 
@@ -128,18 +126,22 @@ gpii.psp.i18n.distributeBindingsAndReconstruct = function (that) {
         return;
     }
 
+    console.log("====UPON DISTRIBUTION", that.model.messages);
     var messagesBindingsDistributions = {};
 
-    var groupedMessages = gpii.app.messageBundles.getMessagesGroupedByComponent(that.options.messageBundles);
-    var dependetCompEl = "{that %typeName}.options.model.messages";
+    var defaultLocale = that.options.defaultLocale;
+    var defaultLocaleMessages = that.options.messageBundles[defaultLocale];
+    var groupedMessages = gpii.app.messageBundles.getMessagesGroupedByComponent(defaultLocaleMessages);
+    var dependetCompEl = "{/ %typeName}.options.model.messages";
     var binding = "{%messageBundle}.model.messages.%typeName";
 
     // TODO reduce
     fluid.each(groupedMessages, function (bundle, typeName) {
-        console.log("TypeName: ", typeName, "Bundle: ", bundle);
+        console.log("TypeName: ", typeName, "Bundle: ", bundle, "\n");
+        var componentName = typeName.replace(/_/g, ".");
 
-        messagesBindingsDistributions[typeName] = { // typeName + "MessagesDistribution"
-            target: fluid.stringTemplate(dependetCompEl, { typeName: typeName }),
+        messagesBindingsDistributions[componentName] = { // typeName + "MessagesDistribution"
+            target: fluid.stringTemplate(dependetCompEl, { typeName: componentName }),
             record: fluid.stringTemplate(binding, {
                 messageBundle: that.typeName,
                 typeName: typeName
@@ -147,6 +149,8 @@ gpii.psp.i18n.distributeBindingsAndReconstruct = function (that) {
         }
     });
 
+
+    console.log("======DISTRIBUTIONS", messagesBindingsDistributions);
 
     var newly = fluid.construct(fluid.pathForComponent(that), {
         type: that.typeName,

@@ -4,10 +4,6 @@
     "gpii_app_menu_keyedIn": "Keyed in with %snapsetName",
     "gpii_app_menu_keyOut": "Key-out of GPII",
 
-    "gpii_app_menuInAppDev_locale": "Locale",
-    "gpii_app_menuInAppDev_keyIn": "Key in ...",
-    "gpii_app_menuInAppDev_exit": "Exit GPII",
-
     "gpii_psp_baseRestartWarning_osRestartText": "Windows needs to restart to apply your changes.",
     "gpii_psp_baseRestartWarning_restartText": "In order to be applied, some of the changes you made require the following applications to restart:",
     "gpii_psp_baseRestartWarning_undo": "Cancel\n(Undo Changes)",

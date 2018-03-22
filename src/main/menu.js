@@ -105,7 +105,7 @@ fluid.defaults("gpii.app.menuInAppDev", {
         //   b) fire a model change to set the new model.keyedInUserToken
         //   c) update the menu
         "onLocale.changeLocale": {
-            changePath: "{app}.messageBundles.model.locale",
+            changePath: "{app}.model.locale",
             value: "{arguments}.0.locale"
         },
         "onKeyIn.performKeyOut": {
@@ -315,8 +315,20 @@ fluid.defaults("gpii.app.menu", {
         onPSP: null,
         onActivePreferenceSetAltered: null,
         onKeyOut: null
+    },
+    listeners: {
+        "onCreate.print": {
+            funcName: "gpii.app.menu.print",
+            args: ["{that}"]
+        }
     }
 });
+
+gpii.app.menu.print = function (that) {
+    setTimeout(function () {
+        console.log("===========MODEL", that.options.model);
+    }, 5000);
+};
 
 /**
 *  Object representing options for a `Electron` `ContextMenu` item.
