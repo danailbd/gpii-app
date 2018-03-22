@@ -20,7 +20,7 @@ var gpii = fluid.registerNamespace("gpii");
  * Holds all messages for the app (renderer included)
  */
 fluid.defaults("gpii.app.messageBundles", {
-    gradeNames: ["fluid.modelComponent"],
+    gradeNames: ["fluid.modelComponent", "gpii.psp.i18n"],
 
     model: {
         locale: "bg",
@@ -37,10 +37,6 @@ fluid.defaults("gpii.app.messageBundles", {
     modelListeners: {
         "locale": {
             func: "{that}.updateMessages"
-        },
-        messages: {
-            funcName: "gpii.app.messageBundles.distributeMessages",
-            args: ["{that}", "{change}.value"]
         }
     },
 
@@ -84,8 +80,9 @@ gpii.app.messageBundles.updateMessages = function (that, messageBundles, locale,
         messages = messageBundles[defaultLocale];
     }
 
-    console.log("Update: ", messages);
-    that.applier.change("messages", messages);
+    var groupedMessages = gpii.app.messageBundles.getMessagesGroupedByComponent(messages);
+
+    that.applier.change("messages", groupedMessages);
 };
 
 gpii.app.messageBundles.getComponentName = function (messageKey) {
@@ -114,13 +111,47 @@ gpii.app.messageBundles.getMessagesGroupedByComponent = function (messages) {
     return groupedMessages;
 };
 
-gpii.app.messageBundles.distributeMessages = function (that, messages) {
-    var groupedMessages = gpii.app.messageBundles.getMessagesGroupedByComponent(messages);
-    fluid.each(groupedMessages, function (bundle, componentName) {
-        var components = fluid.queryIoCSelector(fluid.rootComponent, componentName);
-        console.log("Component name", componentName, components);
-        fluid.each(components, function (component) {
-            component.applier.change("messages", bundle);
-        });
+
+fluid.defaults("gpii.psp.i18n", {
+    gradeNames: ["fluid.modelComponent"],
+
+    listeners: {
+        "onCreate.distributeMessagesBinding": {
+            funcName: "gpii.psp.i18n.distributeBindingsAndReconstruct",
+            args: ["{that}"]
+        }
+    }
+});
+
+gpii.psp.i18n.distributeBindingsAndReconstruct = function (that) {
+    if (that.options.distributed) {
+        return;
+    }
+
+    var messagesBindingsDistributions = {};
+
+    var groupedMessages = gpii.app.messageBundles.getMessagesGroupedByComponent(that.options.messageBundles);
+    var dependetCompEl = "{that %typeName}.options.model.messages";
+    var binding = "{%messageBundle}.model.messages.%typeName";
+
+    // TODO reduce
+    fluid.each(groupedMessages, function (bundle, typeName) {
+        console.log("TypeName: ", typeName, "Bundle: ", bundle);
+
+        messagesBindingsDistributions[typeName] = { // typeName + "MessagesDistribution"
+            target: fluid.stringTemplate(dependetCompEl, { typeName: typeName }),
+            record: fluid.stringTemplate(binding, {
+                messageBundle: that.typeName,
+                typeName: typeName
+            })
+        }
+    });
+
+
+    var newly = fluid.construct(fluid.pathForComponent(that), {
+        type: that.typeName,
+        distributed: true,
+
+        distributeOptions: messagesBindingsDistributions
     });
 };

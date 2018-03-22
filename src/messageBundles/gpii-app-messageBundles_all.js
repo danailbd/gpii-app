@@ -20,7 +20,7 @@ var gpii = fluid.registerNamespace("gpii");
  * Holds all messages for the app (renderer included)
  */
 fluid.defaults("gpii.app.messageBundles", {
-    gradeNames: ["fluid.modelComponent"],
+    gradeNames: ["fluid.modelComponent", "gpii.psp.i18n"],
 
     model: {
         locale: "bg",
@@ -118,8 +118,9 @@ gpii.app.messageBundles.updateMessages = function (that, messageBundles, locale,
         messages = messageBundles[defaultLocale];
     }
 
-    console.log("Update: ", messages);
-    that.applier.change("messages", messages);
+    var groupedMessages = gpii.app.messageBundles.getMessagesGroupedByComponent(messages);
+
+    that.change.applier("messages", groupedMessages);
 };
 
 gpii.app.messageBundles.getComponentName = function (messageKey) {
@@ -148,12 +149,47 @@ gpii.app.messageBundles.getMessagesGroupedByComponent = function (messages) {
     return groupedMessages;
 };
 
-gpii.app.messageBundles.distributeMessages = function (that, messages) {
-    var groupedMessages = gpii.app.messageBundles.getMessagesGroupedByComponent(messages);
-    fluid.each(groupedMessages, function (bundle, componentName) {
-        var components = fluid.queryIoCSelector(fluid.rootComponent, componentName);
-        fluid.each(components, function (component) {
-            component.applier.change("messages", bundle);
-        });
+
+fluid.defaults("gpii.psp.i18n", {
+    gradeNames: ["fluid.modelComponent"],
+
+    listeners: {
+        "onCreate.distributeMessagesBinding": {
+            funcName: "gpii.psp.i18n.distributeBindingsAndReconstruct",
+            args: ["{that}"]
+        }
+    }
+});
+
+gpii.psp.i18n.distributeBindingsAndReconstruct = function (that) {
+    if (that.options.distributed) {
+        return;
+    }
+
+    var messagesBindingsDistributions = {};
+
+    var groupedMessages = gpii.app.messageBundles.getMessagesGroupedByComponent(that.options.messsageBundles);
+    var dependetCompEl = "{that %typeName}.options.model.messages";
+    var binding = "{%messageBundle}.model.messages.%typeName";
+
+    // TODO reduce
+    fluid.each(groupedMessages, function (bundle, typeName) {
+        messagesBindingsDistributions[typeName] = { // typeName + "MessagesDistribution"
+            target: fluid.stringTemplate(dependetCompEl, { typeName: typeName }),
+            record: fluid.stringTemplate(binding, {
+                messageBundle: that.typeName,
+                typeName: typeName
+            })
+        }
     });
+
+
+    var newly = fluid.construct(fluid.pathForComponent(that), {
+        type: that.typeName,
+        distributed: true,
+
+        distributeOptions: messagesBindingsDistributions
+    });
+
+    console.log("---- ", newly);
 };
