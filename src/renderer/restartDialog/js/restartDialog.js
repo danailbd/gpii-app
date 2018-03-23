@@ -109,15 +109,15 @@
 
 
         modelListeners: {
-            "labels.restartTitle": {
+            "messages.restartTitle": {
                 this: "{that}.dom.title",
                 method: "text",
-                args: "{that}.model.messages.restartTitle"
+                args: "{change}.value"
             },
-            "labels.restartQuestion": {
+            "messages.restartQuestion": {
                 this: "{that}.dom.restartQuestion",
                 method: "text",
-                args: "{that}.model.messages.restartQuestion"
+                args: "{change}.value"
             },
             solutionNames: {
                 funcName: "gpii.restartDialog.restartWarning.modifySolutionNamesList",
@@ -140,10 +140,8 @@
             solutionNameMarkup = that.options.markup.solutionName,
             listItemElement;
 
-        console.log("List: ", that);
-
         listElement.empty();
-        if (solutionNames[0] === that.options.labels.os) {
+        if (solutionNames[0] === that.model.messages.osName) {
             listElement.hide();
             return;
         }

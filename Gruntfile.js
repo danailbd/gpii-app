@@ -15,6 +15,13 @@ module.exports = function (grunt) {
                 srderr: true,
                 failOnError: true
             }
+        },
+        compileMessages: {
+            defaults: {
+                messageCompilerPath: "./src/messageBundles/messageBundlesCompiler.js",
+                messagesPath: "./src/messageBundles",
+                resultFilePath: "./build/gpii-app-messageBundles.json"
+            }
         }
     });
 
@@ -26,21 +33,11 @@ module.exports = function (grunt) {
     grunt.registerTask("lint", "Run eslint and jsonlint", ["eslint", "jsonlint"]);
 
 
-    grunt.registerTask("compiledMessageBundles", function () {
-        var buildMessageBundles = require("./src/messageBundles/messageBundlesCompiler.js").buildMessageBundles;
+    grunt.registerMultiTask("compileMessages", function () {
+        var buildMessageBundles = require(this.data.messageCompilerPath).buildMessageBundles;
 
-        var compiledMessageBundles = buildMessageBundles("./src/messageBundles", "json", JSON, "en");
+        var compiledMessageBundles = buildMessageBundles(this.data.messagesPath, "json", JSON, "en");
 
-        console.log(compiledMessageBundles);
-
-        var template = grunt.template.process(
-            grunt.file.read("./src/messageBundles/gpii-app-messageBundles_all.js.tpl"),
-            {
-                data: {
-                    compiledMessageBundles: JSON.stringify(compiledMessageBundles)
-                }
-            });
-
-        grunt.file.write("./src/messageBundles/gpii-app-messageBundles_compiled.js", template);
+        grunt.file.write(this.data.resultFilePath, JSON.stringify(compiledMessageBundles, null, 4));
     });
 };
