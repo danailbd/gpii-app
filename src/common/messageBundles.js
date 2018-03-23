@@ -137,15 +137,10 @@ gpii.app.messageBundles.getMessageDistributions = function (that) {
 };
 
 gpii.app.messageBundles.distributeMessages = function (that) {
-    // The `distributed` flag and this check are needed to avoid an endless recursion.
-    if (that.options.distributed) {
-        return;
-    }
+    var distributeOptions = gpii.app.messageBundles.getMessageDistributions(that);
 
-    fluid.construct(fluid.pathForComponent(that), {
-        type: that.typeName,
-        container: that.container,
-        distributeOptions: gpii.app.messageBundles.getMessageDistributions(that),
-        distributed: true
+    fluid.construct(fluid.pathForComponent(that).concat(["messageDistributor"]), {
+        type: "fluid.component",
+        distributeOptions: distributeOptions
     });
 };
