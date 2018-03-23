@@ -179,12 +179,6 @@
      * @return {String} The text which is to be displayed in the component.
      */
     gpii.psp.baseRestartWarning.generateRestartText = function (messages, solutionNames) {
-        console.log("Generate Restart Text: ", messages);
-        if (!messages) {
-            // translations are missing yet
-            return;
-        }
-
         if (solutionNames[0] === messages.osName) {
             return messages.osRestartText;
         }

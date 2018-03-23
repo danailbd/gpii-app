@@ -315,20 +315,8 @@ fluid.defaults("gpii.app.menu", {
         onPSP: null,
         onActivePreferenceSetAltered: null,
         onKeyOut: null
-    },
-    listeners: {
-        "onCreate.print": {
-            funcName: "gpii.app.menu.print",
-            args: ["{that}"]
-        }
     }
 });
-
-gpii.app.menu.print = function (that) {
-    setTimeout(function () {
-        console.log("===========MODEL", that.options.model);
-    }, 5000);
-};
 
 /**
 *  Object representing options for a `Electron` `ContextMenu` item.
