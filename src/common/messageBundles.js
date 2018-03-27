@@ -1,7 +1,8 @@
 /**
- * The PSP Main component
+ * A component for the i18n
  *
- * A component that represents the whole PSP. It wraps all of the PSP's functionality and also provides information on whether there's someone keyIn or not.
+ * Introduces a component that distributes messages over components.
+ *
  * Copyright 2016 Steven Githens
  * Copyright 2016-2017 OCAD University
  *
@@ -20,20 +21,25 @@ var gpii = fluid.registerNamespace("gpii");
  * Holds all messages for the various components in the application (including
  * the renderer components). The model contains the current locale and the
  * messages applicable to it. The `messageBundles` option is loaded synchronously
- * when this component is instantiated and is a hash whose keys represent the
+ * when this component is instantiated and is a map whose keys represent the
  * supported locales for the application and the values are the messages for these
- * locales. The messages in turn are also hashes whose keys start with the gradeName
- * to which the message is relative (but the dots are replaed with underscores) and
+ * locales. The messages in turn are also maps whose keys start with the gradeName
+ * to which the message is relative (but the dots are replaced with underscores) and
  * end with the simple name of the message key which is referenced in the component.
- * For example, here is an entry from the en locale:
- *     "gpii_psp_header_autosaveText": "Auto-save is on"
+ * For example, here is an entry from the "en" locale:
+ *     en: {
+ *       "gpii_psp_header_autosaveText": "Auto-save is on",
+ *       ...
+ *     }
  * It means that the "Auto-save is on" message should be the value of the `autosaveText`
  * property within the model's messages object of the "gpii.psp.header" component.
  *
  * This component has a `messageDistributor` subcomponent which is created
  * programmatically and it takes care of providing the necessary messages to the
  * components which need them via `distributeOptions` blocks which are generated
- * dynamically.
+ * dynamically. Note that it expects the messages that a component uses to be located
+ * under the "model". This approach makes use of the modelListeners in order for
+ * re-rendering to happen after locale change.
  */
 fluid.defaults("gpii.app.messageBundles", {
     gradeNames: ["fluid.modelComponent", "{that}.options.messageDistributorGrade"],
@@ -119,7 +125,7 @@ gpii.app.messageBundles.loadMessageBundles = function (messageBundlesPath) {
  * there are no messages available for this locale, the default locale messages
  * will be used.
  * @param that {Component} The `gpii.app.messageBundles` instance.
- * @param messageBundles {Object} A hash containing the messages for all available
+ * @param messageBundles {Object} A map containing the messages for all available
  * locales.
  * @param locale {String} The new locale.
  * @param defaultLocale {String} The default locale.
@@ -163,43 +169,43 @@ gpii.app.messageBundles.getSimpleMessageKey = function (messageKey) {
 };
 
 /**
- * Given a hash which contains all messages for a given locale, groups the messages by
+ * Given a map which contains all messages for a given locale, groups the messages by
  * component grades.
- * @param {Object} messages A hash with all the messages for a given locale.
- * @return {Object} A hash whose keys are individual component grade names (which contain
- * _ instead of . as separators) and the values are hashes whose keys are the simple
+ * @param {Object} messages A map with all the messages for a given locale.
+ * @return {Object} A map whose keys are individual component grade names (which contain
+ * _ instead of . as separators) and the values are maps whose keys are the simple
  * message keys and the values are the message strings themselves.
  */
 gpii.app.messageBundles.groupMessagesByComponent = function (messages) {
     var groupedMessages = {};
 
-    fluid.each(messages, function (value, key) {
+    fluid.each(messages, function (message, key) {
         var componentKey = gpii.app.messageBundles.getComponentKey(key),
-            simpleMessageKey = gpii.app.messageBundles.getSimpleMessageKey(key),
-            messageObj = {};
+            simpleMessageKey = gpii.app.messageBundles.getSimpleMessageKey(key);
 
-        messageObj[simpleMessageKey] = value;
+        var messageObj = {};
+        messageObj[simpleMessageKey] = message;
+
         groupedMessages[componentKey] = fluid.extend(true, {}, groupedMessages[componentKey], messageObj);
     });
     return groupedMessages;
 };
 
 /**
- * Created an object which can be used as a `distributeOptions` value to distribute IoC
- * message references to the components that need them.
- * @param that {Component} The `gpii.app.messageBundles` instance.
- * @return {Object} A hash of namespaced distributeOptions blocks.
+ * Constructs an object which can be used as a `distributeOptions` value to distribute IoC
+ * message references to the components that need them. Dependent components are extracted
+ * from the message keys and in the constructed object, there exist a key for every such
+ * component.
+ * @param currentMessages {Object} A map of all messages.
+ * @return {Object} A map of namespaced distributeOptions blocks.
  */
 gpii.app.messageBundles.getMessageDistributions = function (currentMessages) {
-    // var currentLocale = that.model.locale,
-    //     currentMessages = that.options.messageBundles[currentLocale],
     var groupedMessages = gpii.app.messageBundles.groupMessagesByComponent(currentMessages),
         dependentPath = "{/ %componentName}.options.model.messages",
         binding = "{gpii.app.messageBundles}.model.messages.%componentKey";
 
     return fluid.keys(groupedMessages).reduce(function (distributions, componentKey) {
-        var messages = groupedMessages[componentKey],
-            componentName = componentKey.replace(/_/g, ".");
+        var componentName = componentKey.replace(/_/g, ".");
 
         distributions[componentName] = {
             target: fluid.stringTemplate(dependentPath, {componentName: componentName}),
@@ -211,16 +217,3 @@ gpii.app.messageBundles.getMessageDistributions = function (currentMessages) {
         return distributions;
     }, {});
 };
-
-/*
-gpii.app.messageBundles.distributeMessages = function (that) {
-    var distributeOptions = gpii.app.messageBundles.getMessageDistributions(that);
-
-    fluid.construct(fluid.pathForComponent(that).concat(["messageDistributor"]), {
-        type: "fluid.component",
-        distributeOptions: distributeOptions
-    });
-
-    console.log("=========", distributeOptions);
-};
-*/
