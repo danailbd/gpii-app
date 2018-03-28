@@ -45,20 +45,21 @@ fluid.defaults("gpii.app.messageBundles", {
     gradeNames: ["fluid.modelComponent", "{that}.options.messageDistributorGrade"],
 
     model: {
-        locale: "en_us",
+        locale: null, // default will be used
 
         // keep messages here in order to make use
         // of the model events system
         messages: {}
     },
 
-    defaultLocale: "en_us",
+    defaultLocale: "en",
 
     messageBundlesPath: "build/gpii-app-messageBundles.json",
 
     messageBundles: "@expand:gpii.app.messageBundles.loadMessageBundles({that}.options.messageBundlesPath)",
 
     modelListeners: {
+        // Will be called on init
         "locale": {
             func: "{that}.updateMessages"
         }
