@@ -184,7 +184,7 @@ fluid.defaults("gpii.app.psp", {
         },
 
         "onDestroy.cleanupElectron": {
-            this: "{that}.pspWindow",
+            "this": "{that}.pspWindow",
             method: "destroy"
         },
 
@@ -215,6 +215,18 @@ fluid.defaults("gpii.app.psp", {
             args: "{that}"
         }
     },
+
+    modelListeners: {
+        "{app}.model.locale": {
+            funcName: "gpii.app.notifyWindow",
+            args: [
+                "{that}.pspWindow",
+                "onLocaleChanged",
+                "{app}.model.locale"
+            ]
+        }
+    },
+
     invokers: {
         show: {
             funcName: "gpii.app.psp.show",
