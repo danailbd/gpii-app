@@ -1,0 +1,86 @@
+<html>
+    <head>
+        <title>About GPII Auto-personalization</title>
+        <link rel="stylesheet" href="../../../node_modules/winstrap/dist/css/winstrap.min.css">
+        <link rel="stylesheet" href="../psp/css/button.css">
+        <link rel="stylesheet" href="../common/css/dialog.css">
+        <link rel="stylesheet" href="../common/css/titlebar.css">
+        <link rel="stylesheet" href="css/main.css">
+
+
+        <script type="text/javascript" src="../../../node_modules/infusion/src/lib/jquery/core/js/jquery.js"></script>
+        <script type="text/javascript" src="../../../node_modules/infusion/dist/infusion-all.js"></script>
+        <script type="text/javascript" src="../../../node_modules/infusion/src/components/textfieldControl/js/Textfield.js"></script>
+
+        <script type="text/javascript" src="../psp/js/widgets.js"></script>
+        <script type="text/javascript" src="../common/js/titlebar.js"></script>
+        <script type="text/javascript" src="js/logingDialog.js"></script>
+        <script type="text/javascript" src="js/index.js"></script>
+
+        <!-- <script type="text/javascript" src="../common/js/utils.js"></script> -->
+        <!-- <script type="text/javascript" src="../common/js/channelUtils.js"></script> -->
+
+        <!-- TODO -->
+        <!-- <script type="text/javascript" src="../../common/messageBundles.js"></script> -->
+        <!-- <script type="text/javascript" src="../common/js/messageBundles.js"></script> -->
+    </head>
+    <body>
+        
+        <div class="fl-dialog fl-dialog-fullScreen">
+            <div class="fl-dialog-contentWrapper">
+                <div class="flc-titlebar fl-titlebar">
+                    <span class="flc-title fl-appName" tabindex="0"></span>
+                    <button class="flc-closeBtn fl-closeBtn btn btn-regular">&#x2715;</button>
+                </div>
+
+                <div class="fl-dialog-content fl-scrollable">
+                    <img class="fl-dialog-contentIcon" src="../../icons/gpii-color.ico">
+
+                    <div class="fl-dialog-contentText">
+                        <div class="flc-contentTitleIntro fl-title"></div>
+                        <div class="flc-contentSubTitleIntro fl-subtitle"></div>
+                    </div>
+
+                    <div class="fl-dialog-contentText">
+                        <div class="fl-subhead">
+                            <div class="flc-contentTitle fl-title"></div>
+                            <div class="flc-contentSubtitle fl-subtitle"></div>
+                        </div>
+
+                        <div class="form-group">
+                            <label>Email</label>
+                            <!-- <label class="flc-emailText"></span> -->
+                            <input type="text" class="flc-emailTextInput form-control">
+
+                            <label>Password</label>
+                            <!-- <label class="flc-emailText"></span> -->
+                            <input type="text" class="flc-emailTextInput form-control">
+
+
+                            <button class="flc-signIn btn fl-btn fl-signInButton">
+                                <span class="flc-btnLabel fl-btnLabel">Sign in</span>
+                            </button>
+
+                            <div class="flc-errorPopup fl-errorPopup">
+                                <div class="flc-errorTitle fl-errorTitle">Wrong name or password</div>
+                                <div class="flc-errorDetails fl-errorDetails">Try again or use a key</div>
+                            </div>
+                        </div>
+
+                        <div class="flc-links fl-links">
+                            <button class="flc-signup btn btn-link">
+                                <span class="flc-btnLabel fl-btnLabel">Create an Account</span>
+                            </button>
+                            <!-- TODO do we need class? -->
+                            <span class="flc-separator">·</span>
+                            <button class="flc-forgotPassword btn btn-link">
+                                <span class="flc-btnLabel fl-btnLabel">Forgot Password?</span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                <div class="fl-dialog-footer"></div>
+            </div>
+        </div>
+    </body>
+</html>
