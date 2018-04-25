@@ -3,6 +3,7 @@
         <link rel="stylesheet" href="../../../node_modules/winstrap/dist/css/winstrap.min.css">
         <link rel="stylesheet" href="../common/css/titlebar.css">
         <link rel="stylesheet" href="../common/css/heightObservable.css">
+        <link rel="stylesheet" href="../common/css/dialog.css">
         <link rel="stylesheet" href="css/variables.css">
         <link rel="stylesheet" href="css/button.css">
         <link rel="stylesheet" href="css/dropdown.css">
@@ -12,7 +13,7 @@
         <link rel="stylesheet" href="css/textfield.css">
         <link rel="stylesheet" href="css/icons.css">
         <link rel="stylesheet" href="css/restartWarning.css">
-        <link rel="stylesheet" href="css/splash.css">
+        <link rel="stylesheet" href="css/signin.css">
         <link rel="stylesheet" href="css/header.css">
         <link rel="stylesheet" href="css/content.css">
         <link rel="stylesheet" href="css/footer.css">
@@ -28,7 +29,7 @@
         <script type="text/javascript" src="../common/js/utils.js"></script>
         <script type="text/javascript" src="js/exemplars.js"></script>
         <script type="text/javascript" src="js/settingsPanel.js"></script>
-        <script type="text/javascript" src="js/splash.js"></script>
+        <script type="text/javascript" src="js/signin.js"></script>
         <script type="text/javascript" src="js/header.js"></script>
         <script type="text/javascript" src="js/restartWarning.js"></script>
         <script type="text/javascript" src="js/footer.js"></script>
@@ -45,15 +46,7 @@
                 --main-color: #0078d7;
             }
         </style>
-        <div class="flc-splash fl-splash">
-            <div class="logo">
-                <div class="flc-heading fl-heading"></div>
-                <img src="../../icons/gpii-icon-balloon.png">
-                <h3 class="flc-fullAppName"></h3>
-            </div>
-        </div>
-
-        <div class="fl-contentWrapper">
+        <div class="fl-psp">
             <div id="flc-titlebar" class="fl-titlebar">
                 <img src="../../icons/gpii-icon-balloon.png">
                 <span class="flc-title fl-appName"></span>
@@ -61,46 +54,105 @@
                 <div class="clear-both"></div>
             </div>
 
-            <div id="flc-header" class="fl-header">
-                <div class="flc-prefSetPicker form-group fl-dropdown">
-                    <div class="combobox">
-                        <select class="flc-dropdown-options form-control"></select>
+            <!-- PSP content -->
+
+            <!-- SignIn view (splash) -->
+            <div class="flc-signin fl-signin">
+                <div class="flc-signinHeader fl-header">
+                    <!-- TODO -->
+                    Not keyed in
+                </div>
+
+                <div class="fl-signin-content">
+                    <img class="fl-signin-contentIcon" src="../../icons/gpii-color.ico">
+
+                    <div class="fl-signin-contentText">
+                        <div class="flc-contentTitleIntro fl-title"></div>
+                        <div class="flc-contentSubTitleIntro fl-subtitle"></div>
+                    </div>
+
+                    <div class="fl-signin-contentText">
+                        <div class="fl-subhead">
+                            <div class="flc-contentTitle fl-title"></div>
+                            <div class="flc-contentSubtitle fl-subtitle"></div>
+                        </div>
+
+                        <div class="form-group">
+                            <label>Email</label>
+                            <!-- TODO <label class="flc-emailText"></span> -->
+                            <input type="text" class="flc-emailTextInput form-control">
+
+                            <label>Password</label>
+                            <!-- <label class="flc-emailText"></span> -->
+                            <input type="password" class="flc-emailTextInput form-control">
+
+
+                            <button class="flc-signinBtn btn fl-btn fl-signinBtn">
+                                <span class="flc-btnLabel fl-btnLabel">Sign in</span>
+                            </button>
+
+                            <div class="flc-errorPopup fl-errorPopup">
+                                <div class="flc-errorTitle fl-errorTitle">Wrong name or password</div>
+                                <div class="flc-errorDetails fl-errorDetails">Try again or use a key</div>
+                            </div>
+                        </div>
+
+                        <div class="flc-links fl-links">
+                            <button class="flc-signupBtn btn btn-link">
+                                <span class="flc-btnLabel fl-btnLabel">Create an Account</span>
+                            </button>
+                            <span class="flc-separator">·</span>
+                            <button class="flc-forgotPasswordBtn btn btn-link">
+                                <span class="flc-btnLabel fl-btnLabel">Forgot Password?</span>
+                            </button>
+                        </div>
                     </div>
                 </div>
-                <span class="flc-activePreferenceSet fl-activePreferenceSet" tabindex="0"></span>
-                <div class="flc-autosaveHint fl-autosaveHint">
-                    <span class="fl-icon fl-icon-memory"></span>
-                    <span class="flc-autosaveText"></span>
-                </div>
-                <button class="flc-keyOutBtn btn fl-btn fl-keyOutBtn">
-                    <span class="flc-btnLabel fl-btnLabel"></span>
-                </button>
             </div>
 
-            <div id="flc-content" class="fl-content">
-                <div id="flc-settingsList" class="fl-settingsList">
-                </div>
-            </div>
-
-            <div id="flc-restartWarning" class="fl-restartWarning">
-                <div>
-                    <span class="flc-restartIcon fl-restartIcon fl-icon"></span>
-                    <div class="flc-restartText fl-restartText"></div>
-                </div>
-                <div class="fl-restartControls">
-                    <button class="flc-restartUndo btn fl-btn">
-                        <span class="flc-btnLabel"></span>
-                    </button>
-                    <button class="flc-restartNow btn fl-btn">
-                        <span class="flc-btnLabel"></span>
+            <!-- PSP view -->
+            <div class="flc-settingsEditor fl-settingsEditor">
+                <div id="flc-header" class="fl-header">
+                    <div class="flc-prefSetPicker form-group fl-dropdown">
+                        <div class="combobox">
+                            <select class="flc-dropdown-options form-control"></select>
+                        </div>
+                    </div>
+                    <span class="flc-activePreferenceSet fl-activePreferenceSet" tabindex="0"></span>
+                    <div class="flc-autosaveHint fl-autosaveHint">
+                        <span class="fl-icon fl-icon-memory"></span>
+                        <span class="flc-autosaveText"></span>
+                    </div>
+                    <button class="flc-keyOutBtn btn fl-btn fl-keyOutBtn">
+                        <span class="flc-btnLabel fl-btnLabel"></span>
                     </button>
                 </div>
-            </div>
 
-            <div id="flc-footer" class="fl-footer btn-group">
-                <button class="flc-helpBtn btn fl-btn">
-                    <span class="flc-btnLabel fl-btnLabel"></span>
-                </button>
+                <div id="flc-content" class="fl-content">
+                    <div id="flc-settingsList" class="fl-settingsList">
+                    </div>
+                </div>
+
+                <div id="flc-restartWarning" class="fl-restartWarning">
+                    <div>
+                        <span class="flc-restartIcon fl-restartIcon fl-icon"></span>
+                        <div class="flc-restartText fl-restartText"></div>
+                    </div>
+                    <div class="fl-restartControls">
+                        <button class="flc-restartUndo btn fl-btn">
+                            <span class="flc-btnLabel"></span>
+                        </button>
+                        <button class="flc-restartNow btn fl-btn">
+                            <span class="flc-btnLabel"></span>
+                        </button>
+                    </div>
+                </div>
+
+                <div id="flc-footer" class="fl-footer btn-group">
+                    <button class="flc-helpBtn btn fl-btn">
+                        <span class="flc-btnLabel fl-btnLabel"></span>
+                    </button>
+                </div>
             </div>
         </div>
     </body>

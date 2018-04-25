@@ -73,3 +73,50 @@
     font-size: 0.6em;
     min-width: unset;
 }
+
+
+/* Container styles */
+
+.fl-signin {
+    padding: 12px;
+
+    background-color: #ffffff;
+}
+
+.fl-signin .fl-signin-contentIcon {
+    float: left;
+    width: 48px;
+    height: 48px;
+    margin-right: 10px;
+}
+
+.fl-signin .fl-signin-contentText {
+    overflow: hidden;
+}
+
+.fl-signin .fl-signin-contentText .fl-title {
+    margin-bottom: 10px;
+    color: #034EA2;
+    font-size: 1.5em;
+}
+
+.fl-signin .fl-signin-contentText .fl-title + .fl-subtitle {
+    margin: -12px 0 10px 0;
+    font-size: 0.9em;
+}
+
+.fl-signin .fl-signin-contentText .fl-details {
+    padding-bottom: 10px;
+    line-height: 1.33;
+    white-space: pre-wrap;
+}
+
+/* Override winstrap styles */
+.fl-signin ul li {
+    margin: 0;
+}
+
+/* Useful for dialog content without height listener */
+.fl-scrollable {
+    overflow: auto;
+}

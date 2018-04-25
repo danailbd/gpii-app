@@ -17,21 +17,34 @@
 
 "use strict";
 (function (fluid) {
+    var gpii = fluid.registerNamespace("gpii");
     fluid.registerNamespace("gpii.psp");
+
 
     fluid.defaults("gpii.psp", {
         gradeNames: ["fluid.component", "gpii.psp.messageBundles"],
+
         components: {
             channel: {
                 type: "gpii.psp.clientChannel",
                 options: {
                     listeners: {
+                        // TODO
+                        // onKeyedInStateChanged: {
+                        //     funcName: "{mainWindow}.toggleView"
+                        // },
+
                         onPSPOpen: {
                             funcName: "{mainWindow}.playActivePrefSetSound"
                         },
-                        onPreferencesUpdated: {
+                        onPreferencesUpdated: [{
                             funcName: "{mainWindow}.updatePreferences"
                         },
+                            { // XXX for tests
+                                funcName: "{mainWindow}.toggleView",
+                                args: "{arguments}.0"
+                            }
+                        ],
                         onAccentColorChanged: {
                             funcName: "{mainWindow}.updateTheme"
                         },
@@ -44,6 +57,7 @@
                     }
                 }
             },
+
 
             mainWindow: {
                 type: "gpii.psp.mainWindow",

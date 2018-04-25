@@ -38,22 +38,6 @@
     };
 
     /**
-     * Shows or hides the splash window according to the current
-     * preference sets. The splash window should only be hidden when
-     * there are no preference sets passed (the user is keyed out).
-     *
-     * @param splash {Object} The splash component
-     * @param sets {Object[]} The current preference sets
-     */
-    gpii.psp.toggleSplashWindow = function (splash, sets) {
-        if (sets && sets.length > 0) {
-            splash.hide();
-        } else {
-            splash.show();
-        }
-    };
-
-    /**
      * Updates the "theme" of the PSP `BrowserWindow`. Currently, the
      * theme consists simply of a definition of a `--main-color` variable
      * which is used for styling various widgets within the application.
@@ -93,6 +77,28 @@
     };
 
     /**
+     * Shows or hides the sign in view depending on the keyed in state
+     * of the user.
+     *
+     * @param {jQuery} signinView - The signIn view container
+     * @param {jQuery} pspView    - The psp view container
+     * @param {Boolean} isKeyedIn - Whether the user is keyed in
+     */
+    gpii.psp.toggleView = function (signinView, pspView, isKeyedIn) {
+        console.log(isKeyedIn);
+        // if (isKeyedIn) {
+        // XXX for tests
+        if (isKeyedIn.sets && isKeyedIn.sets.length > 0) {
+            signinView.hide();
+            pspView.show();
+        } else {
+            signinView.show();
+            pspView.hide();
+        }
+    };
+
+
+    /**
      * Responsible for drawing the settings list
      *
      * Note: currently only single update of available setting is supported
@@ -110,6 +116,9 @@
             }
         },
         selectors: {
+            signin: ".flc-signin",
+            psp:    ".flc-settingsEditor",
+
             theme: "#flc-theme",
             titlebar: "#flc-titlebar",
             header: "#flc-header",
@@ -119,19 +128,8 @@
             restartWarning: "#flc-restartWarning",
             heightListenerContainer: "#flc-settingsList"
         },
+
         components: {
-            splash: {
-                type: "gpii.psp.splash",
-                container: "{that}.container",
-                options: {
-                    listeners: {
-                        "{mainWindow}.events.onPreferencesUpdated": {
-                            funcName: "gpii.psp.toggleSplashWindow",
-                            args: ["{that}", "{mainWindow}.model.preferences.sets"]
-                        }
-                    }
-                }
-            },
             titlebar: {
                 type: "gpii.psp.titlebar",
                 container: "{that}.dom.titlebar",
@@ -163,6 +161,20 @@
                     }
                 }
             },
+
+            singinPage: {
+                type: "gpii.psp.signin",
+                container: ".flc-signin"
+                // Once there is logic for registration in the core
+                // options: {
+                //     listeners: {
+                //         onSignin: null,
+                //         onSingup: null,
+                //         onForgottenPassword: null
+                //     }
+                // }
+            },
+
             settingsPanel: {
                 type: "gpii.psp.settingsPanel",
                 container: "{that}.dom.settingsList",
@@ -205,11 +217,23 @@
             "preferences": "{that}.events.onPreferencesUpdated"
         },
         listeners: {
+            "onCreate.setInitilView": {
+                funcName: "{that}.toggleView",
+                args: [false]
+            },
             onActivePreferenceSetAltered: {
                 func: "{that}.playActivePrefSetSound"
             }
         },
         invokers: {
+            toggleView: {
+                funcName: "gpii.psp.toggleView",
+                args: [
+                    "{that}.dom.signin",
+                    "{that}.dom.psp",
+                    "{arguments}.0" // isKeyedIn
+                ]
+            },
             "updatePreferences": {
                 changePath: "preferences",
                 value: "{arguments}.0",
