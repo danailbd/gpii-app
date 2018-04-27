@@ -29,19 +29,19 @@
 
         model: {
             messages: {
-                signinHeader:         "Not keyed in",
+                signinHeader: null,
 
-                titleIntro:           "GPII Auto-personalization",
-                subtitleIntro:        "Automatically set up any computer the way you want it.",
+                titleIntro: null,
+                subtitleIntro: null,
 
-                title:                "Use your GPII Key to key-in",
-                subtitle:             "Or key-in with your account below",
+                title: null,
+                subtitle: null,
 
-                emailTextInputLabel:  "Email",
-                passwordInputLabel:   "Password",
-                signinButton:         "Sign in",
-                signupButton:         "Create an Account",
-                forgotPasswordButton: "Forgot Password?"
+                emailTextInputLabel: null,
+                passwordInputLabel: null,
+                signinButton: null,
+                signupButton: null,
+                forgotPasswordButton: null
             },
 
             email: null,
@@ -162,7 +162,7 @@
     });
 
     gpii.psp.signin.toggleError = function (that, error) {
-        var errorContainer = that.dom.locate("error").show();
+        var errorContainer = that.dom.locate("error");
         if (!error.title) {
             errorContainer.hide();
         } else {
