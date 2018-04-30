@@ -25,12 +25,12 @@
      * means for sending key in requests and error handling. It is also
      * internationalizable.
      */
-    fluid.defaults("gpii.psp.signin", {
+    fluid.defaults("gpii.psp.signIn", {
         gradeNames: ["fluid.viewComponent", "gpii.psp.heightObservable"],
 
         model: {
             messages: {
-                signinHeader: null,
+                signInHeader: null,
 
                 titleIntro: null,
                 subtitleIntro: null,
@@ -40,8 +40,8 @@
 
                 emailTextInputLabel: null,
                 passwordInputLabel: null,
-                signinButton: null,
-                signupButton: null,
+                signInButton: null,
+                signUpButton: null,
                 forgotPasswordButton: null
             },
 
@@ -55,7 +55,7 @@
         },
 
         selectors: {
-            signinHeader:         ".flc-signinHeader",
+            signInHeader:         ".flc-signInHeader",
 
             titleIntro:           ".flc-contentTitleIntro",
             subtitleIntro:        ".flc-contentSubTitleIntro",
@@ -69,10 +69,10 @@
             emailTextInput:       ".flc-emailTextInput",
             passwordInput:        ".flc-passwordInput",
 
-            signupButton:         ".flc-signupBtn",
+            signUpButton:         ".flc-signUpBtn",
             forgotPasswordButton: ".flc-forgotPasswordBtn",
 
-            signinBtn:            ".flc-signinBtn",
+            signInBtn:            ".flc-signInBtn",
 
             error:                ".flc-error",
             errorTitle:           ".flc-errorTitle",
@@ -122,7 +122,7 @@
         modelListeners: {
             // Any change means that the whole view should be re-rendered
             "messages": {
-                funcName: "gpii.psp.signin.renderText",
+                funcName: "gpii.psp.signIn.renderText",
                 args: [
                     "{that}",
                     "{that}.options.selectors",
@@ -130,7 +130,7 @@
                 ]
             },
             "error": {
-                funcName: "gpii.psp.signin.toggleError",
+                funcName: "gpii.psp.signIn.toggleError",
                 args: [
                     "{that}",
                     "{change}.value"
@@ -139,18 +139,18 @@
         },
 
         components: {
-            singinBtn: {
+            signInBtn: {
                 type: "gpii.psp.widgets.button",
-                container: "{that}.dom.signinBtn",
+                container: "{that}.dom.signInBtn",
                 options: {
                     attrs: {
-                        "aria-label": "{signin}.model.messages.signinButton"
+                        "aria-label": "{signIn}.model.messages.signInButton"
                     },
                     model: {
-                        label: "{signin}.model.messages.signinButton"
+                        label: "{signIn}.model.messages.signInButton"
                     },
                     invokers: {
-                        "onClick": "{signin}.events.onSigninClicked.fire"
+                        "onClick": "{signIn}.events.onSigninClicked.fire"
                     }
                 }
             }
@@ -160,12 +160,12 @@
     /**
      * Shows or hides the error container and sets the corresponding
      * messages depending on whether an error has occurred.
-     * 
-     * @param {Component} that - The `gpii.psp.signin` instance.
+     *
+     * @param {Component} that - The `gpii.psp.signIn` instance.
      * @param {Object} error - An object descibing the error that has
      * occurred if any.
      */
-    gpii.psp.signin.toggleError = function (that, error) {
+    gpii.psp.signIn.toggleError = function (that, error) {
         var errorContainer = that.dom.locate("error");
         if (error.title) {
             errorContainer.show();
@@ -182,10 +182,10 @@
      * Sets text to dom items in case there is a message for
      * its viewComponent's selector.
      *
-     * @param {Component} that - The `gpii.psp.signin` instance.
+     * @param {Component} that - The `gpii.psp.signIn` instance.
      * @param {Object} messages - The translated text
      */
-    gpii.psp.signin.renderText = function (that, selectors, messages) {
+    gpii.psp.signIn.renderText = function (that, selectors, messages) {
         fluid.each(selectors, function (value, key) {
             var element = that.dom.locate(key);
             if (element && messages[key]) {

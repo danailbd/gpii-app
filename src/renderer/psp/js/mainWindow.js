@@ -100,20 +100,22 @@
     };
 
     /**
-     * Shows or hides the sign in view depending on the keyed in state
-     * of the user.
+     * Shows or hides the appropriate view (the sign in view or the psp view)
+     * depending on the current preferences. If there is at least one preference
+     * set, it is considered that the user has keyed in and hence the psp view
+     * will be shown. Otherwise, the sign in view will be displayed.
      *
-     * @param {jQuery} signinView The signIn view container
+     * @param {jQuery} signInView The signIn view container
      * @param {jQuery} pspView The psp view container
      * @param {Object} preferences An object representing the available
      * preference set, the active preference set and the available settings.
      */
-    gpii.psp.toggleView = function (signinView, pspView, preferences) {
+    gpii.psp.toggleView = function (signInView, pspView, preferences) {
         if (preferences.sets && preferences.sets.length > 0) {
-            signinView.hide();
+            signInView.hide();
             pspView.show();
         } else {
-            signinView.show();
+            signInView.show();
             pspView.hide();
         }
     };
@@ -138,7 +140,7 @@
             theme: null
         },
         selectors: {
-            signin: ".flc-signin",
+            signIn: ".flc-signIn",
             psp:    ".flc-settingsEditor",
 
             theme: "#flc-theme",
@@ -190,17 +192,9 @@
                 }
             },
 
-            singinPage: {
-                type: "gpii.psp.signin",
-                container: ".flc-signin"
-                // Once there is logic for registration in the core
-                // options: {
-                //     listeners: {
-                //         onSignin: null,
-                //         onSingup: null,
-                //         onForgottenPassword: null
-                //     }
-                // }
+            signInPage: {
+                type: "gpii.psp.signIn",
+                container: ".flc-signIn"
             },
 
             settingsPanel: {
@@ -264,7 +258,7 @@
             toggleView: {
                 funcName: "gpii.psp.toggleView",
                 args: [
-                    "{that}.dom.signin",
+                    "{that}.dom.signIn",
                     "{that}.dom.psp",
                     "{arguments}.0" // preferences
                 ]

@@ -17,13 +17,10 @@
 
 "use strict";
 (function (fluid) {
-    var gpii = fluid.registerNamespace("gpii");
     fluid.registerNamespace("gpii.psp");
-
 
     fluid.defaults("gpii.psp", {
         gradeNames: ["fluid.component", "gpii.psp.messageBundles"],
-
         components: {
             channel: {
                 type: "gpii.psp.clientChannel",
@@ -50,7 +47,6 @@
                     }
                 }
             },
-
 
             mainWindow: {
                 type: "gpii.psp.mainWindow",
