@@ -119,3 +119,17 @@
     min-height: 26px;
     border-width: 1px;
 }
+
+/* Styles for alt (dark) theme */
+.theme-alt .fl-signin .fl-signin-content {
+    background-color: var(--alt-theme-background-color);
+}
+
+.theme-alt .fl-signin .fl-signin-contentText .fl-sigin-form input {
+    background-color: var(--alt-theme-text-color);
+}
+
+.theme-alt .fl-signin .fl-signin-contentText .fl-sigin-form input:focus {
+    border-color: var(--main-color);
+    box-shadow: 0 0 5px var(--main-color);
+}

@@ -57,6 +57,7 @@
     background-color: var(--alt-theme-background-color);
 }
 
+.theme-alt .fl-header .fl-headerTitle,
 .theme-alt .fl-header .fl-activePreferenceSet {
-    color: var(--alt-theme-text-color);;
+    color: var(--alt-theme-text-color);
 }
