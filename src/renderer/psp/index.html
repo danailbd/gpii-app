@@ -6,6 +6,7 @@
         <link rel="stylesheet" href="css/variables.css">
         <link rel="stylesheet" href="css/button.css">
         <link rel="stylesheet" href="css/dropdown.css">
+        <link rel="stylesheet" href="css/imageDropdown.css">
         <link rel="stylesheet" href="css/multipicker.css">
         <link rel="stylesheet" href="css/stepper.css">
         <link rel="stylesheet" href="css/switch.css">
@@ -25,6 +26,7 @@
         <script type="text/javascript" src="../common/js/titlebar.js"></script>
         <script type="text/javascript" src="../common/js/heightObservable.js"></script>
         <script type="text/javascript" src="../common/js/messageBundles.js"></script>
+        <script type="text/javascript" src="../common/js/elementRepeater.js"></script>
         <script type="text/javascript" src="../common/js/utils.js"></script>
         <script type="text/javascript" src="js/exemplars.js"></script>
         <script type="text/javascript" src="js/settingsPanel.js"></script>
@@ -103,12 +105,20 @@
             <!-- PSP view -->
             <div class="flc-settingsEditor fl-settingsEditor">
                 <div id="flc-header" class="fl-header">
-                    <div class="flc-prefSetPicker form-group fl-dropdown">
-                        <div class="combobox">
-                            <select class="flc-dropdown-options form-control"></select>
-                        </div>
+                    <div class="flc-prefSetPicker fl-imageDropdown dropdown">
+                        <button class="btn btn-dropdown dropdown-toggle" type="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                            <img class="flc-imageDropdown-selectedItemImage">
+                            <span class="flc-imageDropdown-selectedItemText"></span>
+                            <span class="caret"></span>
+                        </button>
+                        <ul class="flc-imageDropdown-menu dropdown-menu" role="menu">
+                        </ul>
                     </div>
-                    <span class="flc-activePreferenceSet fl-activePreferenceSet" tabindex="0"></span>
+
+                    <span class="flc-activePreferenceSet fl-activePreferenceSet">
+                        <img class="flc-activePreferenceSetImage fl-activePreferenceSetImage">
+                        <span class="flc-activePreferenceSetName" tabindex="0"></span>
+                    </span>
                     <div class="flc-autosaveHint fl-autosaveHint">
                         <span class="fl-icon fl-icon-memory"></span>
                         <span class="flc-autosaveText"></span>
@@ -120,21 +130,6 @@
 
                 <div id="flc-content" class="fl-content">
                     <div id="flc-settingsList" class="fl-settingsList">
-                    </div>
-                </div>
-
-                <div id="flc-restartWarning" class="fl-restartWarning">
-                    <div>
-                        <span class="flc-restartIcon fl-restartIcon fl-icon"></span>
-                        <div class="flc-restartText fl-restartText"></div>
-                    </div>
-                    <div class="fl-restartControls">
-                        <button class="flc-restartUndo btn fl-btn">
-                            <span class="flc-btnLabel"></span>
-                        </button>
-                        <button class="flc-restartNow btn fl-btn">
-                            <span class="flc-btnLabel"></span>
-                        </button>
                     </div>
                 </div>
 

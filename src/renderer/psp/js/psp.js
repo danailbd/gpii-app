@@ -36,6 +36,9 @@
                             funcName: "{mainWindow}.updatePreferences"
                         },
                         onAccentColorChanged: {
+                            funcName: "{mainWindow}.updateAccentColor"
+                        },
+                        onThemeChanged: {
                             funcName: "{mainWindow}.updateTheme"
                         },
                         onSettingUpdated: {
@@ -54,6 +57,7 @@
                 container: "#flc-body",
                 options: {
                     listeners: {
+                        onCreate: "{channel}.notifyPSPCreated",
                         onPSPClose: "{channel}.close",
                         onKeyOut: "{channel}.keyOut",
                         onSettingAltered: "{channel}.alterSetting",

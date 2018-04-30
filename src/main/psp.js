@@ -75,9 +75,9 @@ fluid.defaults("gpii.app.pspInApp", {
         },
 
         onRestartNow: [{
-            func: "{that}.hide"
-        }, {
             listener: "{settingsBroker}.applyPendingChanges"
+        }, {
+            func: "{that}.events.onClosed.fire"
         }],
 
         onUndoChanges: {
@@ -85,7 +85,7 @@ fluid.defaults("gpii.app.pspInApp", {
         },
 
         onActivePreferenceSetAltered: {
-            listener: "{settingsBroker}.clearPendingChanges"
+            listener: "{settingsBroker}.reset"
         },
 
         "{settingsBroker}.events.onRestartRequired": {
@@ -143,6 +143,8 @@ fluid.defaults("gpii.app.psp", {
         pspWindow: "@expand:gpii.app.psp.makePSPWindow({that}.options.attrs)"
     },
     events: {
+        onPSPCreated: null, // fired when the `BrowserWindow` is functional
+
         onSettingAltered: null,
         onActivePreferenceSetAltered: null,
 
@@ -166,6 +168,9 @@ fluid.defaults("gpii.app.psp", {
         "onCreate.initPSPWindowListeners": {
             listener: "gpii.app.psp.initPSPWindowListeners",
             args: ["{that}"]
+        },
+        "onPSPCreated.onThemeChanged": {
+            func: "{that}.onThemeChanged"
         },
 
         "onDestroy.cleanupElectron": {
@@ -202,6 +207,10 @@ fluid.defaults("gpii.app.psp", {
                 "onLocaleChanged",
                 "{app}.model.locale"
             ]
+        },
+        "{app}.model.theme": {
+            func: "{that}.onThemeChanged",
+            excludeSource: "init"
         }
     },
 
@@ -242,6 +251,14 @@ fluid.defaults("gpii.app.psp", {
         hideRestartWarning: {
             func: "{psp}.notifyPSPWindow",
             args: ["onRestartRequired", []]
+        },
+        onThemeChanged: {
+            funcName: "gpii.app.notifyWindow",
+            args: [
+                "{that}.pspWindow",
+                "onThemeChanged",
+                "{that}.model.theme"
+            ]
         }
     }
 });
@@ -341,6 +358,10 @@ gpii.app.psp.initPSPWindowListeners = function (psp) {
  * @param psp {Component} The `gpii.app.psp` instance.
  */
 gpii.app.initPSPWindowIPC = function (app, psp) {
+    ipcMain.on("onPSPCreated", function () {
+        psp.events.onPSPCreated.fire();
+    });
+
     ipcMain.on("onPSPClose", function () {
         psp.events.onClosed.fire();
     });
@@ -365,13 +386,16 @@ gpii.app.initPSPWindowIPC = function (app, psp) {
     /*
      * "Restart Required" functionality events
      */
-
-    ipcMain.on("onRestartNow", function () {
-        psp.events.onRestartNow.fire();
+    ipcMain.on("onRestartNow", function (event, pendingChanges) {
+        psp.events.onRestartNow.fire({
+            pendingChanges: pendingChanges
+        });
     });
 
-    ipcMain.on("onUndoChanges", function () {
-        psp.events.onUndoChanges.fire();
+    ipcMain.on("onUndoChanges", function (event, pendingChanges) {
+        psp.events.onUndoChanges.fire({
+            pendingChanges: pendingChanges
+        });
     });
 };
 
@@ -400,10 +424,24 @@ gpii.app.psp.hide = function (psp) {
     psp.applier.change("isShown", false);
 };
 
+/**
+ * Invoked whenever the user presses the close button in the upper right corner of
+ * the PSP `BrowserWindow`, clicks outside of it or confirms the application of
+ * given settings. The function takes care of hiding the PSP, applying pending
+ * changes which require application restarts and undoing setting changes that
+ * necessitate the OS to be restarted.
+ * @param psp {Component} The `gpii.app.psp` instance.
+ * @param settingsBroker {Component} The `gpii.app.settingsBroker` instance.
+ */
 gpii.app.psp.closePSP = function (psp, settingsBroker) {
     psp.hide();
-    settingsBroker.applyPendingChanges("manualRestart");
-    settingsBroker.undoPendingChanges("OSRestart");
+
+    settingsBroker.applyPendingChanges({
+        liveness: "manualRestart"
+    });
+    settingsBroker.undoPendingChanges({
+        liveness: "OSRestart"
+    });
 };
 
 /**

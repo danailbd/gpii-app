@@ -93,6 +93,16 @@ gpii.app.notifyWindow = function (browserWindow, messageChannel, message) {
     }
 };
 
+/**
+ * Checks if a hash is not empty, i.e. if it contains at least one key.
+ * Note that the values are not examined.
+ * @param hash {Object} An arbitrary object.
+ * @return `true` is the hash has at least one key and `false` otherwise.
+ */
+gpii.app.isHashNotEmpty = function (hash) {
+    return hash && fluid.keys(hash).length > 0;
+};
+
 /*
  * A simple wrapper for the native timeout. Responsible for clearing the interval
  * upon component destruction.
@@ -214,4 +224,34 @@ gpii.app.dialog.simpleEventChannel.registerIPCListener = function (channelName, 
  */
 gpii.app.dialog.simpleEventChannel.deregisterIPCListener = function (channelName) {
     ipcMain.removeAllListeners(channelName);
+};
+
+/**
+ * Set proper context for arrays.
+ * This is needed in order for arrays to pass the more strict
+ * check of: `instanceof array`. In general such checks are to be avoided
+ * in favor of the `fluid.isArray` function, but is useful when dealing with
+ * third party dependencies.
+ * Related to: https://github.com/electron/electron/issues/12698
+ *
+ * @param {Object|Array} object - The object/array that needs to have its contexts fixed.
+ * @returns {Object} The fixed object
+ */
+gpii.app.recontextualise = function (object) {
+    if (!fluid.isPlainObject(object)) {
+        return;
+    }
+    if (fluid.isArrayable(object)) {
+        object = [].slice.call(object);
+    }
+
+    fluid.each(object, function (value, key) {
+        if (fluid.isArrayable(object[key])) {
+            // console.log(value);
+            object[key] = [].slice.call(object[key]);
+        }
+        gpii.app.recontextualise(object[key]);
+    });
+
+    return object;
 };

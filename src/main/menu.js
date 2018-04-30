@@ -9,7 +9,7 @@
  * compliance with this License.
  * The research leading to these results has re eived funding from the European Union's
  * Seventh Framework Programme (FP7/2007-2013) under grant agreement no. 289016.
- * You may obt vcfain a copy of the License at
+ * You may obtain a copy of the License at
  *
  * https://github.com/GPII/universal/blob/master/LICENSE.txt
  */
@@ -70,6 +70,12 @@ fluid.defaults("gpii.app.menuInApp", {
   * @param events {Object} An object containing the events that may be fired by items in the menu.
   */
 gpii.app.updateMenu = function (tray, menuTemplate, events) {
+    // XXX Related to: https://github.com/electron/electron/issues/12698
+    // Needed in order to get around this non graceful check: https://github.com/electron/electron/blob/v1.8.4/lib/browser/api/menu.js#L170
+    // The infusion's expander applies a different contexts (generated with https://nodejs.org/api/vm.html)
+    // than the current which cases this Array check to fail.
+    menuTemplate = gpii.app.recontextualise(menuTemplate);
+
     menuTemplate = gpii.app.menu.expandMenuTemplate(menuTemplate, events);
 
     tray.setContextMenu(Menu.buildFromTemplate(menuTemplate));
@@ -95,6 +101,7 @@ fluid.defaults("gpii.app.menuInAppDev", {
                     "{that}.model.showPSP",
                     "{that}.model.keyedInSnapset",
                     "{that}.options.locales",
+                    "{that}.options.themes",
                     "{that}.options.snapsets",
                     "{that}.model.preferenceSetsMenuItems",
                     "{that}.model.showAbout",
@@ -107,6 +114,7 @@ fluid.defaults("gpii.app.menuInAppDev", {
     },
     events: {
         onLocale: null,
+        onThemeChanged: null,
         onKeyIn: null,
         onExit: null
     },
@@ -115,6 +123,10 @@ fluid.defaults("gpii.app.menuInAppDev", {
         "onLocale.changeLocale": {
             changePath: "{app}.model.locale",
             value: "{arguments}.0.locale"
+        },
+        "onThemeChanged.changeTheme": {
+            changePath: "{app}.model.theme",
+            value: "{arguments}.0.theme"
         },
         // onKeyIn event is fired when a new user keys in through the task tray.
         // This should result in:
@@ -157,6 +169,23 @@ fluid.defaults("gpii.app.menuInAppDev", {
             click: "onLocale",
             args: {
                 locale: "fr"
+            }
+        }]
+    },
+
+    themes: {
+        label: "Theme...",
+        submenu: [{
+            label: "white",
+            click: "onThemeChanged",
+            args: {
+                theme: "white"
+            }
+        }, {
+            label: "dark",
+            click: "onThemeChanged",
+            args: {
+                theme: "dark"
             }
         }]
     },
