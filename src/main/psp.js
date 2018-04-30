@@ -314,9 +314,9 @@ gpii.app.psp.handleDisplayMetricsChange = function (psp, event, display, changed
 gpii.app.psp.handlePSPWindowFocusLost = function (psp, settingsBroker) {
     // The PSP cannot be hidden by clicking outside of it if there is an application
     // which requires a restart.
-    // if (psp.model.isShown && !settingsBroker.hasPendingChange("manualRestart")) {
-    //     psp.events.onClosed.fire();
-    // }
+    if (psp.model.isShown && !settingsBroker.hasPendingChange("manualRestart")) {
+        psp.events.onClosed.fire();
+    }
 };
 
 /**

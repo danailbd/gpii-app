@@ -1,7 +1,8 @@
 /**
- * The about dialog
+ * The sign in page
  *
- * Represents an about dialog, that can be closed by the user.
+ * Represents the sign in page with a form for keying in, error handling mechanism and
+ * useful links.
  * Copyright 2017 Raising the Floor - International
  *
  * Licensed under the New BSD license. You may not use this file except in
@@ -20,9 +21,9 @@
 
 
     /**
-     * Represents the controller for the about dialog,
-     * that gives information for the application version,
-     * user listeners (keys) and some useful links.
+     * A component responsible for managing the sign in page. It provides
+     * means for sending key in requests and error handling. It is also
+     * internationalizable.
      */
     fluid.defaults("gpii.psp.signin", {
         gradeNames: ["fluid.viewComponent", "gpii.psp.heightObservable"],
@@ -71,7 +72,6 @@
             signupButton:         ".flc-signupBtn",
             forgotPasswordButton: ".flc-forgotPasswordBtn",
 
-            // shorten name to avoid text setting
             signinBtn:            ".flc-signinBtn",
 
             error:                ".flc-error",
@@ -109,18 +109,14 @@
                 ]
             },
 
-            // XXX test
-            onSigninRequested: [{
-                this: "console",
-                method: "log",
-                args: ["Sign in requested: ", "{arguments}.0", "{arguments}.1"]
-            }, {
+            // For testing purposes only.
+            onSigninRequested: {
                 func: "{that}.updateError",
                 args: [{
                     title: "Wrong name or password",
                     details: "Try again or use a key"
                 }]
-            }]
+            }
         },
 
         modelListeners: {
@@ -161,21 +157,29 @@
         }
     });
 
+    /**
+     * Shows or hides the error container and sets the corresponding
+     * messages depending on whether an error has occurred.
+     * 
+     * @param {Component} that - The `gpii.psp.signin` instance.
+     * @param {Object} error - An object descibing the error that has
+     * occurred if any.
+     */
     gpii.psp.signin.toggleError = function (that, error) {
         var errorContainer = that.dom.locate("error");
-        if (!error.title) {
-            errorContainer.hide();
-        } else {
+        if (error.title) {
             errorContainer.show();
 
             that.dom.locate("errorTitle").text(error.title);
             that.dom.locate("errorDetails").text(error.details);
+        } else {
+            errorContainer.hide();
         }
     };
 
 
     /**
-     * Set text to dom items in case there is a message for
+     * Sets text to dom items in case there is a message for
      * its viewComponent's selector.
      *
      * @param {Component} that - The `gpii.psp.signin` instance.
@@ -183,9 +187,9 @@
      */
     gpii.psp.signin.renderText = function (that, selectors, messages) {
         fluid.each(selectors, function (value, key) {
-            var el = that.dom.locate(key);
-            if (el && messages[key]) {
-                el.text(messages[key]);
+            var element = that.dom.locate(key);
+            if (element && messages[key]) {
+                element.text(messages[key]);
             }
         });
     };

@@ -16,10 +16,6 @@ body {
     line-height: 1.4;
 }
 
-.fl-settingsEditor {
-    display: none;
-}
-
 ::-webkit-scrollbar {
     -webkit-appearance: none;
     width: 5px;

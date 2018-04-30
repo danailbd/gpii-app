@@ -80,15 +80,13 @@
      * Shows or hides the sign in view depending on the keyed in state
      * of the user.
      *
-     * @param {jQuery} signinView - The signIn view container
-     * @param {jQuery} pspView    - The psp view container
-     * @param {Boolean} isKeyedIn - Whether the user is keyed in
+     * @param {jQuery} signinView The signIn view container
+     * @param {jQuery} pspView The psp view container
+     * @param {Object} preferences An object representing the available
+     * preference set, the active preference set and the available settings.
      */
-    gpii.psp.toggleView = function (signinView, pspView, isKeyedIn) {
-        console.log(isKeyedIn);
-        // if (isKeyedIn) {
-        // XXX for tests
-        if (isKeyedIn.sets && isKeyedIn.sets.length > 0) {
+    gpii.psp.toggleView = function (signinView, pspView, preferences) {
+        if (preferences.sets && preferences.sets.length > 0) {
             signinView.hide();
             pspView.show();
         } else {
@@ -219,7 +217,13 @@
         listeners: {
             "onCreate.setInitilView": {
                 funcName: "{that}.toggleView",
-                args: [false]
+                args: ["{that}.model.preferences"]
+            },
+            "onPreferencesUpdated.toggleView": {
+                funcName: "{that}.toggleView",
+                args: [
+                    "{arguments}.0" // preferences
+                ]
             },
             onActivePreferenceSetAltered: {
                 func: "{that}.playActivePrefSetSound"
@@ -231,7 +235,7 @@
                 args: [
                     "{that}.dom.signin",
                     "{that}.dom.psp",
-                    "{arguments}.0" // isKeyedIn
+                    "{arguments}.0" // preferences
                 ]
             },
             "updatePreferences": {

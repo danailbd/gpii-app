@@ -13,10 +13,10 @@
     "gpii_psp_signin_signinHeader": "Никой не е вписан",
 
     "gpii_psp_signin_titleIntro": "GPII Авто-персонализиране",
-    "gpii_psp_signin_subtitleIntro": "Автоматично приготвя компютъра ви по начина, по който го желаете.",
+    "gpii_psp_signin_subtitleIntro": "Автоматично настройва компютъра ви по начина, по който желаете.",
 
-    "gpii_psp_signin_title": "Използвайте вашият GPII ключ за да се впишете",
-    "gpii_psp_signin_subtitle": "Или се впишете с вашият акаунт долу",
+    "gpii_psp_signin_title": "Използвайте вашия GPII ключ за да се впишете",
+    "gpii_psp_signin_subtitle": "Или се впишете с вашия акаунт долу",
 
     "gpii_psp_signin_emailTextInputLabel": "Имейл",
     "gpii_psp_signin_passwordInputLabel": "Парола",

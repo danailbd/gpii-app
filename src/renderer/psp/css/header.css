@@ -3,7 +3,7 @@
     position: relative;
     padding: 4px;
     background-color: #d8eef9;
-    height: 60px;
+    min-height: 60px;
 }
 
 .fl-header .flc-prefSetPicker {
@@ -12,6 +12,7 @@
     margin-bottom: 5px;
 }
 
+.fl-header .fl-headerTitle,
 .fl-header .fl-activePreferenceSet {
     float: left;
     margin-bottom: 5px;

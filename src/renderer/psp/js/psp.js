@@ -29,22 +29,12 @@
                 type: "gpii.psp.clientChannel",
                 options: {
                     listeners: {
-                        // TODO
-                        // onKeyedInStateChanged: {
-                        //     funcName: "{mainWindow}.toggleView"
-                        // },
-
                         onPSPOpen: {
                             funcName: "{mainWindow}.playActivePrefSetSound"
                         },
-                        onPreferencesUpdated: [{
+                        onPreferencesUpdated: {
                             funcName: "{mainWindow}.updatePreferences"
                         },
-                            { // XXX for tests
-                                funcName: "{mainWindow}.toggleView",
-                                args: "{arguments}.0"
-                            }
-                        ],
                         onAccentColorChanged: {
                             funcName: "{mainWindow}.updateTheme"
                         },
