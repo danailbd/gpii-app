@@ -149,6 +149,15 @@
             notifyPSPCreated: {
                 func: "{that}.sendMessage",
                 args: ["onPSPCreated"]
+            },
+
+            requestSignIn: {
+                func: "{that}.sendMessage",
+                args: [
+                    "onSigninRequested",
+                    "{arguments}.0", // email
+                    "{arguments}.1"  // password
+                ]
             }
         }
     });

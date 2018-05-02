@@ -33,6 +33,7 @@
                 signInHeader: null,
 
                 titleIntro: null,
+
                 subtitleIntro: null,
 
                 title: null,
@@ -93,29 +94,12 @@
 
         listeners: {
             onSigninClicked: {
-                funcName: "{that}.events.onSigninRequested",
+                funcName: "gpii.psp.signIn.validateSignIn",
                 args: [
-                    {
-                        expander: {
-                            this: "{that}.dom.emailTextInput",
-                            method: "val"
-                        }
-                    }, {
-                        expander: {
-                            this: "{that}.dom.passwordInput",
-                            method: "val"
-                        }
-                    }
+                    "{that}",
+                    "{that}.dom.emailTextInput",
+                    "{that}.dom.passwordInput"
                 ]
-            },
-
-            // For testing purposes only.
-            onSigninRequested: {
-                func: "{that}.updateError",
-                args: [{
-                    title: "Wrong name or password",
-                    details: "Try again or use a key"
-                }]
             }
         },
 
@@ -157,6 +141,31 @@
         }
     });
 
+
+    /**
+     * Validate and propagate sign in request. In case there are validation
+     * errors, error message is shown to the user.
+     *
+     * @param {Component} that - The `gpii.psp.signIn` instanced
+     * @param {jQuery} emailInput - The email input element
+     * @param {jQuery} passwordInput - The password input element
+     */
+    gpii.psp.signIn.validateSignIn = function (that, emailInput, passwordInput) {
+        var email = emailInput.val(),
+            password = passwordInput.val();
+
+        // XXX temporary test validation. This should be replaced with
+        // some better mechanism for real usage
+        if (!email || !password) {
+            that.updateError({
+                title: "Wrong name or password",
+                details: "Try again or use a key"
+            });
+        } else {
+            that.events.onSigninRequested.fire(email, password);
+        }
+    };
+
     /**
      * Shows or hides the error container and sets the corresponding
      * messages depending on whether an error has occurred.
@@ -179,10 +188,15 @@
 
 
     /**
-     * Sets text to dom items in case there is a message for
-     * its viewComponent's selector.
+     * Sets text to dom elements using jQuery.
+     * Text to an element is added ONLY if there exist
+     * a message with the same name as the element's selector property.
+     * Example:
+     *  selector - { signInHeader: ".flc-signInHeader" }
+     *  uses a message of the type - { messages: { signInHeader: "Header text" } }
      *
      * @param {Component} that - The `gpii.psp.signIn` instance.
+     * @param {Object} selectors - The viewComponent's selectors
      * @param {Object} messages - The translated text
      */
     gpii.psp.signIn.renderText = function (that, selectors, messages) {

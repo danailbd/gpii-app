@@ -194,7 +194,12 @@
 
             signInPage: {
                 type: "gpii.psp.signIn",
-                container: ".flc-signIn"
+                container: ".flc-signIn",
+                options: {
+                    events: {
+                        onSigninRequested: "{mainWindow}.events.onSigninRequested"
+                    }
+                }
             },
 
             settingsPanel: {
@@ -296,6 +301,8 @@
             }
         },
         events: {
+            onSigninRequested: null,
+
             onPreferencesUpdated: null,
 
             onSettingAltered: null, // the setting was altered by the user
