@@ -82,23 +82,6 @@
         }
     };
 
-    gpii.psp.playActivePrefSetSound = function (preferences) {
-        if (!preferences.activeSet) {
-            return;
-        }
-
-        var activePreferenceSet = fluid.find_if(preferences.sets,
-            function (preferenceSet) {
-                return preferenceSet.path === preferences.activeSet;
-            }
-        );
-
-        if (activePreferenceSet && activePreferenceSet.soundSrc) {
-            var sound = new Audio(activePreferenceSet.soundSrc);
-            sound.play();
-        }
-    };
-
     /**
      * Shows or hides the appropriate view (the sign in view or the psp view)
      * depending on the current preferences. If there is at least one preference
@@ -137,7 +120,8 @@
                 activeSet: null,
                 settingGroups: []
             },
-            theme: null
+            theme: null,
+            sounds: {}
         },
         selectors: {
             signIn: ".flc-signIn",
@@ -234,7 +218,12 @@
             }
         },
         modelListeners: {
-            preferences: "{that}.events.onPreferencesUpdated",
+            preferences: [{
+                func: "{that}.events.onPreferencesUpdated.fire"
+            }, {
+                funcName: "gpii.psp.mainWindow.playSoundNotification",
+                args: ["{change}.value", "{change}.oldValue", "{that}.model.sounds"]
+            }],
             theme: {
                 funcName: "gpii.psp.updateTheme",
                 args: [
@@ -245,7 +234,7 @@
             }
         },
         listeners: {
-            "onCreate.setInitilView": {
+            "onCreate.setInitialView": {
                 funcName: "{that}.toggleView",
                 args: ["{that}.model.preferences"]
             },
@@ -254,9 +243,6 @@
                 args: [
                     "{arguments}.0" // preferences
                 ]
-            },
-            onActivePreferenceSetAltered: {
-                func: "{that}.playActivePrefSetSound"
             }
         },
         invokers: {
@@ -294,10 +280,6 @@
             "calculateHeight": {
                 funcName: "gpii.psp.calculateHeight",
                 args: ["{that}", "{that}.container", "{that}.dom.content", "{that}.dom.settingsList"]
-            },
-            "playActivePrefSetSound": {
-                funcName: "gpii.psp.playActivePrefSetSound",
-                args: ["{that}.model.preferences"]
             }
         },
         events: {
@@ -318,6 +300,34 @@
             onUndoChanges: null
         }
     });
+
+    /**
+     * Plays a sound notification in the following scenarios: when the user keyes in
+     * or when the user changes the active preference set (either via the dropdown in
+     * the PSP or through the context menu).
+     * @param preferences {Object} An object containing all preference set, as well as
+     * information about the currently active preference set.
+     * @param oldPreferences {Object} The previous value for the user's preferences.
+     * @param sounds {Object} An object containing paths to the various sounds that can
+     * be played.
+     */
+    gpii.psp.mainWindow.playSoundNotification = function (preferences, oldPreferences, sounds) {
+        // The user is not / is no longer keyed in. No need for notification.
+        if (preferences.sets.length === 0) {
+            return;
+        }
+
+        // The user was not keyed in before but now he is. Play the keyed in sound.
+        if (oldPreferences.sets.length === 0) {
+            gpii.psp.playSound(sounds.keyedIn);
+            return;
+        }
+
+        // The user is the same but the active set is different now.
+        if (preferences.activeSet !== oldPreferences.activeSet) {
+            gpii.psp.playSound(sounds.activeSetChanged);
+        }
+    };
 
     /**
      * Given the preferences received via the PSP channel and the current theme

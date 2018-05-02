@@ -50,10 +50,6 @@
      * @param clientChannel {Component} The `clientChannel` component.
      */
     gpii.psp.clientChannel.initialize = function (clientChannel) {
-        ipcRenderer.on("onPSPOpen", function () {
-            clientChannel.events.onPSPOpen.fire();
-        });
-
         ipcRenderer.on("onPreferencesUpdated", function (event, preferences) {
             clientChannel.events.onPreferencesUpdated.fire(preferences);
         });
@@ -82,7 +78,6 @@
     fluid.defaults("gpii.psp.clientChannel", {
         gradeNames: ["fluid.component"],
         events: {
-            onPSPOpen: null,
             onPreferencesUpdated: null,
             onSettingUpdated: null,
             onAccentColorChanged: null,
@@ -143,11 +138,6 @@
                     "{arguments}.0" // pendingChanges
                 ]
             },
-            notifyPSPCreated: {
-                func: "{that}.sendMessage",
-                args: ["onPSPCreated"]
-            },
-
             requestSignIn: {
                 func: "{that}.sendMessage",
                 args: [
