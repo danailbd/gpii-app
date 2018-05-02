@@ -40,7 +40,7 @@ fluid.defaults("gpii.app.aboutDialog", {
     config: {
         attrs: {
             width: 400,
-            height: 250
+            height: 1250
         },
         params: {
             userListeners: ["USB", "NFC", "Fingerprint", "Webcam & Voice"],

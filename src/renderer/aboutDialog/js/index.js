@@ -21,13 +21,24 @@
     var electron = require("electron");
     var windowInitialParams = electron.remote.getCurrentWindow().params;
 
-    /**
+    /*
      * Wrapper that enables translations for the `gpii.psp.aboutDialog` component and
      * applies interception of all anchor tags on the page so that an external browser is used
      * for loading them.
      */
     fluid.defaults("gpii.psp.translatedAboutDialog", {
-        gradeNames: ["gpii.psp.messageBundles", "fluid.viewComponent", "gpii.psp.linksInterceptor"],
+        gradeNames: ["gpii.psp.messageBundles",  "gpii.psp.linksInterceptor", "fluid.viewComponent"],
+
+        selectors: {
+            clickthrough: ".flc-clickthrough"
+        },
+
+        listeners: {
+            onCreate: {
+                funcName: "gpii.psp.addClickThroughListeners",
+                args: ["{that}.dom.clickthrough"]
+            }
+        },
 
         components: {
             aboutDialog: {
@@ -43,6 +54,19 @@
         }
     });
 
+
+    gpii.psp.addClickThroughListeners = function (element) {
+        var win = require('electron').remote.getCurrentWindow();
+
+        element.on('mouseenter', function () {
+            win.setIgnoreMouseEvents(true, {forward: true})
+            console.log("enter");
+        })
+        element.on('mouseleave', function () {
+            win.setIgnoreMouseEvents(false)
+            console.log("leabe");
+        })
+    };
 
     jQuery(function () {
         gpii.psp.translatedAboutDialog(".fl-dialog", {

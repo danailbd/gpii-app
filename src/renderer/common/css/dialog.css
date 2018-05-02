@@ -5,6 +5,11 @@ body {
     background-color: transparent;
 }
 
+.fl-dialog {
+    display: flex;
+    flex-direction: column;
+}
+
 /*
  * Used when the dialog is automatically resizable,
  * i.e. when using the `heightChangeListener`.
@@ -18,6 +23,9 @@ body {
 .fl-dialog .fl-dialog-contentWrapper {
     padding: 8px 8px 0 8px;
     background-color: #83CBEF;
+    
+    /* XXX test */
+    flex: 1 1 100%;
 }
 
 .fl-dialog .fl-dialog-content {
@@ -114,7 +122,6 @@ body {
 .fl-dialog.fl-dialog-fullScreen  .fl-dialog-contentWrapper {
     display: flex;
     flex-direction: column;
-    height: 100%;
 }
 
 .fl-dialog.fl-dialog-fullScreen .fl-dialog-content {
@@ -132,4 +139,9 @@ body {
 /* Useful for dialog content without a height listener */
 .fl-scrollable {
     overflow: auto;
+}
+
+
+.flc-clickthrough {
+    flex: 1 1 100%;
 }
