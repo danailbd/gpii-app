@@ -63,7 +63,7 @@
                         onRestartNow:   "{channel}.restartNow",
                         onUndoChanges:  "{channel}.undoChanges",
 
-                        onSigninRequested: "{channel}.requestSignIn"
+                        onSignInRequested: "{channel}.requestSignIn"
                     }
                 }
             }

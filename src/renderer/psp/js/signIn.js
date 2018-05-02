@@ -81,8 +81,8 @@
         },
 
         events: {
-            onSigninClicked: null,
-            onSigninRequested: null
+            onSignInClicked: null,
+            onSignInRequested: null
         },
 
         invokers: {
@@ -93,7 +93,7 @@
         },
 
         listeners: {
-            onSigninClicked: {
+            onSignInClicked: {
                 funcName: "gpii.psp.signIn.validateSignIn",
                 args: [
                     "{that}",
@@ -134,7 +134,7 @@
                         label: "{signIn}.model.messages.signInButton"
                     },
                     invokers: {
-                        "onClick": "{signIn}.events.onSigninClicked.fire"
+                        "onClick": "{signIn}.events.onSignInClicked.fire"
                     }
                 }
             }
@@ -143,10 +143,10 @@
 
 
     /**
-     * Validate and propagate sign in request. In case there are validation
-     * errors, error message is shown to the user.
+     * Validates and propagates the sign in request. In case there are
+     * validation errors, an error message is shown to the user.
      *
-     * @param {Component} that - The `gpii.psp.signIn` instanced
+     * @param {Component} that - The `gpii.psp.signIn` instance
      * @param {jQuery} emailInput - The email input element
      * @param {jQuery} passwordInput - The password input element
      */
@@ -162,7 +162,8 @@
                 details: "Try again or use a key"
             });
         } else {
-            that.events.onSigninRequested.fire(email, password);
+            that.updateError({title: null, details: null});
+            that.events.onSignInRequested.fire(email, password);
         }
     };
 

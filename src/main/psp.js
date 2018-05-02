@@ -398,7 +398,7 @@ gpii.app.initPSPWindowIPC = function (app, psp) {
         });
     });
 
-    ipcMain.on("onSigninRequested", function (event, email, password) {
+    ipcMain.on("onSignInRequested", function (event, email, password) {
         // XXX currently sign in functionality is missing
         fluid.fail("Sign in is not possible with email - ", email,
             " and password: ", password);

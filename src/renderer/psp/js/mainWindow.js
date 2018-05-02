@@ -197,7 +197,7 @@
                 container: ".flc-signIn",
                 options: {
                     events: {
-                        onSigninRequested: "{mainWindow}.events.onSigninRequested"
+                        onSignInRequested: "{mainWindow}.events.onSignInRequested"
                     }
                 }
             },
@@ -301,7 +301,7 @@
             }
         },
         events: {
-            onSigninRequested: null,
+            onSignInRequested: null,
 
             onPreferencesUpdated: null,
 

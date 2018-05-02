@@ -137,3 +137,16 @@
 .theme-alt .fl-signIn .fl-signIn-contentText .fl-sigin-form .fl-error {
     background-color: #a62121;
 }
+
+/* Temporary styles until the sign in functionality is ready */
+.fl-signIn .fl-signIn-contentText .fl-sigin-form {
+    display: none !important;
+}
+
+.fl-signIn .fl-signIn-contentText .fl-links {
+    display: none !important;
+}
+
+.fl-signIn .fl-signIn-content .fl-signIn-contentText .fl-subhead .fl-subtitle {
+    display: none !important;
+}
