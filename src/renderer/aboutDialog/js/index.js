@@ -56,6 +56,8 @@
 
 
     gpii.psp.addClickThroughListeners = function (element) {
+        element = $(".flc-clickthrough");
+
         var win = require('electron').remote.getCurrentWindow();
 
         element.on('mouseenter', function () {
@@ -64,7 +66,7 @@
         })
         element.on('mouseleave', function () {
             win.setIgnoreMouseEvents(false)
-            console.log("leabe");
+            console.log("leave");
         })
     };
 

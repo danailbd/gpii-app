@@ -15,6 +15,7 @@
 "use strict";
 
 var fluid = require("infusion");
+var gpii              = fluid.registerNamespace("gpii");
 
 var app = require("electron").app;
 
@@ -39,8 +40,8 @@ fluid.defaults("gpii.app.aboutDialog", {
 
     config: {
         attrs: {
-            width: 400,
-            height: 1250
+            width: 1080,
+            height: 680
         },
         params: {
             userListeners: ["USB", "NFC", "Fingerprint", "Webcam & Voice"],
@@ -60,5 +61,22 @@ fluid.defaults("gpii.app.aboutDialog", {
                 }
             }
         }
+    },
+
+    listeners: {
+        // onCreate: {
+        //     this: "{that}.dialog",
+        //     method: "openDevTools"
+        // }
+        onCreate: {
+            funcName: "gpii.app.aboutDialog.initListeners",
+            args: ["{that}"]
+        }
     }
 });
+
+gpii.app.aboutDialog.initListeners = function (that) {
+    that.dialog.on("blur", function () {
+        console.log("blur detected...");
+    }); 
+};
