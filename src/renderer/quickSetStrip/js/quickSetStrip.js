@@ -387,6 +387,10 @@
             settings: []
         },
 
+        events: {
+            onQssOpen: null
+        },
+
         components: {
             quickSetStripList: {
                 type: "gpii.qss.list",
@@ -402,6 +406,7 @@
                 options: {
                     events: {
                         // Add events from the main process to be listened for
+                        onQssOpen: "{qss}.events.onQssOpen",
                         onSettingUpdated: null
                     },
                     // XXX dev
@@ -431,6 +436,14 @@
         listeners: {
             "onCreate.disableTabKey": {
                 funcName: "gpii.qss.disableTabKey"
+            },
+            "onQssOpen": {
+                funcName: "gpii.qss.onQssOpen",
+                args: [
+                    "{quickSetStripList}",
+                    "{that}.model.settings",
+                    "{arguments}.0" // params
+                ]
             }
         }
     });
@@ -441,5 +454,12 @@
                 KeyboardEvent.preventDefault();
             }
         });
+    };
+
+    gpii.qss.onQssOpen = function (qssList, settings, params) {
+        if (params.shortcut) {
+            var keyOutBtnIndex = settings.length - 1;
+            qssList.events.onButtonFocus.fire(keyOutBtnIndex);
+        }
     };
 })(fluid);
