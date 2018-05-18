@@ -106,4 +106,20 @@
             }
         });
     };
+
+
+    fluid.registerNamespace("gpii.qssWidget.stepper");
+
+    /**
+     * Either add or subtract two values.
+     *
+     * @param {Number} a - The initial value
+     * @param {Number} b - The that is to be added or subtracted
+     * @param {Boolean} shouldSubtract - Whether subtraction to be done
+     * @returns {Number} The summed value.
+     */
+    gpii.qssWidget.stepper.sum = function (a, b, shouldSubtract) {
+        return a + (shouldSubtract ? -b : b);
+    };
+
 })(fluid, jQuery);

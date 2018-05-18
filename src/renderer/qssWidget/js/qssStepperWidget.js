@@ -109,16 +109,10 @@
         button.addClass("fl-qssWidgetBtn-trigger");
     };
 
-    /**
-     * Represents the QSS stepper widget.
-     */
-    fluid.defaults("gpii.qssWidget.stepper", {
+    fluid.defaults("gpii.qssWidget.baseStepper", {
         gradeNames: ["fluid.modelComponent"],
 
         model: {
-            messages: {
-                titlebarAppName: "Change Text Size"
-            },
             // XXX dev
             setting: {
                 value: 10,
@@ -126,9 +120,13 @@
             } // the currently handled setting
         },
 
+        events: {
+            onSettingAltered: null
+        },
+
         modelListeners: {
             setting: {
-                func: "{channelNotifier}.events.onQssSettingAltered.fire",
+                func: "{that}.events.onSettingAltered.fire",
                 args: ["{change}.value"],
                 includeSource: "settingAlter"
             }
@@ -162,16 +160,25 @@
                 },
                 source: "settingAlter"
             }
-        },
+        }
+    });
 
-        listeners: {
-            "onCreate.log": {
-                this: "console",
-                method: "log",
-                args: [{ expander: { funcName: "jQuery", args: [window] } }]
-            }
-        },
+    /**
+     * Represents the QSS stepper widget.
+     */
+    fluid.defaults("gpii.qssWidget.stepper", {
+        gradeNames: ["gpii.qssWidget.baseStepper"],
 
+        model: {
+            messages: {
+                titlebarAppName: "Change Text Size"
+            },
+            // XXX dev
+            setting: {
+                value: 10,
+                divisibleBy: 1
+            } // the currently handled setting
+        },
 
         components: {
             titlebar: {
@@ -246,23 +253,10 @@
                     events: {
                         // Add events the main process to be notified for
                         onQssWidgetClosed: null,
-                        onQssSettingAltered: null
+                        onQssSettingAltered: "{stepper}.events.onSettingAltered"
                     }
                 }
             }
         }
     });
-
-
-    /**
-     * Either add or subtract two values.
-     *
-     * @param {Number} a - The initial value
-     * @param {Number} b - The that is to be added or subtracted
-     * @param {Boolean} shouldSubtract - Whether subtraction to be done
-     * @returns {Number} The summed value.
-     */
-    gpii.qssWidget.stepper.sum = function (a, b, shouldSubtract) {
-        return a + (shouldSubtract ? -b : b);
-    };
 })(fluid);

@@ -73,11 +73,11 @@
         // pass hover item as it is in order to use its position
         // TODO probably use something like https://stackoverflow.com/questions/3234977/using-jquery-how-to-get-click-coordinates-on-the-target-element
         events: {
-            onButtonFocus: "{list}.events.onButtonFocus",
+            onButtonFocus: "{gpii.qss.list}.events.onButtonFocus",
 
-            onMouseEnter: "{list}.events.onButtonMouseEnter",
-            onMouseLeave: "{list}.events.onButtonMouseLeave",
-            onSettingAltered: "{list}.events.onSettingAltered"
+            onMouseEnter: "{gpii.qss.list}.events.onButtonMouseEnter",
+            onMouseLeave: "{gpii.qss.list}.events.onButtonMouseLeave",
+            onSettingAltered: "{gpii.qss.list}.events.onSettingAltered"
         },
 
         listeners: {
@@ -117,14 +117,6 @@
             }, {
                 func: "{that}.removeHighlight"
             }],
-            onArrowUpPressed: {
-                funcName: "console.log",
-                args: ["{that}.model.item"]
-            },
-            onArrowDownPressed: {
-                funcName: "console.log",
-                args: ["{that}.model.item"]
-            },
             onArrowLeftPressed: {
                 func: "{gpii.qss.list}.changeFocus",
                 args: [
@@ -188,6 +180,36 @@
             width:       target.outerWidth()
         };
     };
+
+
+    fluid.defaults("gpii.qss.stepperButtonPresenter", {
+        gradeNames: ["gpii.qssWidget.baseStepper", "gpii.qss.buttonPresenter"],
+
+        model: {
+            // used by baseStepper
+            setting: "{that}.model.item"
+        },
+
+        listeners: {
+            onArrowUpPressed: [{
+                func: "{that}.increment"
+            }, {
+                func: "{that}.activateBtn"
+            }],
+            onArrowDownPressed: [{
+                func: "{that}.decrement"
+            }, {
+                func: "{that}.activateBtn"
+            }]
+        },
+
+        invokers: {
+            activateBtn: {
+                funcName: "gpii.qssWidget.stepper.activateButton",
+                args: ["{that}.container"]
+            }
+        }
+    });
 
 
     fluid.defaults("gpii.qss.toggleButtonPresenter", {
@@ -273,8 +295,6 @@
                 "</div>",
             containerClassPrefix: "fl-qss-button"
         },
-        // TODO get handler based on setting type
-        handlerType: "gpii.qss.buttonPresenter",
         markup: null,
 
         events: {
@@ -305,15 +325,17 @@
     });
 
     gpii.qss.list.getHandlerType = function (item) {
-        if (item.type === "boolean") {
+        switch (item.type) {
+        case "boolean":
             return "gpii.qss.toggleButtonPresenter";
-        }
-
-        if (item.type === "close") {
+        case "number":
+            return "gpii.qss.stepperButtonPresenter";
+        case "close":
             return "gpii.qss.closeButtonPresenter";
-        }
 
-        return "gpii.qss.buttonPresenter";
+        default:
+            return "gpii.qss.buttonPresenter";
+        };
     };
 
     gpii.qss.list.changeFocus = function (that, items, index, backwards) {
