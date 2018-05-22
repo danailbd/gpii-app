@@ -187,8 +187,9 @@
 
         model: {
             // used by baseStepper
-            setting: "{that}.model.item"
+            divisibleBy: "{that}.model.item.divisibleBy"
         },
+
 
         listeners: {
             onArrowUpPressed: [{

@@ -101,59 +101,48 @@
 
 
     gpii.qssWidget.stepper.activateButton = function (button) {
-        button.removeClass("fl-qssWidgetBtn-trigger");
+        button.removeClass("fl-qssStepperWidgetBtn-trigger");
         // Avoid browser optimization
         // inspired by https://stackoverflow.com/a/30072037/2276288
         button[0].offsetWidth;
 
-        button.addClass("fl-qssWidgetBtn-trigger");
+        button.addClass("fl-qssStepperWidgetBtn-trigger");
     };
 
+    /**
+     * Simple base component for stepper functionality
+     */
     fluid.defaults("gpii.qssWidget.baseStepper", {
         gradeNames: ["fluid.modelComponent"],
 
         model: {
             // XXX dev
-            setting: {
-                value: 10,
-                divisibleBy: 1
-            } // the currently handled setting
-        },
-
-        events: {
-            onSettingAltered: null
-        },
-
-        modelListeners: {
-            setting: {
-                func: "{that}.events.onSettingAltered.fire",
-                args: ["{change}.value"],
-                includeSource: "settingAlter"
-            }
+            value: null,
+            divisibleBy: null
         },
 
         invokers: {
             increment: {
-                changePath: "setting.value",
+                changePath: "value",
                 value: {
                     expander: {
                         funcName: "gpii.qssWidget.stepper.sum",
                         args: [
-                            "{that}.model.setting.value",
-                            "{that}.model.setting.divisibleBy"
+                            "{that}.model.value",
+                            "{that}.model.divisibleBy"
                         ]
                     }
                 },
                 source: "settingAlter"
             },
             decrement: {
-                changePath: "setting.value",
+                changePath: "value",
                 value: {
                     expander: {
                         funcName: "gpii.qssWidget.stepper.sum",
                         args: [
-                            "{that}.model.setting.value",
-                            "{that}.model.setting.divisibleBy",
+                            "{that}.model.value",
+                            "{that}.model.divisibleBy",
                             true
                         ]
                     }
@@ -177,7 +166,25 @@
             setting: {
                 value: 10,
                 divisibleBy: 1
-            } // the currently handled setting
+            }, // the currently handled setting
+
+            value: "{that}.model.setting.value",
+            divisibleBy: "{that}.model.setting.divisibleBy"
+        },
+
+        events: {
+            onSettingAltered: null
+        },
+
+        modelListeners: {
+            "value": [{
+                func: "{that}.events.onSettingAltered.fire",
+                args: ["{that}.model.setting"],
+                includeSource: "settingAlter"
+            }, { // XXX dev
+                funcName: "console.log",
+                args: ["{change}.value"]
+            }]
         },
 
         components: {

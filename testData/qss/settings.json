@@ -17,10 +17,14 @@
         "value": false
     }, {
         "type": "number",
-        "label": "Screen Size"
+        "label": "Screen Size",
+        "value": 10,
+        "divisibleBy": 1
     }, {
         "type": "number",
-        "label": "Text Size"
+        "label": "Text Size",
+        "value": 5,
+        "divisibleBy": 1
     }, {
         "type": "keyIn",
         "label": "Key In"
