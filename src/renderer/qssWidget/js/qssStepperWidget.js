@@ -47,7 +47,8 @@
                 tipSubtitle: "Use mouse or Up/Down arrow keys",
 
                 footerTip: "You can also use Ctrl - and Ctrl + on your keyboard in many applications"
-            }
+            },
+            setting: {}
         },
 
         selectors: {
@@ -63,11 +64,19 @@
         invokers: {
             activateIncBtn: {
                 funcName: "gpii.qssWidget.stepper.activateButton",
-                args: "{that}.dom.incButton"
+                args: [
+                    "{that}.dom.incButton",
+                    "{that}.model.setting.value",
+                    "{that}.model.setting" // only restrictions will be used
+                ]
             },
             activateDecBtn: {
                 funcName: "gpii.qssWidget.stepper.activateButton",
-                args: "{that}.dom.decButton"
+                args: [
+                    "{that}.dom.decButton",
+                    "{that}.model.setting.value",
+                    "{that}.model.setting"
+                ]
             }
         },
 
@@ -99,59 +108,6 @@
         }
     });
 
-
-    gpii.qssWidget.stepper.activateButton = function (button) {
-        button.removeClass("fl-qssStepperWidgetBtn-trigger");
-        // Avoid browser optimization
-        // inspired by https://stackoverflow.com/a/30072037/2276288
-        button[0].offsetWidth;
-
-        button.addClass("fl-qssStepperWidgetBtn-trigger");
-    };
-
-    /**
-     * Simple base component for stepper functionality
-     */
-    fluid.defaults("gpii.qssWidget.baseStepper", {
-        gradeNames: ["fluid.modelComponent"],
-
-        model: {
-            // XXX dev
-            value: null,
-            divisibleBy: null
-        },
-
-        invokers: {
-            increment: {
-                changePath: "value",
-                value: {
-                    expander: {
-                        funcName: "gpii.qssWidget.stepper.sum",
-                        args: [
-                            "{that}.model.value",
-                            "{that}.model.divisibleBy"
-                        ]
-                    }
-                },
-                source: "settingAlter"
-            },
-            decrement: {
-                changePath: "value",
-                value: {
-                    expander: {
-                        funcName: "gpii.qssWidget.stepper.sum",
-                        args: [
-                            "{that}.model.value",
-                            "{that}.model.divisibleBy",
-                            true
-                        ]
-                    }
-                },
-                source: "settingAlter"
-            }
-        }
-    });
-
     /**
      * Represents the QSS stepper widget.
      */
@@ -162,14 +118,19 @@
             messages: {
                 titlebarAppName: "Change Text Size"
             },
-            // XXX dev
             setting: {
-                value: 10,
-                divisibleBy: 1
+                value:       5,
+                divisibleBy: 3,
+                min:         5,
+                max:         15
             }, // the currently handled setting
 
             value: "{that}.model.setting.value",
-            divisibleBy: "{that}.model.setting.divisibleBy"
+            stepperParams: {
+                divisibleBy: "{that}.model.setting.divisibleBy",
+                min:         "{that}.model.setting.min",
+                max:         "{that}.model.setting.max"
+            }
         },
 
         events: {
@@ -205,7 +166,12 @@
 
             contentHandler: {
                 type: "gpii.qssWidget.stepper.contentHandler",
-                container: ".flc-qssWidget"
+                container: ".flc-qssWidget",
+                options: {
+                    model: {
+                        setting: "{stepper}.model.setting"
+                    }
+                }
             },
             // register window key listeners
             windowKeyListener: {

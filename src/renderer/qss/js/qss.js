@@ -187,7 +187,11 @@
 
         model: {
             // used by baseStepper
-            divisibleBy: "{that}.model.item.divisibleBy"
+            stepperParams: {
+                divisibleBy: "{that}.model.item.divisibleBy",
+                min:         "{that}.model.item.min",
+                max:         "{that}.model.item.max"
+            }
         },
 
 
@@ -207,7 +211,7 @@
         invokers: {
             activateBtn: {
                 funcName: "gpii.qssWidget.stepper.activateButton",
-                args: ["{that}.container"]
+                args: ["{that}.container", "{that}.model.value", "{that}.model.stepperParams"]
             }
         }
     });

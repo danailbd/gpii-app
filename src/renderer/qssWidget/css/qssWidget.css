@@ -33,15 +33,26 @@
     border-radius: 5px;
 }
 
-@keyframes activate {
+@keyframes trigger {
     10% {
         background-color: #FFEA00;
         color: black;
     }
 }
 
+@keyframes trigger-error {
+    0% {
+        background-color: #CC0000;
+        color: black;
+    }
+}
+
 .fl-qssStepperWidgetBtn-trigger {
-    animation: activate 0.5s;
+    animation: trigger 0.5s;
+}
+
+.fl-qssStepperWidgetBtn-trigger-error {
+    animation: trigger-error 0.5s;
 }
 
 .fl-arrowUp, .fl-arrowDown {

@@ -19,12 +19,16 @@
         "type": "number",
         "label": "Screen Size",
         "value": 10,
-        "divisibleBy": 1
+        "divisibleBy": 1,
+        "min": 0,
+        "max": 15
     }, {
         "type": "number",
         "label": "Text Size",
         "value": 5,
-        "divisibleBy": 1
+        "divisibleBy": 2,
+        "min": 3,
+        "max": 8
     }, {
         "type": "keyIn",
         "label": "Key In"
