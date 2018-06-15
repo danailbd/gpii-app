@@ -34,7 +34,8 @@ fluid.defaults("gpii.app.qssWidget", {
         attrs: {
             width: 300,
             height: 400,
-            alwaysOnTop: true
+            alwaysOnTop: true,
+            show: true
         },
         fileSuffixPath: "qssWidget/index.html"
     },
@@ -93,13 +94,17 @@ fluid.defaults("gpii.app.qssWidget", {
         }
     },
     modelListeners: {
-        "isShown": {
+        "isShown": [{
             func: "{that}.events.onQssWidgetToggled",
             args: [
                 "{that}.model.setting",
                 "{change}.value" // isShown
             ]
-        },
+        }, {
+            funcName: "gpii.app.offscreenHidable.toggle",
+            args: ["{that}", "{change}.value"],
+            namespace: "impl"
+        }],
         "setting": {
             func: "{that}.events.onQssWidgetToggled",
             args: [
@@ -159,6 +164,11 @@ gpii.app.qssWidget.toggle = function (that, setting, elementMetrics, activationP
  * @param {Object} activationParams.shortcut - Defines the way the show was triggered
  */
 gpii.app.qssWidget.show = function (that, setting, elementMetrics, activationParams) {
+    // XXX Related issues: https://github.com/electron/electron/issues/9477
+    // Additional insurance for the proper size of the dialog
+    // Here `that.width` is not used directly as `getSize` respects the scale factor
+    //that.resize(that.width, that.height);
+
     // Find the offset for the window to be centered over the element
     var windowWidth = that.dialog.getSize()[0];
     // change offset to element's center
@@ -166,14 +176,37 @@ gpii.app.qssWidget.show = function (that, setting, elementMetrics, activationPar
     // set offset to window center
     offsetX -= windowWidth / 2;
 
+    // XXX DEV
+    console.log("---- WIDGET offset: ", offsetX, elementMetrics);
+
     activationParams = activationParams || {};
     that.channelNotifier.events.onSettingUpdated.fire(setting, activationParams);
     that.dialog.setAlwaysOnTop(true);
 
     that.applier.change("setting", setting);
-    that.applier.change("isShown", true);
     // reposition window properly
     that.positionWindow(offsetX, elementMetrics.height);
+    // XXX test whether there's some async problem with change applier
+    that.model.offset = { x: offsetX, y: elementMetrics.height };
+    that.applier.change("isShown", true);
 };
 
-
+fluid.registerNamespace("gpii.app.offscreenHidable");
+gpii.app.offscreenHidable.toggle = function (that, isShown) {
+    // XXX DEV
+    console.log("Toggling: ", isShown, that.model.offset, that.dialog);
+    if (isShown) {
+        // restore position
+        console.log(that.model.offset);
+        if (require("electron").screen.getPrimaryDisplay().scaleFactor > 1) {
+            // it does repositioning as well
+            that.resize(that.width, that.height);
+        } else {
+            // XXX DEV
+            that.repositionWindow();
+        }
+        that.dialog.focus();
+    } else {
+        gpii.browserWindow.moveOffScreen(that.dialog);
+    }
+};

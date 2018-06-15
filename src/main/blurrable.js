@@ -73,7 +73,7 @@ gpii.app.blurrable.onBlur = function (that, linkedWindowsGrades) {
 };
 
 gpii.app.blurrable.handleBlur = function (that) {
-    if (that.hide) {
-        that.hide();
-    }
+    // if (that.hide) {
+    //     that.hide();
+    // }
 };

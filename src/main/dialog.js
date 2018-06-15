@@ -16,9 +16,10 @@
 "use strict";
 
 var fluid         = require("infusion");
-var BrowserWindow = require("electron").BrowserWindow;
+var electron      = require("electron");
+var BrowserWindow = electron.BrowserWindow;
 
-var gpii  = fluid.registerNamespace("gpii");
+var gpii = fluid.registerNamespace("gpii");
 
 require("./resizable.js");
 require("./utils.js");
@@ -152,8 +153,9 @@ fluid.defaults("gpii.app.dialog", {
             funcName: "gpii.app.dialog.resize",
             args: [
                 "{that}",
+                "{that}.model.offset",
                 "{arguments}.0", // windowWidth
-                "{arguments}.1"  // windowHeight
+                "{arguments}.1", // windowHeight
             ]
         },
         show: {
@@ -247,7 +249,16 @@ gpii.app.dialog.toggle = function (that, isShown, showInactive) {
         that.dialog.show;
 
     if (isShown) {
-        that.repositionWindow();
+        // XXX Related to Electron issue https://github.com/electron/electron/issues/9477
+        // Changing the position of a BrowserWindow when the scale factor is different than
+        // the default one ( that is 100% ) changes the window's size (either width of height).
+        // To ensure its size is correct simply reset the size of the window with its stored one.
+        if (electron.screen.getPrimaryDisplay().scaleFactor > 1) {
+            that.resize(that.width, that.height);
+        } else {
+            that.repositionWindow();
+        }
+
         showMethod.call(that.dialog);
         that.events.onDialogShown.fire();
     } else {
@@ -262,13 +273,10 @@ gpii.app.dialog.toggle = function (that, isShown, showInactive) {
  * @param {Number} windowWidth - The new width for the window
  * @param {Number} windowHeight - The new height for the window
  */
-gpii.app.dialog.resize = function (that, windowWidth, windowHeight) {
-    var offset = that.model.offset;
-
+gpii.app.dialog.resize = function (that, offset, windowWidth, windowHeight) {
     // TODO move to the browserWindow utils section
     var bounds = gpii.browserWindow.getDesiredWindowBounds(windowWidth, windowHeight, offset.x, offset.y);
-    // XXX DEV
-    console.log("DIALOG: ", bounds, that.options.gradeNames.slice(-1));
+
     that.dialog.setBounds(bounds);
 };
 
