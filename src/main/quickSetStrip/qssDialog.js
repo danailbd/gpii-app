@@ -82,7 +82,8 @@ fluid.defaults("gpii.app.qss", {
                     onQssButtonMouseEnter: null,
                     onQssButtonMouseLeave: null,
 
-                    onQssSettingAltered: "{qss}.events.onQssSettingAltered"
+                    onQssSettingAltered: "{qss}.events.onQssSettingAltered",
+                    onQssNotificationRequired: null
                 },
 
                 listeners: {

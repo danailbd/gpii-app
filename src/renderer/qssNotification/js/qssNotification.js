@@ -34,24 +34,28 @@
 
         model: {
             messages: {
-                title: "Most applications will need to be re-started in order for the language setting to work in that application.",
+                title: "GPII Notification",
                 dismissButtonLabel: "OK"
             }
         },
 
         selectors: {
-            title: ".flc-qssNotification-title",
+            titlebar: ".flc-titlebar",
+            description: ".flc-qssNotification-description",
             dismissButton: ".flc-qssNotification-dismissButton"
         },
 
-        events: {},
+        events: {
+            onQssNotificationShown: null,
+            onQssNotificationClosed: null
+        },
 
         components: {
             channelListener: {
                 type: "gpii.psp.channelListener",
                 options: {
                     events: {
-                        onQssNotificationShown: null
+                        onQssNotificationShown: "{qssNotification}.events.onQssNotificationShown"
                     }
                 }
             },
@@ -59,7 +63,21 @@
                 type: "gpii.psp.channelNotifier",
                 options: {
                     events: {
-                        onQssNotificationClosed: null
+                        onQssNotificationClosed: "{qssNotification}.events.onQssNotificationClosed"
+                    }
+                }
+            },
+            titlebar: {
+                type: "gpii.psp.titlebar",
+                container: "{that}.dom.titlebar",
+                options: {
+                    model: {
+                        messages: {
+                            title: "{qssNotification}.model.messages.title"
+                        }
+                    },
+                    listeners: {
+                        "onClose": "{qssNotification}.events.onQssNotificationClosed"
                     }
                 }
             },
@@ -69,8 +87,18 @@
                 options: {
                     model: {
                         label: "{qssNotification}.model.messages.dismissButtonLabel"
+                    },
+                    invokers: {
+                        onClick: "{qssNotification}.events.onQssNotificationClosed.fire"
                     }
                 }
+            }
+        },
+
+        listeners: {
+            onQssNotificationShown: {
+                changePath: "messages",
+                value: "{arguments}.0"
             }
         }
     });

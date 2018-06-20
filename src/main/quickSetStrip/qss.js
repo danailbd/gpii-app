@@ -96,16 +96,19 @@ fluid.defaults("gpii.app.qssWrapper", {
                             "{arguments}.2"  // activationParams
                         ]
                     }, {
-                        func: "{qssNotification}.toggle",
-                        args: [
-                            "{arguments}.0" // setting
-                        ]
+                        func: "{qssNotification}.hide"
                     }],
                     onQssSettingAltered: {
                         func: "{qssWrapper}.alterSetting",
                         args: [
                             "{arguments}.0", // updatedSetting
                             "qss"
+                        ]
+                    },
+                    "{channelListener}.events.onQssNotificationRequired": {
+                        func: "{qssNotification}.show",
+                        args: [
+                            "{arguments}.0"  // notificationParams
                         ]
                     }
                 },

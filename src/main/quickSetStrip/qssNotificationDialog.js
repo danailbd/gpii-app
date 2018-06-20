@@ -23,22 +23,16 @@ require("../dialog.js");
 fluid.defaults("gpii.app.qssNotification", {
     gradeNames: ["gpii.app.dialog", "gpii.app.blurrable"],
 
-    model: {
-        messages: {
-
-        }
-    },
-
     config: {
         attrs: {
-            width: 300,
-            height: 150,
+            width: 350,
+            height: 200,
             alwaysOnTop: true
         },
         fileSuffixPath: "qssNotification/index.html"
     },
 
-    linkedWindowsGrades: ["gpii.app.psp", "gpii.app.qss", "gpii.app.qssWidget", "gpii.app.qssNotification"],
+    linkedWindowsGrades: ["gpii.app.qss", "gpii.app.qssNotification"],
 
     events: {
         onQssNotificationShown: null
@@ -76,32 +70,20 @@ fluid.defaults("gpii.app.qssNotification", {
             args: ["{that}.dialog"]
         }
     },
-    
+
     invokers: {
         positionWindow: {
             funcName: "fluid.identity"
         },
-        toggle: {
-            funcName: "gpii.app.qssNotification.toggle",
-            args: [
-                "{that}",
-                "{arguments}.0" // setting
-            ]
-        },
         show: {
             funcName: "gpii.app.qssNotification.show",
-            args: ["{that}"]
+            args: [
+                "{that}",
+                "{arguments}.0" // notificationParams
+            ]
         }
     }
 });
-
-gpii.app.qssNotification.toggle = function (that, setting) {
-    if (setting.schema.type === "save") {
-        that.show();
-    } else {
-        that.hide();
-    }
-};
 
 /**
  * Show the QSS notification window and sends an IPC message with
@@ -109,7 +91,7 @@ gpii.app.qssNotification.toggle = function (that, setting) {
  *
  * @param {Component} that - The `gpii.app.qssNotification` instance.
  */
-gpii.app.qssNotification.show = function (that) {
-    that.channelNotifier.events.onQssNotificationShown.fire(that.model.messages);
+gpii.app.qssNotification.show = function (that, notificationParams) {
+    that.channelNotifier.events.onQssNotificationShown.fire(notificationParams);
     that.applier.change("isShown", true);
 };
