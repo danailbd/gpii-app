@@ -5,6 +5,8 @@
         <link rel="stylesheet" href="../psp/css/button.css">
         <link rel="stylesheet" href="../common/css/dialog.css">
         <link rel="stylesheet" href="../common/css/titlebar.css">
+        <link rel="stylesheet" href="../common/css/heightObservable.css">
+        <link rel="stylesheet" href="css/main.css">
 
         <script type="text/javascript" src="../../../node_modules/infusion/src/lib/jquery/core/js/jquery.js"></script>
         <script type="text/javascript" src="../../../node_modules/infusion/dist/infusion-all.js"></script>
@@ -12,6 +14,7 @@
         <script type="text/javascript" src="js/qssNotification.js"></script>
         <script type="text/javascript" src="js/index.js"></script>
 
+        <script type="text/javascript" src="../common/js/heightObservable.js"></script>
 
         <script type="text/javascript" src="../psp/js/widgets.js"></script>
         <script type="text/javascript" src="../common/js/titlebar.js"></script>
@@ -31,8 +34,8 @@
                     <span class="flc-title fl-appName"></span>
                     <button class="flc-closeBtn fl-closeBtn btn btn-regular">&#x2715;</button>
                 </div>
-                <div class="fl-dialog-content fl-scrollable">
-                    <div class="fl-dialog-contentText">
+                <div class="flc-dialog-content fl-dialog-content fl-scrollable">
+                    <div class="flc-dialog-contentText" fl-dialog-contentText">
                         <div class="flc-qssNotification-description fl-subtitle"></div>
                         <div class="fl-dialog-controls">
                             <button class="flc-qssNotification-dismissButton btn fl-btn">

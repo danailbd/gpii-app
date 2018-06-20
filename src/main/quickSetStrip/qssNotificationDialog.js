@@ -34,6 +34,13 @@ fluid.defaults("gpii.app.qssNotification", {
 
     linkedWindowsGrades: ["gpii.app.qss", "gpii.app.qssNotification"],
 
+    model: {
+        offset: {
+            x: 0,
+            y: 0
+        }
+    },
+
     events: {
         onQssNotificationShown: null
     },
@@ -51,7 +58,8 @@ fluid.defaults("gpii.app.qssNotification", {
             type: "gpii.app.channelListener",
             options: {
                 events: {
-                    onQssNotificationClosed: null
+                    onQssNotificationClosed: null,
+                    onQssNotificationHeightChanged: "{qssNotification}.events.onContentHeightChanged"
                 },
                 listeners: {
                     onQssNotificationClosed: [{
@@ -73,7 +81,16 @@ fluid.defaults("gpii.app.qssNotification", {
 
     invokers: {
         positionWindow: {
-            funcName: "fluid.identity"
+            funcName: "gpii.app.qssNotification.positionWindow",
+            args: ["{that}.dialog"]
+        },
+        resize: {
+            funcName: "gpii.app.qssNotification.resize",
+            args: [
+                "{that}",
+                "{arguments}.0", // windowWidth
+                "{arguments}.1"  // windowHeight
+            ]
         },
         show: {
             funcName: "gpii.app.qssNotification.show",
@@ -84,6 +101,17 @@ fluid.defaults("gpii.app.qssNotification", {
         }
     }
 });
+
+gpii.app.qssNotification.positionWindow = function (dialog) {
+    var dialogSize = dialog.getSize(),
+        position = gpii.browserWindow.computeCentralWindowPosition(dialogSize[0], dialogSize[1]);
+    dialog.setPosition(position.x, position.y);
+};
+
+gpii.app.qssNotification.resize = function (that, windowWidth, windowHeight) {
+    var bounds = gpii.browserWindow.getCenterWindowBounds(windowWidth, windowHeight);
+    that.dialog.setBounds(bounds);
+};
 
 /**
  * Show the QSS notification window and sends an IPC message with

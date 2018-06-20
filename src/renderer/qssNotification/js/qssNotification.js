@@ -30,7 +30,7 @@
     });
 
     fluid.defaults("gpii.psp.qssNotification", {
-        gradeNames: ["fluid.viewComponent", "gpii.psp.selectorsTextRenderer"],
+        gradeNames: ["fluid.viewComponent", "gpii.psp.selectorsTextRenderer", "gpii.psp.heightObservable"],
 
         model: {
             messages: {
@@ -42,7 +42,10 @@
         selectors: {
             titlebar: ".flc-titlebar",
             description: ".flc-qssNotification-description",
-            dismissButton: ".flc-qssNotification-dismissButton"
+            dismissButton: ".flc-qssNotification-dismissButton",
+
+            dialogContent: ".flc-dialog-content",
+            heightListenerContainer: ".flc-dialog-contentText"
         },
 
         events: {
@@ -63,6 +66,7 @@
                 type: "gpii.psp.channelNotifier",
                 options: {
                     events: {
+                        onQssNotificationHeightChanged: "{qssNotification}.events.onHeightChanged",
                         onQssNotificationClosed: "{qssNotification}.events.onQssNotificationClosed"
                     }
                 }
@@ -100,6 +104,17 @@
                 changePath: "messages",
                 value: "{arguments}.0"
             }
+        },
+
+        invokers: {
+            calculateHeight: {
+                funcName: "gpii.psp.qssNotification.calculateHeight",
+                args: ["{that}.container", "{that}.dom.dialogContent", "{that}.dom.heightListenerContainer"]
+            }
         }
     });
+
+    gpii.psp.qssNotification.calculateHeight = function (container, dialogContent, heightListenerContainer) {
+        return container.outerHeight(true) - dialogContent.height() + heightListenerContainer.height();
+    };
 })(fluid);
