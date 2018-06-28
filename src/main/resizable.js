@@ -39,12 +39,7 @@ fluid.defaults("gpii.app.resizable", {
     },
     members: {
         width:  "{that}.options.config.attrs.width", // the actual width of the content
-        height: "{that}.options.config.attrs.height", // the actual height of the content
-        // helper variables needed for display metrics changes
-        displayMetricsChanged: {
-            timer: null,
-            wasFocused: null
-        }
+        height: "{that}.options.config.attrs.height" // the actual height of the content
     },
     events: {
         onContentHeightChanged: null,
@@ -117,9 +112,6 @@ gpii.app.resizable.onContentSizeChanged = function (that, width, height) {
  * Possible changes are `bounds`, `workArea`, `scaleFactor` and `rotation`
  */
 gpii.app.resizable.handleDisplayMetricsChange = function (that, changedMetrics) {
-    // XXX support both `gpii.app.psp` and `gpii.app.dialog` types
-    var dialog = that.dialog || that.pspWindow;
-
     // In older versions of Electron (e.g. 1.4.1) whenever the DPI was changed, one
     // `display-metrics-changed` event was fired. In newer versions (e.g. 1.8.1) the
     // `display-metrics-changed` event is fired multiple times. The change of the DPI
@@ -130,48 +122,17 @@ gpii.app.resizable.handleDisplayMetricsChange = function (that, changedMetrics) 
     // `display-metrics-changed` event is fired in which case the changedMetrics argument
     // will not include the `scaleFactor` string. For more information please take a look
     // at https://issues.gpii.net/browse/GPII-2890.
-    //
-    // Electron BrowserWindows are not resized automatically on Display Metrics Changes, so
-    // manual resizing is necessary.
-    // On the other resizing an Electron BrowserWindow the passed width and height values are altered
-    // according to the scale factor of the environment (DPI setting for Windows). In other words
-    // calling the resize method with the same size will update the window with respect to the scaling.
-    function scaleDialog() {
+    if (that.options.gradeNames.slice(-1)[0] === "gpii.app.qssWidget") {
+        console.log("=========resize", changedMetrics);
+    }
+    if (!changedMetrics.includes("scaleFactor")) {
         var attrs = that.options.config.attrs,
             width = that.width || attrs.width,
             height = that.height || attrs.height;
-
-        that.resize(width, height);
-
-        // in case it is not the PSP
-        if (that.repositionWindow) {
-            that.repositionWindow();
-        }
-
-        // Correct the state of windows
-        that.displayMetricsChanged.timer = null;
-        if (that.options.offScreenHide || that.model.isShown) {
-            // low level show
-            if (that.displayMetricsChanged.wasFocused) {
-                dialog.show();
-            } else {
-                // without a focus; We want to restore the previously focused window
-                dialog.showInactive();
-            }
-        }
+        setTimeout(function () {
+            that.resize(width, height);
+        }, 1000);
     }
-
-    // in case this is the first call notification of the display-metrics-changed event
-    // hide the dialog, and keep its state
-    if (!that.displayMetricsChanged.timer) {
-        that.displayMetricsChanged.wasFocused = dialog.isFocused();
-        // low level hide
-        dialog.hide();
-    }
-
-    // to ensure the DPI change has taken place, wait for a while after its last event
-    clearTimeout(that.displayMetricsChanged.timer);
-    that.displayMetricsChanged.timer = setTimeout(scaleDialog, 500);
 };
 
 /**
