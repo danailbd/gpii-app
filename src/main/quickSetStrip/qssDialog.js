@@ -93,10 +93,10 @@ fluid.defaults("gpii.app.qss", {
                         func: "{qss}.hide"
                     },
                     // XXX DEV
-                    onQssButtonActivated: {
-                        funcName: "console.log",
-                        args: ["Item clicked: ", "{arguments}.0"]
-                    },
+                    // onQssButtonActivated: {
+                    //     funcName: "console.log",
+                    //     args: ["Item clicked: ", "{arguments}.0"]
+                    // },
                     // onQssButtonMouseEnter: {
                     //     funcName: "console.log",
                     //     args: ["Item Enter: ", "{arguments}.0.target.offsetLeft"]

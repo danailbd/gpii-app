@@ -77,6 +77,35 @@
                 container: "{qssWidget}.container",
                 options: {
                     sounds: "{qssWidget}.options.sounds",
+                    components: {
+                        heightObservable: {
+                            type: "gpii.psp.heightObservable",
+                            container: {
+                                expander: {
+                                    funcName: "gpii.psp.qssWidget.getHeightObservableContainer",
+                                    args: [
+                                        "{qssWidget}.dom.stepper",
+                                        "{qssWidget}.dom.menu",
+                                        "{qssWidget}.model.setting"
+                                    ]
+                                }
+                            },
+                            options: {
+                                events: {
+                                    onHeightChanged: "{channelNotifier}.events.onQssWidgetHeightChanged"
+                                },
+                                invokers: {
+                                    calculateHeight: {
+                                        funcName: "gpii.psp.qssWidget.calculateHeight",
+                                        args: [
+                                            "{qssWidget}.container",
+                                            "{that}.container"
+                                        ]
+                                    }
+                                }
+                            }
+                        }
+                    },
                     events: {
                         onNotificationRequired: "{qssWidget}.events.onQssWidgetNotificationRequired"
                     },
@@ -166,7 +195,8 @@
                         onQssWidgetClosed:               null,
                         onQssWidgetSettingAltered:       "{qssWidget}.events.onQssWidgetSettingAltered",
                         onQssWidgetBlur:                 "{qssWidget}.events.onWidgetBlur",
-                        onQssWidgetNotificationRequired: "{qssWidget}.events.onQssWidgetNotificationRequired"
+                        onQssWidgetNotificationRequired: "{qssWidget}.events.onQssWidgetNotificationRequired",
+                        onQssWidgetHeightChanged:        null
                     }
                 }
             }
@@ -206,6 +236,23 @@
             stepperElement.hide();
             menuElement.show();
         }
+    };
+
+    gpii.psp.qssWidget.getHeightObservableContainer = function (stepperElement, menuElement, setting) {
+        var container = (setting.schema.type === "number") ? stepperElement : menuElement;
+        return container.find(".flc-heightObservable");
+    };
+
+    gpii.psp.qssWidget.calculateHeight = function (container, heightListenerContainer) {
+        var height = heightListenerContainer.height(),
+            scrollHeight = heightListenerContainer[0].scrollHeight;
+
+        if (scrollHeight > height) {
+            return Math.ceil(45 + container.outerHeight(true) - height + scrollHeight);
+        }
+
+        var offset = heightListenerContainer.offset();
+        return Math.ceil(45 + offset.top + height + 12);
     };
 
     gpii.qssWidget.processParams = function (focusManager, activationParams) {

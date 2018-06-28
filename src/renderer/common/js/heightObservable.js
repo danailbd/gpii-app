@@ -111,6 +111,10 @@
                                 "{heightObservable}.options.markup.heightChangeListener",
                                 "{heightObservable}.events.onHeightListenerMarkupRendered"
                             ]
+                        },
+                        "onDestroy.removeMarkup": {
+                            funcName: "gpii.psp.heightObservable.removeMarkup",
+                            args: ["{that}.container"]
                         }
                     }
                 }
@@ -171,5 +175,9 @@
         var heightListenerElement = jQuery(markup);
         container.prepend(heightListenerElement);
         onRenderedEvent.fire(heightListenerElement);
+    };
+
+    gpii.psp.heightObservable.removeMarkup = function (container) {
+        container.find(".fl-heightChangeListener").remove();
     };
 })(fluid);

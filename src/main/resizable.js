@@ -104,9 +104,11 @@ gpii.app.resizable.addDisplayMetricsListener = function (that) {
  * @param {Number} height The updated height of the componet's content.
  */
 gpii.app.resizable.onContentSizeChanged = function (that, width, height) {
-    that.width = width;
-    that.height = height;
-    that.resize(width, height);
+    if (height) {
+        that.width = width;
+        that.height = height;
+        that.resize(width, height);
+    }
 };
 
 /**

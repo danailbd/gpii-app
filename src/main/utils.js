@@ -117,16 +117,16 @@ gpii.browserWindow.computeCentralWindowPosition = function (width, height) {
  * @param width {Number} The width of the `BrowserWindow`.
  * @param height {Number} The height of the `BrowserWindow`.
  *
- * @param {Number} offsetY - The y bottom offset.
  * @param {Number} offsetX - The x right offset.
+ * @param {Number} offsetY - The y bottom offset.
  * @return {{x: Number, y: Number, width: Number, height: Number}}
  */
-gpii.browserWindow.getDesiredWindowBounds = function (width, height, offsetY, offsetX) {
+gpii.browserWindow.getDesiredWindowBounds = function (width, height, offsetX, offsetY) {
     // restrict offset to be positive
     var position = gpii.browserWindow.computeWindowPosition(width, height, offsetX, offsetY);
     var size = gpii.browserWindow.computeWindowSize(width, height, offsetX, offsetY);
 
-    console.log("Desired Bounds: ", arguments, size, position);
+    // console.log("Desired Bounds: ", arguments, size, position);
 
     return {
         x:      position.x,
@@ -156,6 +156,7 @@ gpii.browserWindow.getCenterWindowBounds = function (width, height) {
 gpii.browserWindow.positionWindow = function (dialogWindow, offsetX, offsetY) {
     var size = dialogWindow.getSize(),
         position = gpii.browserWindow.computeWindowPosition(size[0], size[1], offsetX, offsetY);
+    console.log("======size", size, position);
 
     dialogWindow.setPosition(position.x, position.y);
 };

@@ -123,7 +123,7 @@ gpii.app.pspInApp.applyOffset = function (psp, qssHeight, isQssShown) {
         psp.options.heightOffset = null;
     }
 
-    console.log("Apply Offset & resize: ", psp.width, psp.height, psp.options.heightOffset);
+    // console.log("Apply Offset & resize: ", psp.width, psp.height, psp.options.heightOffset);
     // in case it was shown, it will be also repositioned
     psp.resize(psp.width, psp.height);
 };
@@ -318,7 +318,7 @@ fluid.defaults("gpii.app.psp", {
  * @param {Component} psp - The `gpii.app.psp` instance.
  */
 gpii.app.psp.show = function (psp) {
-    console.log("Show: ", psp.options.heightOffset);
+    // console.log("Show: ", psp.options.heightOffset);
     gpii.browserWindow.moveToScreen(psp.pspWindow, { y: psp.options.heightOffset });
     psp.pspWindow.focus();
     psp.applier.change("isShown", true);
@@ -434,7 +434,7 @@ gpii.app.psp.resize = function (psp, width, contentHeight, minHeight, heightOffs
     var pspWindow = psp.pspWindow,
         wasShown = psp.model.isShown,
         height = Math.max(contentHeight, minHeight || 0),
-        bounds = gpii.browserWindow.getDesiredWindowBounds(width, height, heightOffset);
+        bounds = gpii.browserWindow.getDesiredWindowBounds(width, height, 0, heightOffset);
 
     if (wasShown) {
         // The coordinates and the dimensions of the PSP must be set with a single

@@ -263,8 +263,10 @@ gpii.app.dialog.resize = function (that, windowWidth, windowHeight) {
 
     // TODO move to the browserWindow utils section
     var bounds = gpii.browserWindow.getDesiredWindowBounds(windowWidth, windowHeight, offset.x, offset.y);
+    if (that.options.gradeNames.slice(-1)[0] === "gpii.app.qssWidget") {
+        console.log("DIALOG: ", windowWidth, windowHeight, offset, bounds);
+    }
     // XXX DEV
-    console.log("DIALOG: ", bounds, that.options.gradeNames.slice(-1));
     that.dialog.setBounds(bounds);
 };
 

@@ -78,7 +78,8 @@ fluid.defaults("gpii.app.qssWidget", {
                     onQssWidgetClosed: null,
                     onQssWidgetNotificationRequired: "{qssWidget}.events.onQssWidgetNotificationRequired",
                     onQssWidgetSettingAltered: "{qssWidget}.events.onQssWidgetSettingAltered",
-                    onQssWidgetBlur: null
+                    onQssWidgetBlur: null,
+                    onQssWidgetHeightChanged: "{qssWidget}.events.onContentHeightChanged"
                 },
                 listeners: {
                     onQssWidgetClosed: [{
@@ -97,7 +98,11 @@ fluid.defaults("gpii.app.qssWidget", {
                         args: [
                             "{arguments}.0" // params
                         ]
-                    }]
+                    }],
+                    onQssWidgetHeightChanged: {
+                        func: "console.log",
+                        args: ["<<<<<<<<onQssWidgetHeightChanged", "{arguments}.0", "{arguments}.1"]
+                    }
                 }
             }
         }
