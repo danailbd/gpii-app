@@ -377,10 +377,19 @@ gpii.app.dialog.setRestrictedSize = function (that, restrictions, width, height)
 fluid.defaults("gpii.app.dialogWrapper", {
     gradeNames: "fluid.modelComponent",
 
+    model: {
+        isShown: null
+    },
+
     components: {
         dialog: {
             type: "gpii.app.dialog",
-            createOnEvent: "onDialogCreate"
+            createOnEvent: "onDialogCreate",
+            options: {
+                model: {
+                    isShown: "{dialogWrapper}.model.isShown"
+                }
+            }
         }
     },
 

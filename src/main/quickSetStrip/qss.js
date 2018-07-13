@@ -146,7 +146,7 @@ fluid.defaults("gpii.app.qssWrapper", {
             }
         },
         qssWidget: {
-            type: "gpii.app.qssWidget",
+            type: "gpii.app.qssWidgetWrapper",
             options: {
                 listeners: {
                     onQssWidgetSettingAltered: {
@@ -237,15 +237,15 @@ fluid.defaults("gpii.app.qssWrapper", {
  * (or the setting for the PSP button respectively).
  */
 gpii.app.qss.hideQssMenus = function (that, qssWidget, setting) {
-    var qssWidgetSetting = qssWidget.model.setting || {};
+    // var qssWidgetSetting = qssWidget.model.setting || {};
 
-    if (setting.path !== qssWidgetSetting.path) {
-        qssWidget.hide();
-    }
+    // if (setting.path !== qssWidgetSetting.path) {
+    //     qssWidget.hide();
+    // }
 
-    if (setting.path !== that.options.pspButtonPath) {
-        that.events.onQssPspClose.fire();
-    }
+    // if (setting.path !== that.options.pspButtonPath) {
+    //     that.events.onQssPspClose.fire();
+    // }
 };
 
 gpii.app.qssWrapper.updateSetting = function (that, updatedSetting) {

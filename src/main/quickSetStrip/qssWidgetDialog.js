@@ -22,6 +22,71 @@ require("../dialog.js");
 require("../blurrable.js");
 require("../../common/channelUtils.js");
 
+fluid.defaults("gpii.app.qssWidgetWrapper", {
+    gradeNames: ["gpii.app.dialogWrapper"],
+    events: {
+        onSettingUpdated: null,
+        onQssWidgetToggled: null,
+        onQssWidgetSettingAltered: null,
+        onQssWidgetNotificationRequired: null
+    },
+    model: {
+        setting: {}
+    },
+    components: {
+        dialog: {
+            type: "gpii.app.qssWidget",
+            options: {
+                setting: "{arguments}.0",
+                elementMetrics: "{arguments}.1",
+                activationParams: "{arguments}.2",
+
+                events: {
+                    onSettingUpdated: "{qssWidgetWrapper}.events.onSettingUpdated",
+                    onQssWidgetToggled: "{qssWidgetWrapper}.events.onQssWidgetToggled",
+                    onQssWidgetSettingAltered: "{qssWidgetWrapper}.events.onQssWidgetSettingAltered",
+                    onQssWidgetNotificationRequired: "{qssWidgetWrapper}.events.onQssWidgetNotificationRequired"
+                },
+
+                listeners: {
+                    onCreate: {
+                        func: "{that}.show",
+                        args: [
+                            "{that}.options.setting",
+                            "{that}.options.elementMetrics",
+                            "{that}.options.activationParams"
+                        ]
+                    }
+                }
+            }
+        }
+    },
+    invokers: {
+        toggle: {
+            funcName: "gpii.app.qssWidget.toggle",
+            args: [
+                "{that}",
+                "{arguments}.0", // setting
+                "{arguments}.1",  // elementMetrics
+                "{arguments}.2"// activationParams
+            ]
+        },
+        show: {
+            funcName: "gpii.app.qssWidgetWrapper.show",
+            args: [
+                "{that}",
+                "{arguments}.0", // setting
+                "{arguments}.1",  // elementMetrics
+                "{arguments}.2"// activationParams
+            ]
+        }
+    }
+});
+
+gpii.app.qssWidgetWrapper.show = function (that, setting, elementMetrics, activationParams) {
+    that.events.onDialogCreate.fire(setting, elementMetrics, activationParams);
+};
+
 
 fluid.defaults("gpii.app.qssWidget", {
     gradeNames: ["gpii.app.dialog", "gpii.app.blurrable"],
@@ -140,15 +205,6 @@ fluid.defaults("gpii.app.qssWidget", {
                 "{arguments}.1",  // elementMetrics
                 "{arguments}.2"// activationParams
             ]
-        },
-        toggle: {
-            funcName: "gpii.app.qssWidget.toggle",
-            args: [
-                "{that}",
-                "{arguments}.0", // setting
-                "{arguments}.1",  // elementMetrics
-                "{arguments}.2"// activationParams
-            ]
         }
     }
 });
@@ -160,6 +216,7 @@ gpii.app.qssWidget.toggle = function (that, setting, elementMetrics, activationP
     }
 
     if (setting.schema.type === "string" || setting.schema.type === "number") {
+        that.applier.change("setting", setting);
         that.show(setting, elementMetrics, activationParams);
     } else {
         that.hide();
