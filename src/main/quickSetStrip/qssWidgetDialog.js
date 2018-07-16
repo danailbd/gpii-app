@@ -24,7 +24,7 @@ require("../../common/channelUtils.js");
 
 
 fluid.defaults("gpii.app.qssWidget", {
-    gradeNames: ["gpii.app.dialog", "gpii.app.blurrable"],
+    gradeNames: ["gpii.app.dialog", "gpii.app.blurrable", "gpii.app.dialog.offScreenHidable"],
 
     model: {
         setting: {}
@@ -84,7 +84,8 @@ fluid.defaults("gpii.app.qssWidget", {
                     onQssWidgetClosed: null,
                     onQssWidgetNotificationRequired: "{qssWidget}.events.onQssWidgetNotificationRequired",
                     onQssWidgetSettingAltered: "{qssWidget}.events.onQssWidgetSettingAltered",
-                    onQssWidgetBlur: null
+                    onQssWidgetBlur: null,
+                    onQssWidgetCreated: null
                 },
                 listeners: {
                     onQssWidgetClosed: [{
@@ -103,7 +104,11 @@ fluid.defaults("gpii.app.qssWidget", {
                         args: [
                             "{arguments}.0" // params
                         ]
-                    }]
+                    }],
+                    onQssWidgetCreated: {
+                        funcName: "gpii.app.qssWidget.onQssWidgetCreated",
+                        args: ["{qssWidget}"]
+                    }
                 }
             }
         }
@@ -196,18 +201,20 @@ function getWidgetPosition(dialog, elementMetrics) {
  * @param {Object} activationParams.shortcut - Defines the way the show was triggered
  */
 gpii.app.qssWidget.show = function (that, heightMap, setting, elementMetrics, activationParams) {
-    var position = getWidgetPosition(that.dialog, elementMetrics);
-
     activationParams = activationParams || {};
     that.channelNotifier.events.onSettingUpdated.fire(setting, activationParams);
     that.dialog.setAlwaysOnTop(true);
 
     gpii.app.applier.replace(that.applier, "setting", setting);
-    that.applier.change("isShown", true);
 
     // reposition window properly
     that.height = heightMap[setting.path] || that.options.config.attrs.height;
-    that.setPosition(position.x, position.y);
+    that.model.offset = getWidgetPosition(that.dialog, elementMetrics);
+};
+
+gpii.app.qssWidget.onQssWidgetCreated = function (qssWidget) {
+    qssWidget.applier.change("isShown", true);
+    qssWidget._show();
 };
 
 
