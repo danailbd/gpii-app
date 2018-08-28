@@ -87,12 +87,12 @@ gpii.tests.qss.testPspAndQssVisibility = function (app, params) {
 };
 
 // XXX: For dev purposes.
-gpii.tests.qss.linger = function () {
+gpii.tests.qss.linger = function (timeout) {
     var promise = fluid.promise();
 
     setTimeout(function () {
         promise.resolve();
-    }, 2000);
+    }, timeout);
 
     return promise;
 };
@@ -805,6 +805,71 @@ var crossQssTranslations = [
     }
 ];
 
+/*
+ * TODO app ready state (changes took place)
+ *
+ * - dpi UP change, look how it looks
+ * - UP again
+ * - UP again
+ * - Down again
+ * - Down again
+ *
+ * ===
+ * Key In snapset_1a
+ * -- similar
+ *
+ * === Key in with profile
+ * - change in dark theme
+ * - change in language
+ * - change in DPI
+ */
+
+function getDpiCangeSeqEl(value) {
+    return  {
+        func: "{that}.app.qssWrapper.alterSetting",
+        args: [
+            {
+                path: "http://registry\\.gpii\\.net/common/DPIScale",
+                value: value
+            },
+            "qssWidget"
+        ]
+    };
+}
+
+var dpiIntectactions = [
+    getDpiCangeSeqEl(1),
+    getDpiCangeSeqEl(2),
+    getDpiCangeSeqEl(3),
+    getDpiCangeSeqEl(-1),
+    getDpiCangeSeqEl(-2),
+    getDpiCangeSeqEl(0),
+    getDpiCangeSeqEl(3)
+];
+
+
+gpii.tests.qss.applyTimeout = function (items, timeout) {
+    return items.reduce(function (acc, item) {
+        acc.push(item);
+        acc.push({
+            task: "gpii.tests.qss.linger",
+            args: timeout,
+            resolve: "fluid.identity"
+        });
+        return acc;
+    }, []);
+};
+
+var showQssSeq = { // When the tray icon is clicked...
+    func: "{that}.app.tray.events.onTrayIconClicked.fire"
+};
+
+var loadTests = [].concat(
+    showQssSeq,
+    gpii.tests.qss.applyTimeout(dpiIntectactions, 2500),
+    gpii.tests.qss.applyTimeout(dpiIntectactions, 2500),
+    gpii.tests.qss.applyTimeout(dpiIntectactions, 2500)
+);
 
 gpii.tests.qss.testDefs = {
     name: "QSS Widget integration tests",
@@ -833,15 +898,17 @@ gpii.tests.qss.testDefs = {
     gradeNames: ["gpii.test.common.testCaseHolder"],
     sequence: [].concat(
         [{ // Wait for the QSS to initialize.
+            // TODO user qssReady event
             task: "gpii.tests.qss.awaitQssInitialization",
             args: ["{that}.app.qssWrapper.qss"],
             resolve: "jqUnit.assert",
             resolveArgs: ["QSS has initialized successfully"]
         }],
-        undoCrossTestSequence,
-        undoTestSequence,
-        qssCrossTestSequence,
-        crossQssTranslations,
-        appZoomTestSequence
+        // undoCrossTestSequence,
+        // undoTestSequence,
+        // qssCrossTestSequence,
+        // crossQssTranslations,
+        // appZoomTestSequence
+        loadTests
     )
 };
