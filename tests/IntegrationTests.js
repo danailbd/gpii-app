@@ -81,6 +81,7 @@ gpii.tests.app.testDefToServerEnvironment = function (testDef) {
     return {
         type: "kettle.test.serverEnvironment",
         options: {
+            hangWait: 20000,
             configurationName: configurationName,
             components: {
                 tests: {

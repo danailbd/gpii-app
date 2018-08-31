@@ -489,7 +489,7 @@ gpii.app.keyIn = function (flowManager, token) {
 gpii.app.keyOut = function (token) {
     var togo = fluid.promise();
     // TODO: Replace this with direct function call when https://github.com/GPII/universal/pull/653 gets merged
-    request("http://localhost:8081/user/" + token + "/proximityTriggered", function () {
+    request("http://localhost:8081/user/" + token + "/logout", function () {
         //TODO Put in some error logging
         // if (error) {
         //     togo.reject(error);

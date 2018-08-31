@@ -97,6 +97,14 @@ gpii.tests.qss.linger = function (timeout) {
     return promise;
 };
 
+function getLingerSeqEl(timeout) {
+    return {
+        task: "gpii.tests.qss.linger",
+        args: timeout,
+        resolve: "console.log",
+        resolveArgs: "Lingered: " + timeout
+    };
+}
 
 var qssCrossTestSequence = [
     /*
@@ -851,14 +859,30 @@ var dpiIntectactions = [
 gpii.tests.qss.applyTimeout = function (items, timeout) {
     return items.reduce(function (acc, item) {
         acc.push(item);
-        acc.push({
-            task: "gpii.tests.qss.linger",
-            args: timeout,
-            resolve: "fluid.identity"
-        });
+        acc.push(getLingerSeqEl(timeout));
         return acc;
     }, []);
 };
+
+function getKeyInOutSeq() {
+    return [
+        gpii.tests.qss.applyTimeout(
+            [
+                {
+                    func: "{that}.app.keyIn",
+                    args: "snapset_2a" // Read To Me
+                },        { // make a change to an undoable setting shouldn't have effect
+                    func: "{that}.app.qssWrapper.alterSetting",
+                    args: [{path: "http://registry\\.gpii\\.net/common/language", value: "ru-RU"}]
+                },
+            ], 4000),
+
+        gpii.tests.qss.applyTimeout(
+            [{
+                func: "{that}.app.keyOut"
+            }], 4000)
+    ];
+}
 
 var showQssSeq = { // When the tray icon is clicked...
     func: "{that}.app.tray.events.onTrayIconClicked.fire"
@@ -866,16 +890,58 @@ var showQssSeq = { // When the tray icon is clicked...
 
 var loadTests = [].concat(
     showQssSeq,
-    gpii.tests.qss.applyTimeout(dpiIntectactions, 2500),
-    gpii.tests.qss.applyTimeout(dpiIntectactions, 2500),
-    gpii.tests.qss.applyTimeout(dpiIntectactions, 2500)
+
+    getLingerSeqEl(6000),
+
+    // { // ... click on menu item (we know the order from the config we are using)
+    //     funcName: "console.log",
+    //     args: [
+    //         "WIDGET CREATED: ",
+    //         "@expand:{that}.app.qssWrapper.qssWidget.dialog.isDestroyed()"
+    //     ]
+    // },
+
+    { // ... click on menu item (we know the order from the config we are using)
+        func: "gpii.test.executeJavaScript",
+        args: [
+            "{that}.app.qssWrapper.qssWidget.dialog",
+            clickLanguageBtn
+        ]
+    },
+
+//     { // ... click on menu item (we know the order from the config we are using)
+//         funcName: "console.log",
+//         args: [
+//             "WIDGET CREATED: ",
+//             "@expand:{that}.app.qssWrapper.qssWidget.dialog.isDestroyed()"
+//         ]
+//     },
+
+//     {
+//         funcName: "console.log",
+//         args: [
+//             "--Positions: ",
+//             "@expand:{that}.app.qssWrapper.qssWidget.dialog.getPosition()"
+//         ]
+//     },
+    // gpii.tests.qss.applyTimeout(dpiIntectactions, 2500),
+    // gpii.tests.qss.applyTimeout(dpiIntectactions, 2500),
+    // gpii.tests.qss.applyTimeout(dpiIntectactions, 2500)
+
+    getKeyInOutSeq(),
+    // getLingerSeqEl(4000),
+    getKeyInOutSeq(),
+    // getLingerSeqEl(6000),
+    getKeyInOutSeq(),
+
+    getLingerSeqEl(20000)
 );
 
 gpii.tests.qss.testDefs = {
     name: "QSS Widget integration tests",
     expect: 40,
     config: {
-        configName: "gpii.tests.dev.config",
+        configName: "gpii.tests.all.config",
         configPath: "tests/configs"
     },
     distributeOptions: {
@@ -897,18 +963,17 @@ gpii.tests.qss.testDefs = {
 
     gradeNames: ["gpii.test.common.testCaseHolder"],
     sequence: [].concat(
-        [{ // Wait for the QSS to initialize.
-            // TODO user qssReady event
-            task: "gpii.tests.qss.awaitQssInitialization",
-            args: ["{that}.app.qssWrapper.qss"],
-            resolve: "jqUnit.assert",
-            resolveArgs: ["QSS has initialized successfully"]
-        }],
         // undoCrossTestSequence,
         // undoTestSequence,
         // qssCrossTestSequence,
         // crossQssTranslations,
         // appZoomTestSequence
-        loadTests
+        loadTests,
+        // [{ // Wait for the QSS to initialize.
+        //     // TODO user qssReady event
+        //     event: "{that qssDialog}.events.onDialogReady",
+        //     listener: "jqUnit.assert",
+        //     args: ["QSS has initialized successfully"]
+        // }]
     )
 };

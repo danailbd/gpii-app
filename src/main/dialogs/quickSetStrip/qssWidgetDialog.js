@@ -98,6 +98,23 @@ fluid.defaults("gpii.app.qssWidget", {
         onQssWidgetNotificationRequired: null
     },
 
+    listeners: {
+        "onCreate": { // XXX dev
+            funcName: "console.log",
+            args: [
+                "WIDGET CREATED: ",
+                "@expand:{that}.dialog.isDestroyed()"
+            ]
+        },
+        "onDestroy": {
+            funcName: "console.log",
+            args: [
+                "WIDGET DESTR: ",
+                "@expand:{that}.dialog.isDestroyed()"
+            ]
+        }
+    },
+
     components: {
         channelNotifier: {
             type: "gpii.app.channelNotifier",
