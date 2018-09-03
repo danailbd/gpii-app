@@ -99,7 +99,7 @@ gpii.app.gpiiConnector.updateSetting = function (gpiiConnector, setting) {
         return;
     }
 
-    console.log("gpiiConnector: Alter setting - ", setting);
+    
 
     gpiiConnector.send({
         path: ["settingControls", setting.path, "value"],
@@ -115,7 +115,7 @@ gpii.app.gpiiConnector.updateSetting = function (gpiiConnector, setting) {
  * @param {Object} updateDetails - The PSP Channel massage's details about the update
  */
 gpii.app.gpiiConnector.handlePreferencesChangeMessage = function (gpiiConnector, updateDetails) {
-    console.log("GpiiConnector: Updated preference set:", updateDetails);
+    
     var snapsetName = gpii.app.extractSnapsetName(updateDetails);
     gpiiConnector.events.onSnapsetNameUpdated.fire(snapsetName);
 
@@ -133,7 +133,7 @@ gpii.app.gpiiConnector.handleSettingUpdateMessage = function (gpiiConnector, upd
     var settingPath = updateDetails.path[updateDetails.path.length - 2],
         settingValue = updateDetails.value;
 
-    console.log("GpiiConnector: Updated setting:", settingPath, settingValue);
+    
 
     gpiiConnector.events.onSettingUpdated.fire({
         path: settingPath,
@@ -736,7 +736,7 @@ gpii.app.dev.gpiiConnector.qss.distributeQssSettings = function (that, message) 
         qssSettingControls = value.qssSettingControls || {};
 
     if (gpii.app.gpiiConnector.isPrefSetUpdate(payload)) {
-        console.log("gpiiConnector.qss Controls to be sent: ", value.qssSettingControls);
+        
 
         that.events.onQssSettingsUpdate.fire(
             fluid.hashToArray(qssSettingControls, "path"), // set to the expected format
@@ -765,7 +765,7 @@ gpii.app.dev.gpiiConnector.qss.applySettingDefaults = function (that, defaultQss
     // Whether the update is a full preference set update (fired from change in the snapset or active preference set),
     // or a change of a missing in the preference set setting from the QSS
     if (gpii.app.gpiiConnector.isFullPrefSetUpdate(that.previousState, updateDetails)) {
-        console.log("gpiiConnect.qss: Merge QSS default settings");
+        
 
         // add missing QSS settings to the update list (this is needed for triggering reset of the QSS)
         qssSettingControls = fluid.extend(true, {}, defaultQssSettingValues, qssSettingControls);

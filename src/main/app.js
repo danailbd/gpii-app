@@ -541,7 +541,7 @@ gpii.app.handleSessionStop = function (that, keyedOutUserToken) {
     var currentKeyedInUserToken = that.model.keyedInUserToken;
 
     if (keyedOutUserToken !== currentKeyedInUserToken) {
-        console.log("Warning: The keyed out user token does NOT match the current keyed in user token.");
+        
     } else {
         that.updateKeyedInUserToken(null);
     }

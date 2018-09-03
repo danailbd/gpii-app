@@ -100,14 +100,14 @@ fluid.defaults("gpii.app.qssWidget", {
 
     listeners: {
         "onCreate": { // XXX dev
-            funcName: "console.log",
+            funcName: "fluid.identity",
             args: [
                 "WIDGET CREATED: ",
                 "@expand:{that}.dialog.isDestroyed()"
             ]
         },
         "onDestroy": {
-            funcName: "console.log",
+            funcName: "fluid.identity",
             args: [
                 "WIDGET DESTR: ",
                 "@expand:{that}.dialog.isDestroyed()"
@@ -143,7 +143,7 @@ fluid.defaults("gpii.app.qssWidget", {
                         ]
                     }],
                     onQssWidgetSettingAltered: { // XXX dev
-                        funcName: "console.log",
+                        funcName: "fluid.identity",
                         args: ["Settings Altered: ", "{arguments}.0"]
                     },
                     onQssWidgetCreated: {

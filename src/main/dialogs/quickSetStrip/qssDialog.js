@@ -72,7 +72,7 @@ fluid.defaults("gpii.app.qss", {
                 },
                 listeners: {
                     onSettingUpdated: {
-                        "funcName": "console.log",
+                        "funcName": "fluid.identity",
                         args: ["QssDialog settingUpdate: ", "{arguments}.0"]
                     }
                 },
@@ -112,7 +112,7 @@ fluid.defaults("gpii.app.qss", {
                     },
                     // XXX DEV
                     onQssSettingAltered: {
-                        funcName: "console.log",
+                        funcName: "fluid.identity",
                         args: ["Setting altered QSS:", "{arguments}.0.path", "{arguments}.0.value"]
                     }
                 }
