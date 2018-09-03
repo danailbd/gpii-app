@@ -878,10 +878,16 @@ function getLogSeq(msg) {
     }
 }
 
+var shownDiagnostic = 1;
 
 gpii.tests.showQssDiagnostics = function (qss) {
+    console.log("Shown: ", shownDiagnostic++);
+
     console.log("QSS:        ", qss.width, qss.height)
     console.log("--- Real: ", qss.dialog.getSize(), require("electron").screen.getPrimaryDisplay().scaleFactor);
+    
+    console.log("Position: ", qss.model.offset);
+    console.log("--- ", qss.dialog.getPosition(), require("electron").screen.getPrimaryDisplay().workAreaSize);
 }
 
 function qssDiagnosticsSeqEl() {
@@ -898,7 +904,7 @@ function getKeyInOutSeq(factor) {
         getLogSeq("KeyIn"),
         {
             func: "{that}.app.keyIn",
-            args: "snapset_1a" // Read To Me
+            args: "snapset_2a" // Read To Me
         },
         getLingerSeqEl(6000),
         getLogSeq("Changing language"),
