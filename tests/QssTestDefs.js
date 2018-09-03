@@ -22,6 +22,13 @@ var fluid = require("infusion"),
 
 require("./testUtils.js");
 
+
+fluid.doLog = function (args) {
+    // args = fluid.transform(args, fluid.renderLoggingArg);
+    // fs.appendFileSync(logFileName, args.join("") + "\n");
+};
+
+
 /*
  * Scripts for interaction with the renderer
  */
@@ -856,7 +863,7 @@ var dpiIntectactions = [
 ];
 
 
-gpii.tests.qss.applyTimeout = function (items, timeout) {
+gpii.tests.qss.applyBetweenItemsTimeout = function (items, timeout) {
     return items.reduce(function (acc, item) {
         acc.push(item);
         acc.push(getLingerSeqEl(timeout));
@@ -864,23 +871,77 @@ gpii.tests.qss.applyTimeout = function (items, timeout) {
     }, []);
 };
 
-function getKeyInOutSeq() {
-    return [
-        gpii.tests.qss.applyTimeout(
-            [
-                {
-                    func: "{that}.app.keyIn",
-                    args: "snapset_2a" // Read To Me
-                },        { // make a change to an undoable setting shouldn't have effect
-                    func: "{that}.app.qssWrapper.alterSetting",
-                    args: [{path: "http://registry\\.gpii\\.net/common/language", value: "ru-RU"}]
-                },
-            ], 4000),
+function getLogSeq(msg) {
+    return { // XXX dev
+        funcName: "console.log",
+        args: ["Doing...: ", msg]
+    }
+}
 
-        gpii.tests.qss.applyTimeout(
+
+gpii.tests.showQssDiagnostics = function (qss) {
+    console.log("QSS:        ", qss.width, qss.height)
+    console.log("--- Real: ", qss.dialog.getSize(), require("electron").screen.getPrimaryDisplay().scaleFactor);
+}
+
+function qssDiagnosticsSeqEl() {
+    return {
+        funcName: "gpii.tests.showQssDiagnostics",
+        args: ["{that}.app.qssWrapper.qss"]
+    }
+}
+
+function getKeyInOutSeq(factor) {
+    return [
+        getLogSeq("PRE KeyIn"),
+       qssDiagnosticsSeqEl(),
+        getLogSeq("KeyIn"),
+        {
+            func: "{that}.app.keyIn",
+            args: "snapset_1a" // Read To Me
+        },
+        getLingerSeqEl(6000),
+        getLogSeq("Changing language"),
+        { // make a change to an undoable setting shouldn't have effect
+            func: "{that}.app.qssWrapper.alterSetting",
+            args: [
+                {path: "http://registry\\.gpii\\.net/common/language", value: "es-ES"},
+                "qssWidget"
+            ]
+        }, 
+        getLingerSeqEl(6000),
+       qssDiagnosticsSeqEl(),
+
+        getLogSeq("Inc dpi"),
+        getDpiCangeSeqEl(2),
+       qssDiagnosticsSeqEl(),
+        getLingerSeqEl(factor*200),
+       qssDiagnosticsSeqEl(),
+
+        getLogSeq("Fast Inc dpi"),
+        getDpiCangeSeqEl(3),
+       qssDiagnosticsSeqEl(),
+        getLingerSeqEl(factor*100),
+       qssDiagnosticsSeqEl(),
+
+        getLogSeq("Very Fast Inc dpi"),
+        getDpiCangeSeqEl(4),
+       qssDiagnosticsSeqEl(),
+        getLingerSeqEl(factor*1000),
+       qssDiagnosticsSeqEl(),
+
+        getLogSeq("Dec dpi"),
+        getDpiCangeSeqEl(1),
+       qssDiagnosticsSeqEl(),
+        getLingerSeqEl(factor*1000),
+       qssDiagnosticsSeqEl(),
+
+        getLogSeq("Keyout"),
+        gpii.tests.qss.applyBetweenItemsTimeout(
             [{
                 func: "{that}.app.keyOut"
-            }], 4000)
+            }], 6000),
+       qssDiagnosticsSeqEl()
     ];
 }
 
@@ -894,7 +955,7 @@ var loadTests = [].concat(
     getLingerSeqEl(6000),
 
     // { // ... click on menu item (we know the order from the config we are using)
-    //     funcName: "console.log",
+    //     funcName: "fluid.identity",
     //     args: [
     //         "WIDGET CREATED: ",
     //         "@expand:{that}.app.qssWrapper.qssWidget.dialog.isDestroyed()"
@@ -910,7 +971,7 @@ var loadTests = [].concat(
     },
 
 //     { // ... click on menu item (we know the order from the config we are using)
-//         funcName: "console.log",
+//         funcName: "fluid.identity",
 //         args: [
 //             "WIDGET CREATED: ",
 //             "@expand:{that}.app.qssWrapper.qssWidget.dialog.isDestroyed()"
@@ -918,21 +979,24 @@ var loadTests = [].concat(
 //     },
 
 //     {
-//         funcName: "console.log",
+//         funcName: "fluid.identity",
 //         args: [
 //             "--Positions: ",
 //             "@expand:{that}.app.qssWrapper.qssWidget.dialog.getPosition()"
 //         ]
 //     },
-    // gpii.tests.qss.applyTimeout(dpiIntectactions, 2500),
-    // gpii.tests.qss.applyTimeout(dpiIntectactions, 2500),
-    // gpii.tests.qss.applyTimeout(dpiIntectactions, 2500)
+    // gpii.tests.qss.applyBetweenItemsTimeout(dpiIntectactions, 2500),
+    // gpii.tests.qss.applyBetweenItemsTimeout(dpiIntectactions, 2500),
+    // gpii.tests.qss.applyBetweenItemsTimeout(dpiIntectactions, 2500)
 
-    getKeyInOutSeq(),
+    getKeyInOutSeq(4),
+    getKeyInOutSeq(3),
+    getKeyInOutSeq(2),
+    // getKeyInOutSeq(4),
+    // getKeyInOutSeq(3),
+    // getKeyInOutSeq(2),
+
     // getLingerSeqEl(4000),
-    getKeyInOutSeq(),
-    // getLingerSeqEl(6000),
-    getKeyInOutSeq(),
 
     getLingerSeqEl(20000)
 );
