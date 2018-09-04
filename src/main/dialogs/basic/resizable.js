@@ -63,6 +63,10 @@ fluid.defaults("gpii.app.resizable", {
                 "{arguments}.0" // height
             ]
         },
+        "onDisplayMetricsChanged.log": { // XXX dev
+            funcName: "gpii.app.logDisplayMetrics",
+            args: ["{that}", "{arguments}"]
+        },
         "onDisplayMetricsChanged.handleDisplayMetricsChange": {
             func: "gpii.app.resizable.handleDisplayMetricsChange",
             args: [
@@ -100,6 +104,12 @@ fluid.defaults("gpii.app.resizable", {
         }
     }
 });
+
+gpii.app.logDisplayMetrics = function (that, args) {
+    if ( that.options.gradeNames.slice(-1)[0] === "gpii.app.qss" ) {
+        console.log("DisplayMetricsChanged", args);
+    }
+};
 
 /**
  * Handles the change in the height of the content for this component's
@@ -166,7 +176,7 @@ gpii.app.resizable.handleDisplayMetricsChange = function (that) {
         that.dialog.hide();
     }
 
-    that.rescaleDialogTimer.start(1000);
+    that.rescaleDialogTimer.start(700);
 };
 
 /**

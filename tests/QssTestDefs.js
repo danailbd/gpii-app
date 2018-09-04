@@ -93,16 +93,36 @@ gpii.tests.qss.testPspAndQssVisibility = function (app, params) {
     );
 };
 
+
+var promise;
+var t;
+
 // XXX: For dev purposes.
 gpii.tests.qss.linger = function (timeout) {
-    var promise = fluid.promise();
+    promise = fluid.promise();
 
-    setTimeout(function () {
+    t = setTimeout(function () {
+        t = null;
         promise.resolve();
     }, timeout);
 
     return promise;
 };
+
+const {app, globalShortcut} = require('electron')
+
+app.on('ready', () => {
+    globalShortcut.register('Space', function reset (e) {
+        console.log("Reregister linger - 5 sec more");
+        if (t) {
+            clearTimeout(t);
+
+            t = setTimeout(function () {
+                promise.resolve();
+            }, 5000);
+        }
+    })
+})
 
 function getLingerSeqEl(timeout) {
     return {
@@ -885,7 +905,7 @@ gpii.tests.showQssDiagnostics = function (qss) {
 
     console.log("QSS:        ", qss.width, qss.height)
     console.log("--- Real: ", qss.dialog.getSize(), require("electron").screen.getPrimaryDisplay().scaleFactor);
-    
+
     console.log("Position: ", qss.model.offset);
     console.log("--- ", qss.dialog.getPosition(), require("electron").screen.getPrimaryDisplay().workAreaSize);
 }
@@ -900,7 +920,7 @@ function qssDiagnosticsSeqEl() {
 function getKeyInOutSeq(factor) {
     return [
         getLogSeq("PRE KeyIn"),
-       qssDiagnosticsSeqEl(),
+        qssDiagnosticsSeqEl(),
         getLogSeq("KeyIn"),
         {
             func: "{that}.app.keyIn",
@@ -914,40 +934,46 @@ function getKeyInOutSeq(factor) {
                 {path: "http://registry\\.gpii\\.net/common/language", value: "es-ES"},
                 "qssWidget"
             ]
-        }, 
+        },
         getLingerSeqEl(6000),
-       qssDiagnosticsSeqEl(),
+        qssDiagnosticsSeqEl(),
 
         getLogSeq("Inc dpi"),
         getDpiCangeSeqEl(2),
-       qssDiagnosticsSeqEl(),
+        qssDiagnosticsSeqEl(),
         getLingerSeqEl(factor*200),
-       qssDiagnosticsSeqEl(),
+        qssDiagnosticsSeqEl(),
 
         getLogSeq("Fast Inc dpi"),
         getDpiCangeSeqEl(3),
-       qssDiagnosticsSeqEl(),
+        qssDiagnosticsSeqEl(),
         getLingerSeqEl(factor*100),
-       qssDiagnosticsSeqEl(),
+        qssDiagnosticsSeqEl(),
 
         getLogSeq("Very Fast Inc dpi"),
         getDpiCangeSeqEl(4),
-       qssDiagnosticsSeqEl(),
+        qssDiagnosticsSeqEl(),
         getLingerSeqEl(factor*1000),
-       qssDiagnosticsSeqEl(),
+        qssDiagnosticsSeqEl(),
 
         getLogSeq("Dec dpi"),
         getDpiCangeSeqEl(1),
-       qssDiagnosticsSeqEl(),
+        qssDiagnosticsSeqEl(),
         getLingerSeqEl(factor*1000),
-       qssDiagnosticsSeqEl(),
+        qssDiagnosticsSeqEl(),
+
+        getLogSeq("Dec dpi"),
+        getDpiCangeSeqEl(3),
+        qssDiagnosticsSeqEl(),
+        getLingerSeqEl(factor*1000),
+        qssDiagnosticsSeqEl(),
 
         getLogSeq("Keyout"),
         gpii.tests.qss.applyBetweenItemsTimeout(
             [{
                 func: "{that}.app.keyOut"
             }], 6000),
-       qssDiagnosticsSeqEl()
+        qssDiagnosticsSeqEl()
     ];
 }
 
@@ -976,31 +1002,26 @@ var loadTests = [].concat(
         ]
     },
 
-//     { // ... click on menu item (we know the order from the config we are using)
-//         funcName: "fluid.identity",
-//         args: [
-//             "WIDGET CREATED: ",
-//             "@expand:{that}.app.qssWrapper.qssWidget.dialog.isDestroyed()"
-//         ]
-//     },
+    //     { // ... click on menu item (we know the order from the config we are using)
+    //         funcName: "fluid.identity",
+    //         args: [
+    //             "WIDGET CREATED: ",
+    //             "@expand:{that}.app.qssWrapper.qssWidget.dialog.isDestroyed()"
+    //         ]
+    //     },
 
-//     {
-//         funcName: "fluid.identity",
-//         args: [
-//             "--Positions: ",
-//             "@expand:{that}.app.qssWrapper.qssWidget.dialog.getPosition()"
-//         ]
-//     },
+    //     {
+    //         funcName: "fluid.identity",
+    //         args: [
+    //             "--Positions: ",
+    //             "@expand:{that}.app.qssWrapper.qssWidget.dialog.getPosition()"
+    //         ]
+    //     },
     // gpii.tests.qss.applyBetweenItemsTimeout(dpiIntectactions, 2500),
-    // gpii.tests.qss.applyBetweenItemsTimeout(dpiIntectactions, 2500),
-    // gpii.tests.qss.applyBetweenItemsTimeout(dpiIntectactions, 2500)
 
     getKeyInOutSeq(4),
     getKeyInOutSeq(3),
-    getKeyInOutSeq(2),
     // getKeyInOutSeq(4),
-    // getKeyInOutSeq(3),
-    // getKeyInOutSeq(2),
 
     // getLingerSeqEl(4000),
 
