@@ -147,7 +147,7 @@ fluid.defaults("gpii.app.qss", {
  * opened via an ArrowLeft/ArrowRight key or using the global shortcut.
  */
 gpii.app.qss.show = function (that, params) {
-    gpii.app.dialog.show(that);
+    gpii.app.dialog.reshow(that);
 
     that.events.onQssOpen.fire(params);
 };

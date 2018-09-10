@@ -228,12 +228,12 @@ fluid.defaults("gpii.app.dialog", {
             method: "hide"
         },
         show: {
-            funcName: "gpii.app.dialog.show",
+            funcName: "gpii.app.dialog.reshow",
             args: ["{that}"]
         },
         hide: {
-            changePath: "isShown",
-            value: false
+            funcName: "gpii.app.dialog.rehide",
+            args: ["{that}"]
         },
         toggle: {
             changePath: "isShown",
@@ -250,6 +250,25 @@ fluid.defaults("gpii.app.dialog", {
     }
 });
 
+/**
+ * Re-shows a dialog. A re-showing is needed is case there's inconsistency
+ * between the flag and the dialog real state.
+ * @param {Component} that - The instance of `gpii.app.dialog`
+ */
+gpii.app.dialog.reshow = function (that) {
+    // Ensure the showing mechanism will be triggered.
+    if (that.model.isShown) {
+        that.applier.change("isShown", false);
+    }
+    that.applier.change("isShown", true);
+};
+
+gpii.app.dialog.rehide = function (that) {
+    if (that.model.isShown) {
+        that.applier.change("isShown", true);
+    }
+    that.applier.change("isShown", false);
+};
 
 /**
  * Builds a file URL inside the application **Working Directory**.
@@ -344,20 +363,6 @@ gpii.app.dialog.registerDailogReadyListener = function (that) {
     if (that.options.config.awaitWindowReadiness) {
         // register listener that is to be removed once a notification for the current dialog is received
         ipcMain.on("onDialogReady", handleReadyResponse);
-    }
-};
-
-/**
- * Shows the window if it is currently hidden or focuses it otherwise.
- * This is the simplest way for showing a dialog. If the dialog has
- * other rules for showing itself, this invoker can be overridden.
- * @param {Component} that - The `gpii.app.dialog` instance.
- */
-gpii.app.dialog.show = function (that) {
-    if (that.model.isShown) {
-        that.focus();
-    } else {
-        that.applier.change("isShown", true);
     }
 };
 

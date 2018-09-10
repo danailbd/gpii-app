@@ -166,7 +166,7 @@ gpii.app.resizable.handleDisplayMetricsChange = function (that) {
         that.dialog.hide();
     }
 
-    that.rescaleDialogTimer.start(1000);
+    that.rescaleDialogTimer.start(2000);
 };
 
 /**
