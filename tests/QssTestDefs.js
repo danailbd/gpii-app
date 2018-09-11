@@ -109,14 +109,15 @@ gpii.tests.qss.linger = function (timeout) {
     return promise;
 };
 
-const {app, globalShortcut} = require('electron')
+const {app, globalShortcut} = require('electron');
+var ligCount = 0;
 
 app.on('ready', () => {
     globalShortcut.register('Space', function reset (e) {
         console.log("Reregister linger - 5 sec more");
-        if (t) {
-            clearTimeout(t);
-
+        clearTimeout(t);
+        if (t && ligCount < 3) {
+            ligCount++;
             t = setTimeout(function () {
                 promise.resolve();
             }, 5000);
