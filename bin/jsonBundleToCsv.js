@@ -10,7 +10,7 @@ var os = require("os");
 require("json5/lib/register");
 
 var gpii = fluid.registerNamespace("gpii");
-require("../messageBundlesCompiler.js")
+require("../messageBundlesCompiler.js");
 
 
 if (!processArgs.length) {
@@ -19,8 +19,10 @@ if (!processArgs.length) {
 }
 
 var columns = ["Key", "Message"];
+var csvDelimitor = ",";
 var subKeyDelimiter = "|";
 var bundlesPath = processArgs[0];
+var baseBundle = "en";
 
 
 function generateCsvBundle(bundlePath) {
@@ -35,7 +37,11 @@ function generateCsvBundle(bundlePath) {
             key = topKey ? subKeyDelimiter + key : key;
             var subKey = topKey + key;
 
-            if (fluid.isPrimitive(value)) {
+            if (!value) {
+                // skip element as it is empty
+                return;
+            } else if (fluid.isPrimitive(value)) {
+                value = "\"" + value + "\""; // ensure new lines are handled
                 csvEntries.push([ subKey, value ]);
             } else {
                 getCsvEntries(subKey, value, csvEntries);
@@ -51,7 +57,7 @@ function generateCsvBundle(bundlePath) {
     csvEntries.unshift(columns);
 
     var csvBundle = csvEntries.reduce(function (acc, csvEntry) {
-        acc += csvEntry.join(",");
+        acc += csvEntry.join(csvDelimitor);
         acc += os.EOL;
 
         return acc;
@@ -62,6 +68,9 @@ function generateCsvBundle(bundlePath) {
 }
 
 var bundles = gpii.app.messageBundlesCompiler.collectFilesByType(bundlesPath, ["json", "json5"]);
+bundles = bundles.filter(function (bundlePath) {
+    return bundlePath.indexOf("_" + baseBundle) > -1;
+});
 
 // Generate all csv files
 fluid.each(bundles, generateCsvBundle);
