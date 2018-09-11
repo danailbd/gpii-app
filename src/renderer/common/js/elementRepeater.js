@@ -37,71 +37,33 @@
             renderedContainer: null
         },
         events: {
-            onElementRendered: {
-                events: {
-                    onContainerRendered: "onContainerRendered",
-                    onMarkupRendered:    "onMarkupRendered"
-                },
-                args: ["{that}.model.renderedContainer"]
-            },
-
-            onContainerRendered: null,
-            onMarkupRendered:    null
+            onElementRendered: null
         },
         listeners: {
+            "onCreate.renderContainer": {
+                this: "{that}.container",
+                method: "append",
+                args: ["{that}.options.markup.container"]
+            },
+            "onCreate.updateContainer": {
+                funcName: "{that}.setContainer",
+                args: "@expand:gpii.psp.getContainerLastChild({that}.container)",
+                priority: "after:renderContainer"
+            },
+            "onCreate.renderElement": {
+                this: "{that}.model.renderedContainer",
+                method: "append",
+                args: "{that}.options.markup.element",
+                priority: "after:updateContainer"
+            },
+            "onCreate.notify": {
+                funcName: "{that}.events.onElementRendered.fire",
+                args: ["{that}.model.renderedContainer"],
+                priority: "after:renderElement"
+            },
             "onDestroy.clearInjectedMarkup": {
                 funcName: "gpii.psp.removeElement",
                 args: "{that}.model.renderedContainer"
-            }
-        },
-        components: {
-            /*
-             * Renders the container for the item's element, saves it and
-             * notifies when done.
-             */
-            renderElementContainer: {
-                type: "fluid.viewComponent",
-                container: "{that}.container",
-                options: {
-                    listeners: {
-                        "onCreate.render": {
-                            this: "{that}.container",
-                            method: "append",
-                            args: ["{renderer}.options.markup.container"]
-                        },
-                        "onCreate.updateContainer": {
-                            funcName: "{renderer}.setContainer",
-                            args: "@expand:gpii.psp.getContainerLastChild({that}.container)",
-                            priority: "after:render"
-                        },
-                        "onCreate.notify": {
-                            funcName: "{renderer}.events.onContainerRendered.fire",
-                            priority: "after:updateContainer"
-                        }
-                    }
-                }
-            },
-            /**
-             * Renders the markup of the item inside the dedicated container.
-             */
-            renderElementMarkup: {
-                type: "fluid.viewComponent",
-                container: "{that}.model.renderedContainer",
-                createOnEvent: "onContainerRendered",
-                options: {
-                    listeners: {
-                        "onCreate.render": {
-                            this: "{that}.container",
-                            method: "append",
-                            args: "{renderer}.options.markup.element"
-                        },
-                        "onCreate.notify": {
-                            funcName: "{renderer}.events.onMarkupRendered.fire",
-                            args: ["{that}.model.renderedContainer"],
-                            priority: "after:render"
-                        }
-                    }
-                }
             }
         },
         invokers: {
@@ -161,16 +123,6 @@
                     model: {
                         item: "{element}.model.item",
                         index: "{element}.options.index"
-                    },
-                    events: {
-                        onHandlerCreated: "{repeater}.events.onHandlerCreated"
-                    },
-                    listeners: {
-                        "onCreate.notifyHandlerCreated": {
-                            func: "{that}.events.onHandlerCreated.fire",
-                            args: ["{that}.model.item"],
-                            priority: "last"
-                        }
                     }
                 }
             }
@@ -195,17 +147,8 @@
     fluid.defaults("gpii.psp.repeater", {
         gradeNames: "fluid.viewComponent",
 
-        members: {
-            handlersCount: 0
-        },
-
         model: {
             items: []
-        },
-
-        events: {
-            onRepeaterCreated: null,
-            onHandlerCreated: null
         },
 
         handlerType: null,
@@ -218,13 +161,6 @@
             getHandlerType: {
                 funcName: "fluid.identity",
                 args: ["{that}.options.handlerType"]
-            }
-        },
-
-        listeners: {
-            onHandlerCreated: {
-                funcName: "gpii.psp.repeater.onHandlerCreated",
-                args: ["{that}"]
             }
         },
 
@@ -292,19 +228,6 @@
             }
         }
     });
-
-    /**
-     * Invoked whenever a handler component for a `repeater.item` is created. When the number of
-     * created handlers coincides with the number of items, the `onRepeaterCreated` event will
-     * be fired.
-     * @param {Component} that - The `gpii.psp.repeater` instance.
-     */
-    gpii.psp.repeater.onHandlerCreated = function (that) {
-        that.handlersCount++;
-        if (that.handlersCount >= that.model.items.length) {
-            that.events.onRepeaterCreated.fire();
-        }
-    };
 
     /**
      * Notifies the `gpii.psp.repeater` component for changes  in its element handlers.
