@@ -114,8 +114,8 @@ fluid.defaults("gpii.app.resizable", {
 });
 
 gpii.app.logDisplayMetrics = function (that, args) {
-    if ( that.options.gradeNames.slice(-1)[0] === "gpii.app.qss" ) {
-        console.log("DisplayMetricsChanged", args);
+    if ( that.options.gradeNames.slice(-1)[0] === "gpii.app.qssInWrapper" ) {
+        console.log("DisplayMetricsChanged", args[2]);
     }
 };
 
@@ -139,6 +139,15 @@ gpii.app.resizable.handleContentHeightChange = function (that, height) {
  */
 gpii.app.resizable.addDisplayMetricsListener = function (that) {
     electron.screen.on("display-metrics-changed", that.events.onDisplayMetricsChanged.fire);
+
+    if (that.options.gradeNames.slice(-1)[0] === "gpii.app.qssInWrapper") {
+        that.dialog.hookWindowMessage(Number.parseInt('0x007E'), function (wParam,lParam) {
+            console.log("Display CHANGED: ", lParam);
+        });
+        that.dialog.hookWindowMessage(Number.parseInt('0x0047'), function (wParam,lParam) {
+            console.log("WINDOW POS CHANGED: ", lParam);
+        });
+    }
 };
 
 /**
@@ -148,12 +157,21 @@ gpii.app.resizable.addDisplayMetricsListener = function (that) {
  * @param {Component} that - The `gpii.app.resizable` component.
  */
 gpii.app.resizable.scaleDialog = function (that) {
+    // that.dialog.setBounds = that.displayMetricsChanged.setBounds;
+
     that.setBounds();
 
+    // if ( that.options.gradeNames.slice(-1)[0] === "gpii.app.qssInWrapper" ) {
+        // XXX DEV
+        console.log("Scale at last");
+    // }
+
     // Show the dialog if it was shown when a `display-metrics-changed` event occurred
-    if (that.options.config.hideOffScreen || that.model.isShown) {
+    if (!that.options.config.hideOffScreen || that.model.isShown) {
+        gpii.app.dialog.offScreenHidable.moveToScreen(that, !that.displayMetricsChanged.wasFocused);
+
         // Use the low level show
-        gpii.app.dialog.showImpl(that, !that.displayMetricsChanged.wasFocused);
+        // gpii.app.dialog.showImpl(that, !that.displayMetricsChanged.wasFocused);
     }
 };
 
@@ -180,8 +198,15 @@ gpii.app.resizable.handleDisplayMetricsChange = function (that) {
      */
     if (!that.rescaleDialogTimer.isActive()) {
         that.displayMetricsChanged.wasFocused = that.dialog.isFocused();
+
         // Low level hide - hides the dialog but preserves the `isShown` model state of its component.
-        that.dialog.hide();
+        // that.dialog.hide();
+        setTimeout(function() {
+            gpii.app.dialog.offScreenHidable.moveOffScreen(that.dialog);
+        }.bind(this), 500);
+        // XXX disable repositioning
+        // that.displayMetricsChanged.setBounds = that.dialog.setBounds;
+        // that.dialog.setBounds = fluid.identity;
     }
 
     that.rescaleDialogTimer.start(that.options.rescaleTimeout);

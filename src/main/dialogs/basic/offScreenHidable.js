@@ -46,7 +46,10 @@ fluid.defaults("gpii.app.dialog.offScreenHidable", {
         },
         hideImpl: {
             funcName: "gpii.app.dialog.offScreenHidable.moveOffScreen",
-            args: ["{that}.dialog"]
+            args: [
+                "{that}.dialog",
+                true // makeInactive
+            ]
         },
         setPosition: {
             funcName: "gpii.app.dialog.offScreenHidable.setBounds",
@@ -93,7 +96,7 @@ gpii.app.dialog.offScreenHidable.moveToScreen = function (that, showInactive) {
  * flickering issue when the content of the dialog changes.
  * @param {Object} dialog - An Electron `BrowserWindow`.
  */
-gpii.app.dialog.offScreenHidable.moveOffScreen = function (dialog) {
+gpii.app.dialog.offScreenHidable.moveOffScreen = function (dialog, makeInactive) {
     // Move the BrowserWindow so far away that even if there is an additional screen attached,
     // it will not be visible. It appears that the min value for the `BrowserWindow`
     // position can be -Math.pow(2, 31). Any smaller values lead to an exception.
@@ -107,8 +110,10 @@ gpii.app.dialog.offScreenHidable.moveOffScreen = function (dialog) {
         y:      coordinate
     });
 
-    // remove the focus as well
-    dialog.blur();
+    if (makeInactive) {
+        // remove the focus as well
+        dialog.blur();
+    }
 };
 
 /**
