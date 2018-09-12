@@ -27,7 +27,12 @@ require("../../../shared/channelUtils.js");
  * A component that represents the Quick Set Strip.
  */
 fluid.defaults("gpii.app.qss", {
-    gradeNames: ["gpii.app.dialog", "gpii.app.scaledDialog", "gpii.app.blurrable"],
+    gradeNames: [
+        "gpii.app.dialog",
+        "gpii.app.scaledDialog",
+        "gpii.app.blurrable",
+        "gpii.app.dialog.offScreenHidable"
+    ],
 
     scaleFactor: 1,
     defaultWidth: 984,

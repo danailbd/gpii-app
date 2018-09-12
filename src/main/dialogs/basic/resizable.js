@@ -43,6 +43,14 @@ fluid.defaults("gpii.app.resizable", {
             wasFocused: null
         }
     },
+
+    /*
+     * Timeout before rescaling after "display-metrics-changed" is done
+     * This is needed as the "display-metrics-changed" event is fired multiple times
+     * e.g. for a single DPI change.
+     */
+    rescaleTimeout: 2000,
+
     events: {
         onDisplayMetricsChanged: null,
         /*
@@ -176,7 +184,7 @@ gpii.app.resizable.handleDisplayMetricsChange = function (that) {
         that.dialog.hide();
     }
 
-    that.rescaleDialogTimer.start(700);
+    that.rescaleDialogTimer.start(that.options.rescaleTimeout);
 };
 
 /**

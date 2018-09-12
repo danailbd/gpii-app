@@ -106,6 +106,9 @@ gpii.app.dialog.offScreenHidable.moveOffScreen = function (dialog) {
         x:      coordinate,
         y:      coordinate
     });
+
+    // remove the focus as well
+    dialog.blur();
 };
 
 /**
