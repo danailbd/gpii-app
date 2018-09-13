@@ -159,20 +159,14 @@ gpii.app.resizable.addDisplayMetricsListener = function (that) {
 gpii.app.resizable.scaleDialog = function (that) {
     // that.dialog.setBounds = that.displayMetricsChanged.setBounds;
 
-    that.setBounds();
-
-    // if ( that.options.gradeNames.slice(-1)[0] === "gpii.app.qssInWrapper" ) {
-        // XXX DEV
-        console.log("Scale at last");
-    // }
-
     // Show the dialog if it was shown when a `display-metrics-changed` event occurred
-    if (!that.options.config.hideOffScreen || that.model.isShown) {
-        gpii.app.dialog.offScreenHidable.moveToScreen(that, !that.displayMetricsChanged.wasFocused);
-
+    if (that.options.config.hideOffScreen || that.model.isShown) {
         // Use the low level show
-        // gpii.app.dialog.showImpl(that, !that.displayMetricsChanged.wasFocused);
+        gpii.app.dialog.showImpl(that, !that.displayMetricsChanged.wasFocused);
     }
+
+    // gpii.app.dialog.offScreenHidable.moveToScreen(that, !that.displayMetricsChanged.wasFocused);
+    that.setBounds();
 };
 
 /**
@@ -200,14 +194,11 @@ gpii.app.resizable.handleDisplayMetricsChange = function (that) {
         that.displayMetricsChanged.wasFocused = that.dialog.isFocused();
 
         // Low level hide - hides the dialog but preserves the `isShown` model state of its component.
-        // that.dialog.hide();
-        setTimeout(function() {
-            gpii.app.dialog.offScreenHidable.moveOffScreen(that.dialog);
-        }.bind(this), 500);
-        // XXX disable repositioning
-        // that.displayMetricsChanged.setBounds = that.dialog.setBounds;
-        // that.dialog.setBounds = fluid.identity;
+        that.dialog.hide();
     }
+
+    // hide offscreen & show
+    // resize and move to screen
 
     that.rescaleDialogTimer.start(that.options.rescaleTimeout);
 };
