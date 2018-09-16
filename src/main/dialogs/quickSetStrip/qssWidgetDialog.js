@@ -204,9 +204,11 @@ gpii.app.qssWidget.toggle = function (that, setting, btnCenterOffset, activation
  * the screen.
  */
 gpii.app.qssWidget.getWidgetPosition = function (that, btnCenterOffset) {
+    var menuFineOffset = 15;
+
     return {
         x: btnCenterOffset.x - that.width / 2,
-        y: btnCenterOffset.y
+        y: btnCenterOffset.y - menuFineOffset
     };
 };
 
@@ -250,6 +252,7 @@ gpii.app.qssWidget.show = function (that, heightMap, setting, elementMetrics, ac
 gpii.app.qssWidget.showOnInit = function (qssWidget) {
     if (qssWidget.shouldShow) {
         qssWidget.shouldShow = false;
+        // TODO
         setTimeout(function () {
             qssWidget.applier.change("isShown", true);
         }, 100);

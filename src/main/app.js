@@ -217,6 +217,7 @@ fluid.defaults("gpii.app", {
             type: "gpii.app.pspInApp",
             createOnEvent: "onPSPPrerequisitesReady",
             options: {
+                // TODO move to pspInApp
                 model: {
                     preferences: "{app}.model.preferences",
                     theme: "{app}.model.theme",
