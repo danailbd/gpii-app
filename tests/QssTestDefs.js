@@ -948,33 +948,37 @@ function getKeyInOutSeq(factor) {
 
         getLogSeq("Inc dpi"),
         getDpiCangeSeqEl(2),
-        qssDiagnosticsSeqEl(),
-        getLingerSeqEl(factor*200),
-        qssDiagnosticsSeqEl(),
+            qssDiagnosticsSeqEl(),
+        getLingerSeqEl(factor*400), // 2400
+            qssDiagnosticsSeqEl(),
 
         getLogSeq("Fast Inc dpi"),
+        getLingerSeqEl(4000),
         getDpiCangeSeqEl(3),
-        qssDiagnosticsSeqEl(),
-        getLingerSeqEl(factor*100),
-        qssDiagnosticsSeqEl(),
+            qssDiagnosticsSeqEl(),
+        getLingerSeqEl(factor*350),
+            qssDiagnosticsSeqEl(),
 
         getLogSeq("Very Fast Inc dpi"),
+        getLingerSeqEl(4000),
         getDpiCangeSeqEl(4),
-        qssDiagnosticsSeqEl(),
-        getLingerSeqEl(factor*1000),
-        qssDiagnosticsSeqEl(),
+            qssDiagnosticsSeqEl(),
+        getLingerSeqEl(factor*100),
+            qssDiagnosticsSeqEl(),
 
         getLogSeq("Dec dpi"),
+        getLingerSeqEl(4000),
         getDpiCangeSeqEl(1),
-        qssDiagnosticsSeqEl(),
+            qssDiagnosticsSeqEl(),
         getLingerSeqEl(factor*1000),
-        qssDiagnosticsSeqEl(),
+            qssDiagnosticsSeqEl(),
 
         getLogSeq("Dec dpi"),
+        getLingerSeqEl(4000),
         getDpiCangeSeqEl(3),
-        qssDiagnosticsSeqEl(),
+            qssDiagnosticsSeqEl(),
         getLingerSeqEl(factor*1000),
-        qssDiagnosticsSeqEl(),
+            qssDiagnosticsSeqEl(),
 
         getLogSeq("Keyout"),
         gpii.tests.qss.applyBetweenItemsTimeout(
@@ -1027,8 +1031,8 @@ var loadTests = [].concat(
     //     },
     // gpii.tests.qss.applyBetweenItemsTimeout(dpiIntectactions, 2500),
 
-    getKeyInOutSeq(4),
-    getKeyInOutSeq(3),
+    getKeyInOutSeq(6),
+    // getKeyInOutSeq(3),
     // getKeyInOutSeq(4),
 
     // getLingerSeqEl(4000),
