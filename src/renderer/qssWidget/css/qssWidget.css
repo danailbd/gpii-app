@@ -203,9 +203,16 @@ body {
  * Menu Widget
  */
 
-.fl-qssMenuWidget  {
+.fl-qssMenuWidget {
     display: flex;
     flex-direction: column;
+    height: 100%;
+}
+
+.fl-qssMenuWidget .fl-qssMenuWidget-controlsWrapper {
+    position: relative;
+    flex: 1;
+    overflow: overlay;
 }
 
 .fl-qssMenuWidget .fl-qssWidget-tip {

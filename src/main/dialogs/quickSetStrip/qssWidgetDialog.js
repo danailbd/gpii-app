@@ -44,28 +44,6 @@ fluid.defaults("gpii.app.qssWidget", {
         shouldShow: false
     },
 
-    // Temporary. Should be removed when the widget becomes truly resizable.
-    heightMap: {
-        "http://registry\\.gpii\\.net/common/language": {
-            expander: {
-                funcName: "gpii.app.scale",
-                args: [
-                    "{that}.options.scaleFactor",
-                    637
-                ]
-            }
-        },
-        "http://registry\\.gpii\\.net/common/highContrastTheme": {
-            expander: {
-                funcName: "gpii.app.scale",
-                args: [
-                    "{that}.options.scaleFactor",
-                    627
-                ]
-            }
-        }
-    },
-
     config: {
         closable: false,
 
@@ -112,6 +90,7 @@ fluid.defaults("gpii.app.qssWidget", {
             options: {
                 events: {
                     onQssWidgetClosed: null,
+                    onQssWidgetHeightChanged: "{qssWidget}.events.onContentHeightChanged",
                     onQssWidgetNotificationRequired: "{qssWidget}.events.onQssWidgetNotificationRequired",
                     onQssWidgetSettingAltered: "{qssWidget}.events.onQssWidgetSettingAltered",
                     onQssWidgetCreated: null
@@ -158,7 +137,6 @@ fluid.defaults("gpii.app.qssWidget", {
             funcName: "gpii.app.qssWidget.show",
             args: [
                 "{that}",
-                "{that}.options.heightMap",
                 "{arguments}.0", // setting
                 "{arguments}.1",  // elementMetrics
                 "{arguments}.2"// activationParams
@@ -219,8 +197,6 @@ gpii.app.qssWidget.getWidgetPosition = function (that, btnCenterOffset) {
  * Shows the widget window and position it centered with respect to the
  * corresponding QSS button.
  * @param {Component} that - The `gpii.app.qssWidget` instance
- * @param {Object} heightMap - A hash containing the height the QSS widget must
- * have if the `setting` has a path matching a key in the hash.
  * @param {Object} setting - The setting corresponding to the QSS button that
  * has been activated
  * @param {Object} elementMetrics - An object containing metrics for the QSS
@@ -228,7 +204,7 @@ gpii.app.qssWidget.getWidgetPosition = function (that, btnCenterOffset) {
  * @param {Object} [activationParams] - Parameters sent to the renderer portion
  * of the QSS dialog (e.g. whether the activation occurred via keyboard)
  */
-gpii.app.qssWidget.show = function (that, heightMap, setting, elementMetrics, activationParams) {
+gpii.app.qssWidget.show = function (that, setting, elementMetrics, activationParams) {
     activationParams = activationParams || {};
 
     that.dialog.setAlwaysOnTop(true);
@@ -241,7 +217,7 @@ gpii.app.qssWidget.show = function (that, heightMap, setting, elementMetrics, ac
     var offset = gpii.app.qssWidget.getWidgetPosition(that, elementMetrics);
     that.applier.change("offset", offset);
 
-    that.height = heightMap[setting.path] || that.options.config.attrs.height;
+    that.height = that.options.config.attrs.height;
     that.setRestrictedSize(that.width, that.height);
 
     that.shouldShow = true;
