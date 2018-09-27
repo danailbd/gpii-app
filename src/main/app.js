@@ -372,11 +372,11 @@ fluid.defaults("gpii.app", {
         },
         keyIn: {
             funcName: "gpii.app.keyIn",
-            args: ["{flowManager}", "{arguments}.0"] // token
+            args: ["{lifecycleManager}", "{flowManager}", "{arguments}.0"] // token
         },
         keyOut: {
             funcName: "gpii.app.keyOut",
-            args: "{that}.model.keyedInUserToken"
+            args: ["{lifecycleManager}", "{that}.model.keyedInUserToken"]
         },
         exit: {
             funcName: "gpii.app.exit",
@@ -477,28 +477,40 @@ gpii.app.fireAppReady = function (fireFn) {
   * @param {Component} flowManager - The `gpii.flowManager` instance.
   * @param {String} token - The token to key in with.
   */
-gpii.app.keyIn = function (flowManager, token) {
+gpii.app.keyIn = function (lifecycleManager, flowManager, token) {
     // TODO: Replace this with direct function call when https://github.com/GPII/universal/pull/653 gets merged
-    request("http://localhost:8081/user/" + token + "/proximityTriggered", function (error, response, body) {
+    // request("http://localhost:8081/user/" + token + "/login", function (error, response, body) {
 
-        // Try is needed as the response body has two formats:
-        //  - success message - simple string (like message key of the object)
-        //  - object - "{isError: Boolean, message: string}"
-        try {
-            /// XXX temporary way for triggering key in error
-            // TODO: Replace this when https://github.com/GPII/universal/pull/653 gets merged
-            if (typeof body === "string" && JSON.parse(body).isError) {
-                flowManager.userErrors.events.userError.fire({
-                    isError: true,
-                    messageKey: "KeyInFail",
-                    originalError: JSON.parse(response.body).message
-                });
-            }
-        }
-        // SyntaxError
-        // Should be a success
-        catch (e) { return; }
+    //     // Try is needed as the response body has two formats:
+    //     //  - success message - simple string (like message key of the object)
+    //     //  - object - "{isError: Boolean, message: string}"
+    //     try {
+    //         /// XXX temporary way for triggering key in error
+    //         // TODO: Replace this when https://github.com/GPII/universal/pull/653 gets merged
+    //         if (typeof body === "string" && JSON.parse(body).isError) {
+    //             flowManager.userErrors.events.userError.fire({
+    //                 isError: true,
+    //                 messageKey: "KeyInFail",
+    //                 originalError: JSON.parse(response.body).message
+    //             });
+    //         }
+    //     }
+    //     // SyntaxError
+    //     // Should be a success
+    //     catch (e) { return; }
+    // });
+
+    var togo = lifecycleManager.performLogin(token);
+
+    togo.then(fluid.identity, function (error) {
+        flowManager.userErrors.events.userError.fire({
+            isError: true,
+            messageKey: "KeyInFail",
+            originalError: error
+        });
     });
+
+    return togo;
 };
 
 /**
@@ -506,20 +518,23 @@ gpii.app.keyIn = function (flowManager, token) {
   * @param {String} token - The token to key out with.
   * @return {Promise} A promise that will be resolved/rejected when the request is finished.
   */
-gpii.app.keyOut = function (token) {
-    var togo = fluid.promise();
-    // TODO: Replace this with direct function call when https://github.com/GPII/universal/pull/653 gets merged
-    request("http://localhost:8081/user/" + token + "/proximityTriggered", function () {
-        //TODO Put in some error logging
-        // if (error) {
-        //     togo.reject(error);
-        //     fluid.log("Key out response:", response);
-        //     fluid.log("Key out body:", body);
-        // } else {
-        //     togo.resolve();
-        // }
-    });
-    return togo;
+gpii.app.keyOut = function (lifecycleManager, token) {
+    // var togo = fluid.promise();
+    // // TODO: Replace this with direct function call when https://github.com/GPII/universal/pull/653 gets merged
+    // request("http://localhost:8081/user/" + token + "/logout", function (error, response, body) {
+    //     console.log("===================Keying out...", token, error, response, body);
+    //     //TODO Put in some error logging
+    //     // if (error) {
+    //     //     togo.reject(error);
+    //     //     fluid.log("Key out response:", response);
+    //     //     fluid.log("Key out body:", body);
+    //     // } else {
+    //     //     togo.resolve();
+    //     // }
+    // });
+    // return togo;
+
+    return lifecycleManager.performLogout(token);
 };
 
 /**
