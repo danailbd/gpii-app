@@ -35,6 +35,7 @@ fluid.defaults("gpii.app.surveyTriggerManager", {
         registeredTriggerHandlers: {}
     },
     conditionHandlerGrades: {
+        keyedInFor: "gpii.app.keyedInForHandler",
         sessionTimer: "gpii.app.sessionTimerHandler"
     },
     events: {
@@ -104,6 +105,7 @@ gpii.app.surveyTriggerManager.registerTrigger = function (that, trigger) {
     that.removeTrigger(trigger);
     that.events.onTriggerAdded.fire(trigger);
 };
+
 
 /**
  * Removes a trigger from the `surveyTriggerManager` by destroying its corresponding trigger handler.
@@ -272,6 +274,31 @@ fluid.defaults("gpii.app.timedConditionHandler", {
         onTimerFinished: "{that}.handleSuccess()"
     }
 });
+
+/**
+ * A `timedConditionHandler` for the `keyedInFor` fact. It determines whether a
+ * given amount of time has passed since the user has keyed in.
+ */
+fluid.defaults("gpii.app.keyedInForHandler", {
+    gradeNames: ["gpii.app.timedConditionHandler"],
+    listeners: {
+        "onCreate.startTimer": {
+            funcName: "gpii.app.keyedInForHandler.start",
+            args: ["{that}", "{factsManager}.model.keyedInTimestamp"]
+        }
+    }
+});
+
+/**
+ * Starts the `keyedInForHandler` timer.
+ * @param {Component} that - The `keyedInForHandler` instance.
+ * @param {Number} keyedInTimestamp - The timestamp when the user has keyed in.
+ */
+gpii.app.keyedInForHandler.start = function (that, keyedInTimestamp) {
+    var offset = Date.now() - keyedInTimestamp;
+    that.start(that.model.condition.value - offset);
+};
+
 
 /**
  * A `gpii.app.timedConditionHandler` which schedules a timer for showing a user survey
