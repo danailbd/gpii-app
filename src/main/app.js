@@ -378,6 +378,10 @@ fluid.defaults("gpii.app", {
             funcName: "gpii.app.keyOut",
             args: "{that}.model.keyedInUserToken"
         },
+        reset: {
+            funcName: "gpii.app.reset",
+            args: ["{that}"]
+        },
         exit: {
             funcName: "gpii.app.exit",
             args: "{that}"
@@ -520,6 +524,11 @@ gpii.app.keyOut = function (token) {
         // }
     });
     return togo;
+};
+
+gpii.app.reset = function (that) {
+    console.log("==========resetting app...");
+    return that.keyIn("reset");
 };
 
 /**

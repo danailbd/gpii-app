@@ -95,7 +95,7 @@ fluid.defaults("gpii.app.qssWrapper", {
         onResetAllRequired: [{
             func: "{qss}.hide"
         }, {
-            func: "{app}.keyOut"
+            func: "{app}.reset"
         }],
         onSaveRequired: {
             funcName: "gpii.app.qssWrapper.saveSettings",
