@@ -30,8 +30,8 @@ require("./IntegrationTestDefs.js");
 require("./QssTestDefs.js");
 require("./SequentialDialogsTestDefs.js");
 require("./SettingsBrokerTestDefs.js");
+require("./SurveysConnectorTestDefs.js");
 require("./SurveyTriggerManagerTestsDefs.js");
-require("./SurveysTestDefs.js");
 require("./UserErrorsHandlerTestDefs.js");
 require("./SiteConfigurationHandlerTestDefs.js");
 require("./WebviewTestDefs.js");
@@ -46,7 +46,8 @@ fluid.registerNamespace("gpii.tests.app");
 gpii.tests.app.startSequence = [
     { // This sequence point is required because of a QUnit bug - it defers the start of sequence by 13ms "to avoid any current callbacks" in its words
         func: "{testEnvironment}.events.constructServer.fire"
-    }, { // Before the actual tests commence, the PSP application must be fully functional. The `onPSPReady` event guarantees that.
+    },
+    { // Before the actual tests commence, the PSP application must be fully functional. The `onPSPReady` event guarantees that.
         event: "{that gpii.app}.events.onPSPReady",
         listener: "fluid.identity"
     }
@@ -105,9 +106,9 @@ gpii.tests.app.bootstrapServer([
     // fluid.copy(gpii.tests.qss.testDefs),
     // fluid.copy(gpii.tests.sequentialDialogs.testDefs),
     // fluid.copy(gpii.tests.settingsBroker.testDefs),
+    // fluid.copy(gpii.tests.surveys.surveyConnectorNegativeTestDefs),
     // fluid.copy(gpii.tests.surveyTriggerManager.testDefs),
-    // XXX: Uncoment once cindyli's revised implementation of the `noUser` functionality is available.
-    // fluid.copy(gpii.tests.surveys.testDefs),
+    // fluid.copy(gpii.tests.surveys.surveyConnectorTestDefs),
     // fluid.copy(gpii.tests.siteConfigurationHandler.testDefs),
     // fluid.copy(gpii.tests.userErrorsHandler.testDefs),
     // fluid.copy(gpii.tests.webview.testDefs),
