@@ -275,7 +275,7 @@ var triggersApiSequence = [
 
 gpii.tests.surveyTriggerManager.testDefs = {
     name: "Trigger Engine integration tests",
-    expect: 28,
+    expect: 26,
     config: {
         configName: "gpii.tests.all.config",
         configPath: "tests/configs"

@@ -353,8 +353,10 @@ fluid.defaults("gpii.app", {
             method: "fire",
             priority: "last"
         },
-        "onDestroy.beforeExit": {
-            listener: "{that}.keyOut"
+        "{lifecycleManager}.events.onDestroy": {
+            listener: "{that}.keyOut",
+            priority: "first",
+            namespace: "beforeExit"
         }
     },
     invokers: {
@@ -503,6 +505,7 @@ gpii.app.keyIn = function (lifecycleManager, flowManager, token) {
     var togo = lifecycleManager.performLogin(token);
 
     togo.then(fluid.identity, function (error) {
+        // XXX temporary way for triggering key in error
         flowManager.userErrors.events.userError.fire({
             isError: true,
             messageKey: "KeyInFail",

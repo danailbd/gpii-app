@@ -443,7 +443,7 @@ var qssCrossTestSequence = [
      */
     { // Test menu after key in
         func: "{that}.app.keyIn",
-        args: "snapset_2a" // Read To Me
+        args: "snapset_1a" // Read To Me
     }, {
         event: "{that}.app.events.onKeyedIn",
         listener: "fluid.identity"
@@ -476,7 +476,8 @@ var qssCrossTestSequence = [
             "{arguments}.0"
         ]
     }, { // Test menu after key out
-        func: "{that}.app.keyOut"
+        task: "{that}.app.keyOut",
+        resolve: "fluid.identity"
     }
 ];
 
@@ -713,7 +714,7 @@ var appZoomTestSequence = [
             clickIncreaseBtn
         ]
     }, {
-        event: "{that}.app.appZoom.events.onAppZoomed",
+        event: "{that}.app.appZoomHandler.events.onAppZoomed",
         listener: "jqUnit.assertEquals",
         args: [
             "App Zoom zooms in when the + button in the QSS widget is pressed",
@@ -727,7 +728,7 @@ var appZoomTestSequence = [
             clickDecreaseBtn
         ]
     }, {
-        event: "{that}.app.appZoom.events.onAppZoomed",
+        event: "{that}.app.appZoomHandler.events.onAppZoomed",
         listener: "jqUnit.assertEquals",
         args: [
             "App Zoom zooms out when the - button in the QSS widget is pressed",
@@ -764,7 +765,7 @@ fluid.defaults("gpii.tests.qss.mockedAppZoom", {
 fluid.defaults("gpii.tests.qss.mockedAppZoomWrapper", {
     gradeNames: "fluid.component",
     components: {
-        appZoom: {
+        appZoomHandler: {
             type: "gpii.tests.qss.mockedAppZoom"
         }
     }
