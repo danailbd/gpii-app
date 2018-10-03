@@ -70,14 +70,14 @@ gpii.tests.psp.testDefs = {
     }, {
         func: "{that}.app.psp.show"
     }, {
-        func: "{that}.app.keyIn",
-        args: ["multi_context"]
-    }, { // Delay the tests a bit so that the UI can initialize properly.
-        task: "gpii.test.executeJavaScriptDelayed",
+        task: "{that}.app.keyIn",
+        args: ["multi_context"],
+        resolve: "fluid.identity"
+    }, {
+        task: "gpii.test.executeJavaScript",
         args: [
             "{that}.app.psp.dialog",
-            decreaseVolume,
-            2000
+            decreaseVolume
         ],
         resolve: "fluid.identity"
     }, {

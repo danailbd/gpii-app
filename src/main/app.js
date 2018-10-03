@@ -541,7 +541,14 @@ gpii.app.keyOut = function (lifecycleManager, token) {
     // });
     // return togo;
 
-    return lifecycleManager.performLogout(token);
+    console.log("========key out request", token);
+    var togo = lifecycleManager.performLogout(token);
+
+    togo.then(fluid.identity, function (error) {
+        console.log("======key out error", JSON.stringify(error, null, 4));
+    });
+
+    return togo;
 };
 
 /**
