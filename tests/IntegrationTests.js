@@ -50,6 +50,10 @@ gpii.tests.app.startSequence = [
     { // Before the actual tests commence, the PSP application must be fully functional. The `onPSPReady` event guarantees that.
         event: "{that gpii.app}.events.onPSPReady",
         listener: "fluid.identity"
+    },
+    {
+        event: "{testEnvironment}.events.noUserLoggedIn",
+        listener: "fluid.identity"
     }
 ];
 
@@ -87,6 +91,9 @@ gpii.tests.app.testDefToServerEnvironment = function (testDef) {
                 tests: {
                     options: gpii.tests.app.testDefToCaseHolder(configurationName, testDef)
                 }
+            },
+            events: {
+                noUserLoggedIn: null
             }
         }
     };

@@ -25,6 +25,12 @@
             "distributeDevPcpChannelConnector": {
                 "record": "gpii.app.dev.gpiiConnector",
                 "target": "{that gpiiConnector}.options.gradeNames"
+            },
+            "flowManager.escalate": {
+                "record": {
+                    "noUserLoggedIn.escalate": "{testEnvironment}.events.noUserLoggedIn"
+                },
+                "target": "{that localConfig flowManager}.options.listeners"
             }
         }
     },
