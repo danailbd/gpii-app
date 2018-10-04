@@ -163,8 +163,7 @@ gpii.tests.psp.testDefs = {
             keyOut
         ]
     }, {
-        changeEvent: "{that}.app.applier.modelChanged",
-        path: "isKeyedIn",
+        event: "{that}.app.events.onKeyedOut",
         listener: "gpii.tests.psp.testKeyedOut",
         args: ["{that}.app.psp"]
     }]

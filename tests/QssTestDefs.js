@@ -475,9 +475,11 @@ var qssCrossTestSequence = [
             { path: "http://registry\\.gpii\\.net/common/selfVoicing/enabled", value: true },
             "{arguments}.0"
         ]
-    }, { // Test menu after key out
-        task: "{that}.app.keyOut",
-        resolve: "fluid.identity"
+    }, {
+        func: "{that}.app.keyOut"
+    }, {
+        event: "{that}.app.events.onKeyedOut",
+        listener: "fluid.identity"
     }
 ];
 

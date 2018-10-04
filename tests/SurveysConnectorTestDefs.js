@@ -122,6 +122,9 @@ gpii.tests.surveys.surveyConnectorTestDefs = {
         args: [surveysFixture[triggersFixture[0].id], "{arguments}.0"]
     }, {
         func: "{that}.app.keyOut"
+    }, {
+        event: "{that}.app.events.onKeyedOut",
+        listener: "fluid.identity"
     }]
 };
 
