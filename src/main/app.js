@@ -16,7 +16,6 @@
 
 var fluid   = require("infusion");
 var gpii    = fluid.registerNamespace("gpii");
-var request = require("request");
 
 require("../shared/channelUtils.js");
 require("../shared/messageBundles.js");
@@ -480,32 +479,12 @@ gpii.app.fireAppReady = function (fireFn) {
 
 /**
   * Keys a user into the GPII.
+  * @param {Component} lifecycleManager - The `gpii.lifecycleManager` instance.
   * @param {Component} flowManager - The `gpii.flowManager` instance.
   * @param {String} token - The token to key in with.
+  * @return {Promise} A promise that will be resolved/rejected when the request is finished.
   */
 gpii.app.keyIn = function (lifecycleManager, flowManager, token) {
-    // TODO: Replace this with direct function call when https://github.com/GPII/universal/pull/653 gets merged
-    // request("http://localhost:8081/user/" + token + "/login", function (error, response, body) {
-
-    //     // Try is needed as the response body has two formats:
-    //     //  - success message - simple string (like message key of the object)
-    //     //  - object - "{isError: Boolean, message: string}"
-    //     try {
-    //         /// XXX temporary way for triggering key in error
-    //         // TODO: Replace this when https://github.com/GPII/universal/pull/653 gets merged
-    //         if (typeof body === "string" && JSON.parse(body).isError) {
-    //             flowManager.userErrors.events.userError.fire({
-    //                 isError: true,
-    //                 messageKey: "KeyInFail",
-    //                 originalError: JSON.parse(response.body).message
-    //             });
-    //         }
-    //     }
-    //     // SyntaxError
-    //     // Should be a success
-    //     catch (e) { return; }
-    // });
-
     var togo = lifecycleManager.performLogin(token);
 
     togo.then(fluid.identity, function (error) {
@@ -522,33 +501,12 @@ gpii.app.keyIn = function (lifecycleManager, flowManager, token) {
 
 /**
   * Keys out of the GPII.
+  * @param {Component} lifecycleManager - The `gpii.lifecycleManager` instance.
   * @param {String} token - The token to key out with.
   * @return {Promise} A promise that will be resolved/rejected when the request is finished.
   */
 gpii.app.keyOut = function (lifecycleManager, token) {
-    // var togo = fluid.promise();
-    // // TODO: Replace this with direct function call when https://github.com/GPII/universal/pull/653 gets merged
-    // request("http://localhost:8081/user/" + token + "/logout", function (error, response, body) {
-    //     console.log("===================Keying out...", token, error, response, body);
-    //     //TODO Put in some error logging
-    //     // if (error) {
-    //     //     togo.reject(error);
-    //     //     fluid.log("Key out response:", response);
-    //     //     fluid.log("Key out body:", body);
-    //     // } else {
-    //     //     togo.resolve();
-    //     // }
-    // });
-    // return togo;
-
-    console.log("========key out request", token);
-    var togo = lifecycleManager.performLogout(token);
-
-    togo.then(fluid.identity, function (error) {
-        console.log("======key out error", JSON.stringify(error, null, 4));
-    });
-
-    return togo;
+    return lifecycleManager.performLogout(token);
 };
 
 /**
