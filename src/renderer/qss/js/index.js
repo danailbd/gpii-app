@@ -20,6 +20,13 @@
         electron = require("electron"),
         windowInitialParams = electron.remote.getCurrentWindow().params;
 
+
+    window.onkeyup = window.onkeydown = function(e) {
+        var key = e.keyCode ? e.keyCode : e.which;
+        // XXX DEV
+        console.log(e);
+    }
+
     jQuery(function () {
         gpii.psp.translatedQss(".flc-quicksetstrip", {
             model: {

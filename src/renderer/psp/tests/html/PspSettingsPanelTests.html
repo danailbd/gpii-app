@@ -19,7 +19,6 @@
         <link rel="stylesheet" href="../../css/icons.css">
         <link rel="stylesheet" href="../../css/restartWarning.css">
         <link rel="stylesheet" href="../../css/main.css">
-        <link rel="stylesheet" href="../../css/splash.css">
         <link rel="stylesheet" href="../css/PspSettingsPanelTests.css">
 
         <!-- This file verifies that the Renderer still basically functions in the absence of the IoC framework -->
@@ -51,12 +50,15 @@
         <script type="text/javascript" src="../../../../../node_modules/infusion/src/components/textfieldControl/js/TextfieldStepper.js"></script>
 
         <!--  These are the jqUnit test js files -->
-        <script type="text/javascript" src="../../../../../node_modules/infusion/tests/lib/qunit/js/qunit.js"></script>
-        <script type="text/javascript" src="../../../../../node_modules/infusion/tests/test-core/jqUnit/js/jqUnit.js"></script>
-        <script type="text/javascript" src="../../../../../node_modules/infusion/tests/test-core/jqUnit/js/jqUnit-browser.js"></script>
+        <script type="text/javascript" src="/node_modules/infusion/tests/lib/qunit/js/qunit.js"></script>
 
-        <script type="text/javascript" src="../../../../../node_modules/infusion/src/framework/enhancement/js/ContextAwareness.js"></script>
-        <script type="text/javascript" src="../../../../../node_modules/infusion/tests/test-core/utils/js/IoCTestUtils.js"></script>
+        <script src="/testem.js"></script>
+
+        <script type="text/javascript" src="/node_modules/infusion/tests/test-core/jqUnit/js/jqUnit.js"></script>
+        <script type="text/javascript" src="/node_modules/infusion/tests/test-core/jqUnit/js/jqUnit-browser.js"></script>
+
+        <script type="text/javascript" src="/node_modules/infusion/src/framework/enhancement/js/ContextAwareness.js"></script>
+        <script type="text/javascript" src="/node_modules/infusion/tests/test-core/utils/js/IoCTestUtils.js"></script>
 
         <!-- Needed for the image dropdown to function properly -->
         <script type="text/javascript" src="../../../../../node_modules/winstrap/dist/js/vendor/bootstrap.min.js"></script>
@@ -70,9 +72,12 @@
         <script type="text/javascript" src="../../js/restartWarning.js"></script>
         <script type="text/javascript" src="../../js/header.js"></script>
 
+        <!-- <script type="text/javascript" src="/coverage/client/coverageSender.js"></script> -->
 
         <!--  These are tests that have been written using this page as data -->
         <script type="text/javascript" src="../js/PspSettingsPanelTests.js"></script>
+        <!-- <script type="text/javascript" src="/node_modules/gpii-testem/tests/testem-fixtures/coverage-fixtures/src/js/coverage-components.js"></script> -->
+        <!-- <script type="text/javascript" src="/node_modules/gpii-testem/tests/testem-fixtures/coverage-fixtures/src/js/coverage-client-fixtures.js"></script> -->
 
     </head>
 
@@ -133,5 +138,9 @@
                 <span class="flc-btnLabel fl-btnLabel"></span>
             </button>
         </div>
+
+        <!-- <script type="text/javascript"> -->
+        <!--     fluid.test.runTests("gpii.tests.testem.coverage.environment.complete"); -->
+        <!-- </script> -->
     </body>
 </html>
