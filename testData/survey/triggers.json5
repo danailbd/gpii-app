@@ -17,6 +17,7 @@
         ]
     }, {
         "id": "trigger_2",
+        "recurring": true,
         "conditions": [
             {
                 "type": "keyedInFor",
@@ -25,6 +26,7 @@
         ]
     }, { // Example for compound trigger
         "id": "trigger_3",
+        "recurring": true,
         "conditions": [
             {
                 "type": "keyedInFor",

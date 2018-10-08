@@ -65,8 +65,9 @@ fluid.defaults("gpii.app.surveyTriggerManager", {
     },
     listeners: {
         onTriggerOccurred: {
-            func: "{that}.removeTrigger",
+            funcName: "gpii.app.surveyTriggerManager.handleTriggerOccurred",
             args: [
+                "{that}",
                 "{arguments}.0" // trigger
             ]
         }
@@ -111,7 +112,6 @@ gpii.app.surveyTriggerManager.registerTrigger = function (that, trigger) {
 
 /**
  * Removes a trigger from the `surveyTriggerManager` by destroying its corresponding trigger handler.
- *
  * @param {Component} that - The `gpii.app.surveyTriggerManager` instance.
  * @param {Object} trigger - The survey trigger which is to be removed.
  */
@@ -123,6 +123,20 @@ gpii.app.surveyTriggerManager.removeTrigger = function (that, trigger) {
             triggerHandler.destroy();
             delete that.registeredTriggerHandlers[triggerId];
         }
+    }
+};
+
+/**
+ * This function takes care of removing the trigger once it has occurred. If
+ * the trigger is recurring, it will then be registered again with the
+ * `surveyTriggerManager` and its corresponding survey can be shown again.
+ * @param {Component} that - The `gpii.app.surveyTriggerManager` instance.
+ * @param {Object} trigger - The survey trigger which has just occurred.
+ */
+gpii.app.surveyTriggerManager.handleTriggerOccurred = function (that, trigger) {
+    that.removeTrigger(trigger);
+    if (trigger.recurring) {
+        that.registerTrigger(trigger);
     }
 };
 
@@ -142,7 +156,6 @@ gpii.app.surveyTriggerManager.reset = function (that) {
 /**
  * Registers a dynamic `triggerHandler` component with its parent `surveyTriggerManager` component. Necessary in order
  * to be able to remove handlers when they are no longer needed.
- *
  * @param {Component} surveyTriggerManager - The `gpii.app.surveyTriggerManager` instance.
  * @param {Component} triggerHandler - The `gpii.app.triggerHandler` instance.
  */
@@ -156,6 +169,10 @@ gpii.app.surveyTriggerManager.registerTriggerHandler = function (surveyTriggerMa
  * the trigger’s conditions the trigger handler will delegate the responsibility of
  * ascertaining whether this condition is satisfied to a specific condition handler. The
  * condition handlers are dynamic subcomponents of the trigger handler.
+ *
+ * Note that generally a trigger occurs only once during a user session. If there is a need
+ * for a given trigger to occur repeatedly, then it should be marked as a recurring in its
+ * definition (i.e. `recurring`: true).
  */
 fluid.defaults("gpii.app.triggerHandler", {
     gradeNames: ["fluid.modelComponent"],
@@ -200,7 +217,6 @@ fluid.defaults("gpii.app.triggerHandler", {
 /**
  * Retrieves the `gradeName` for a condition handler based on the condition's type. An error will be thrown if there is
  * no condition handler for the given type.
- *
  * @param {Object} condition - The condition for whose handler the type is to be retrieved.
  * @param {Object} conditionHandlerGrades - A hash whose keys represent all available
  * condition types and the values are the corresponding gradeNames.
@@ -256,7 +272,6 @@ fluid.defaults("gpii.app.conditionHandler", {
 /**
  * A function which is called when a condition handler determines that its condition has been satisfied. Responsible for
  * firing the `onConditionSatisfied` event and destroying the condition handler.
- *
  * @param {Component} that - The `gpii.app.conditionHandler` instance.
  */
 gpii.app.conditionHandler.handleSuccess = function (that) {

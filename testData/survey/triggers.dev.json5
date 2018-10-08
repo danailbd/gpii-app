@@ -1,6 +1,7 @@
 [
     {
         "id": "trigger_1",
+        "recurring": true,
         "conditions": [
             {
                 "type": "sessionTimer",
