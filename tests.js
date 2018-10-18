@@ -27,6 +27,7 @@ jqUnit.onAllTestsDone.addListener(function () {
     }
 });
 
+
 // Run the electron app tests with code coverage if possible.
 require("./tests/AppTests.js");
 require("./tests/MessageBundlesTests.js");
