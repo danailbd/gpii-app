@@ -15,11 +15,39 @@
 
 
 var fluid = require("gpii-universal"),
-    gpii = fluid.registerNamespace("gpii");
+    gpii = fluid.registerNamespace("gpii"),
+    ipcMain = require("electron").ipcMain,
+    BrowserWindow = require("electron").BrowserWindow;
+
 require("gpii-testem");
 
 
-function sendCoverage() {
+
+fluid.defaults("gpii.tests.app.rendererCoverageServer", {
+    gradeNames:  "gpii.testem.coverage.express",
+    options: {
+        port: 7003,
+        distributeOptions: {
+            record: "%gpii-app/coverage",
+            target: "{that gpii.testem.coverage.receiver.middleware}.options.coverageDir"
+        },
+        listeners: {
+            "onCreate": { // XXX dev
+                funcName: "console.log",
+                args: ["ROUTER CREATED"]
+            }
+        }
+    }
+});
+
+
+
+/**
+ * Sends coverage data from a renderer process to the coverageServer.
+ * This function is sent to renderer processes and run there. Once the `gpii.testem.coverage.server`
+ * returns a response it notifies the main process so that the tests would continue.
+ */
+gpii.tests.app.sendRendererCoverage = function () {
     var coveragePort = 7003; // TODO configurabale (stringTemplate)
     // send coverage
     // notify server for change
@@ -68,12 +96,12 @@ function sendCoverage() {
         // notify anyways
         notifyCoverageSuccess();
     }
-}
+};
 
 
 
 /**
- * Component that ensures `gpii.app.dialog`s are using the instrumented version of renderer content 
+ * Component that ensures `gpii.app.dialog`s are using the instrumented version of renderer content
  */
 fluid.defaults("gpii.tests.app.instrumentedDialog", {
     // use the instrumented renderer files
@@ -93,23 +121,36 @@ fluid.defaults("gpii.tests.app.instrumentedDialog", {
     }
 });
 
+gpii.tests.app.instrumentedDialog.requestDialogCoverage = function (dialog) {
+    var sendCoverageCommand = fluid.stringTemplate("(%function)()", { function: gpii.tests.app.sendRendererCoverage.toString() });
+    gpii.test.executeJavaScript(dialog, sendCoverageCommand);
+};
+
+/**
+ * Request coverage data from all currently created BrowserWindows. Continues with
+ * tests execution once all windows have notified that their coverage had been sent successfully, 
+ *
+ * Note that the coverage is collected by executing a command sent from the main process - `gpii.tests.app.sendRendererCoverage`. 
+ * For more details refer to gpii.test.executeJavaScript.
+ */
 gpii.tests.app.instrumentedDialog.requestCoverage = function () {
     var promise = fluid.promise();
 
-    var dialogs = require("electron").BrowserWindow.getAllWindows();
+    var dialogs = BrowserWindow.getAllWindows();
     var dialogCounter = 0;
 
     fluid.each(dialogs, function (dialog) {
-        // dialog.webContents.toggleDevTools();
+        dialog.webContents.toggleDevTools();
         console.log("REQUEST COVERAGE: ", dialog.gradeNames);
-        gpii.test.executeJavaScript(dialog, sendCoverage.toString() + " sendCoverage();");
+        // create an iife
+        gpii.tests.app.instrumentedDialog.requestDialogCoverage(dialog);
     });
 
-    require("electron").ipcMain.on("coverageSuccess", function (e) {
+    ipcMain.on("coverageSuccess", function (e) {
         dialogCounter++;
 
-        var diags = require("electron").BrowserWindow.getAllWindows();
-        console.log("State: ", diags.map((d) => d.isDestroyed()))
+        // XXX this should be unneeded
+        var diags = BrowserWindow.getAllWindows();
         console.log("Sender: ", e.sender.isDestroyed());
 
         // XXX DEV
@@ -117,20 +158,25 @@ gpii.tests.app.instrumentedDialog.requestCoverage = function () {
 
         if (dialogCounter >= dialogs.length) {
             promise.resolve();
-            require("electron").ipcMain.removeAllListeners("coverageSuccess");
+            ipcMain.removeAllListeners("coverageSuccess");
         }
     });
 
     return promise;
 };
 
+/**
+ * Collect the coverage data of a dialog before its destruction.
+ * This is needed in case a dialog is recreated throughout a single test sequence.
+ *
+ * @param {Component} dialog
+ */
 gpii.tests.app.instrumentedDialog.attachCoverageCollector = function (dialog) {
     dialog.on("closed", function () {
         // TODO load script form file
         // XXX DEV
         console.log("REQUEST COVERAGE: ", dialog.gradeNames);
-        gpii.test.executeJavaScript(dialog, sendCoverage.toString() + " sendCoverage();");
+        gpii.tests.app.instrumentedDialog.requestDialogCoverage(dialog);
     });
-    require("electron").ipcMain.on("covereageSuccess", dialog.destroy);
+    ipcMain.on("coverageSuccess", dialog.destroy);
 };
-

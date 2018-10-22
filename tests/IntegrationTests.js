@@ -108,22 +108,6 @@ gpii.tests.app.testDefToServerEnvironment = function (testDef) {
             components: {
                 tests: {
                     options: gpii.tests.app.testDefToCaseHolder(configurationName, testDef)
-                },
-                coverage: {
-                    type: "gpii.testem.coverage.express",
-                    options: {
-                        port: 7003,
-                        distributeOptions: {
-                            record: "%gpii-app/coverage",
-                            target: "{that gpii.testem.coverage.receiver.middleware}.options.coverageDir"
-                        },
-                        listeners: {
-                            "onCreate": { // XXX dev
-                                funcName: "console.log",
-                                args: ["ROUTER CREATED"]
-                            }
-                        }
-                    }
                 }
             },
             events: {
