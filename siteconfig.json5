@@ -30,5 +30,8 @@
     },
 
     // URL to the the place serving the survey triggers data. Note that it should return triggers in JSON format
-    surveyTriggersUrl: "http://survey.gpii.net/survey-triggers.json"
+    surveyConnectorConfig: {
+        surveyTriggersUrl: "http://www.mocky.io/v2/5bdc5c89330000112581359e",
+        surveyPayloadsUrl: "http://www.mocky.io/v2/5bdc5cd63300005a008135a1"
+    }
 }

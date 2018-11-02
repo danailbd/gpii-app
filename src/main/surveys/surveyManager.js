@@ -44,7 +44,7 @@ fluid.defaults("gpii.app.surveyManager", {
          * arrive first which in turn will make the handling logic more complex.
          */
         "{app}.model.preferences.gpiiKey": {
-            funcName: "gpii.app.surveyManager.requestTriggers",
+            funcName: "gpii.app.surveyManager.requestSurveyData",
             args: [
                 "{surveyConnector}",
                 "{change}.value"
@@ -96,9 +96,9 @@ fluid.defaults("gpii.app.surveyManager", {
  * @param {Component} surveyConnector - The `gpii.app.surveyConnector` instance.
  * @param {String} keyedInUserToken - The token of the currently keyed in user (if any).
  */
-gpii.app.surveyManager.requestTriggers = function (surveyConnector, keyedInUserToken) {
+gpii.app.surveyManager.requestSurveyData = function (surveyConnector, keyedInUserToken) {
     if (fluid.isValue(keyedInUserToken)) {
-        surveyConnector.requestTriggers();
+        surveyConnector.requestSurveyData();
     }
 };
 
