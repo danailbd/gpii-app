@@ -12,5 +12,8 @@
     	resizable: true,
     	alwaysOnTop: true
     },
-    surveyTriggersUrl: "http://localhost:8083/surveys/triggers.json"
+    surveyConnectorConfig: {
+        surveyTriggersUrl: "http://localhost:8083/surveys/triggers.json",
+        surveyPayloadsUrl: "http://localhost:8083/surveys/surveys.json"
+    }
 }

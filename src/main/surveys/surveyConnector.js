@@ -22,8 +22,9 @@ var fluid = require("infusion"),
 
 /**
  * A component which is responsible for:
- * 1. Requesting the survey data when a user keys in (see the `requestSurveyData` invoker).
- * 2. Firing an event (`onTriggerDataReceived`) when the triggers data is received.
+ * 1. Requesting the survey data (triggers and survey payloads) when a user keys in (see the
+ * `requestSurveyData` invoker).
+ * 2. Firing an event (`onTriggerDataReceived`) when the survey data is received.
  * 3. Informing the interested parties that a survey trigger has occurred (see the
  * `notifyTriggerOccurred` invoker).
  * 4. Firing an event (`onSurveyRequired`) when a survey needs to be shown by the PSP.
@@ -33,9 +34,10 @@ var fluid = require("infusion"),
  * implementation - survey and trigger payloads are fetched from a remote location.
  *
  * The `surveyConnector` should request the survey data by appending the `keyedInUserToken`, the
- * `machineId` and the `language` to the query string in the corresponding urls.
+ * `machineId` and the `language` to the query string in the corresponding urls which are specified
+ * in the `siteConfig.json5` file.
  *
- * The server would return an array of trigger objects in the following format:
+ * The survey server would return an array of trigger objects in the following format:
  *     {
  *         id: <trigger_id>, // mandatory, used to distinguish the triggers
  *         conditions: {
@@ -43,14 +45,14 @@ var fluid = require("infusion"),
  *         }
  *     }
  *
- * When the conditions for a survey trigger have been satisfied, the `surveyConnector`
- * would issue a request to the corresponding server route with the following JSON parameter:
+ * and a JSON with the survey payloads in the following format:
  *     {
- *         trigger: <triggerObject> // the trigger which has occurred
+ *         <trigger_id_1>: <survey_payload_1>,
+ *         <trigger_id_2>: <survey_payload_2>,
+ *         ...
  *     }
  *
- * Finally, the message that the survey server will send in order for the PSP to show a survey would
- * look like this:
+ * The survey payload will have the following format:
  *    {
  *        url: <the Qualtrics survey's URL>,
  *        closeOnSubmit: <true | false> // whether the survey should close automatically when completed
@@ -67,6 +69,11 @@ var fluid = require("infusion"),
  *    }
  * Any valid configuration option for the `BrowserWindow` can also be specified in the `window`
  * object of the payload above without the need for any further actions on the PSP's side.
+ *
+ * When the conditions for a survey trigger have been satisfied, the `surveyConnector` will determine
+ * which survey must be presented to the user. The information about all the available surveys has
+ * already been loaded when the user keyed in. When a survey has to be opened, information about the
+ * QSS settings will be appended to the search string of the survey URL.
  */
 fluid.defaults("gpii.app.surveyConnector", {
     gradeNames: ["fluid.modelComponent"],
@@ -233,15 +240,15 @@ gpii.app.dynamicSurveyConnector.requestData = function (that, url) {
     var togo = fluid.promise(),
         pendingRequest = request(url, function (error, response, body) {
             if (error || response.statusCode !== 200) {
-                fluid.log(fluid.logLevel.WARN, "Survey connector: Cannot get data ", url, response.statusCode, error);
-                togo.reject();
+                fluid.log(fluid.logLevel.WARN, "Survey connector: Cannot get data", url, response.statusCode, error);
+                togo.reject("Survey connector: Cannot get data");
             } else {
                 try {
                     var parsedResponse = JSON.parse(body);
                     togo.resolve(parsedResponse);
                 } catch (parsingError) {
                     fluid.log(fluid.logLevel.WARN, "Survey connector: Error parsing data", url, parsingError, body);
-                    togo.reject();
+                    togo.reject("Survey connector: Error parsing data");
                 }
             }
         }),
