@@ -111,6 +111,75 @@ gpii.tests.qss.testPspAndQssVisibility = function (app, params) {
     );
 };
 
+gpii.tests.qss.getFocusedElementIndex = function () {
+    // Note that the elements will be returned in the order in which they appear in the DOM.
+    var qssButtons = jQuery(".fl-qss-button"),
+        focusedElement = jQuery(".fl-focused")[0];
+    return jQuery.inArray(focusedElement, qssButtons);
+};
+
+gpii.tests.qss.pressKey = function (key, modifiers) {
+    return {
+        funcName: "gpii.tests.qss.simulateShortcut",
+        args: [
+            "{that}.app.qssWrapper.qss.dialog",
+            {
+                key: key,
+                modifiers: modifiers
+            }
+        ]
+    };
+};
+
+gpii.tests.qss.assertFocusedElementIndex = function (expectedIndex) {
+    return {
+        task: "gpii.test.executeJavaScriptDelayed",
+        args: [
+            "{that}.app.qssWrapper.qss.dialog",
+            gpii.test.toIIFEString(gpii.tests.qss.getFocusedElementIndex),
+            100
+        ],
+        resolve: "jqUnit.assertEquals",
+        resolveArgs: [
+            "The correct button in the QSS is focused",
+            expectedIndex,
+            "{arguments}.0"
+        ]
+    };
+};
+
+var qssSettingsCount = 11;
+
+var navigationSequence = [
+    {
+        func: "{that}.app.tray.events.onTrayIconClicked.fire"
+    },
+    gpii.tests.qss.assertFocusedElementIndex(-1),
+    gpii.tests.qss.pressKey("Right"),
+    gpii.tests.qss.assertFocusedElementIndex(0),
+    gpii.tests.qss.pressKey("Tab"),
+    gpii.tests.qss.assertFocusedElementIndex(1),
+    gpii.tests.qss.pressKey("Left"),
+    gpii.tests.qss.assertFocusedElementIndex(0),
+    gpii.tests.qss.pressKey("Tab", ["Shift"]),
+    gpii.tests.qss.assertFocusedElementIndex(qssSettingsCount - 1),
+    gpii.tests.qss.pressKey("Tab", ["Shift"]),
+    gpii.tests.qss.assertFocusedElementIndex(qssSettingsCount - 2),
+    gpii.tests.qss.pressKey("Up"),
+    gpii.tests.qss.assertFocusedElementIndex(qssSettingsCount - 3),
+    gpii.tests.qss.pressKey("Down"),
+    gpii.tests.qss.assertFocusedElementIndex(qssSettingsCount - 2),
+    gpii.tests.qss.pressKey("Left"),
+    gpii.tests.qss.assertFocusedElementIndex(qssSettingsCount - 4),
+    gpii.tests.qss.pressKey("Up"),
+    gpii.tests.qss.assertFocusedElementIndex(qssSettingsCount - 5),
+    gpii.tests.qss.pressKey("Right"),
+    gpii.tests.qss.assertFocusedElementIndex(qssSettingsCount - 3),
+    {
+        func: "{that}.app.tray.events.onTrayIconClicked.fire"
+    }
+];
+
 
 var restartWarningSequence = [
     { // Simulate language change
@@ -1503,7 +1572,7 @@ var qssInstalledLanguages = [
 
 gpii.tests.qss.testDefs = {
     name: "QSS Widget integration tests",
-    expect: 71,
+    expect: 82,
     config: {
         configName: "gpii.tests.dev.config",
         configPath: "tests/configs"
@@ -1543,6 +1612,7 @@ gpii.tests.qss.testDefs = {
             listener: "jqUnit.assert",
             args: ["QSS has initialized successfully"]
         }],
+        navigationSequence,
         qssInstalledLanguages,
         undoCrossTestSequence,
         undoTestSequence,
