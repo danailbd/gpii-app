@@ -3,7 +3,7 @@
  *
  * A component responsible for storing and retrieving data which is essential for the proper
  * operation of the GPII app.
- * Copyright 2018 Raising the Floor - International
+ * Copyright 2018 Raising the Floor - US
  *
  * Licensed under the New BSD license. You may not use this file except in
  * compliance with this License.

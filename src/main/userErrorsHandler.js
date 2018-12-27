@@ -2,7 +2,7 @@
  * GPII User Errors handler
  *
  * A component responsible for handling user errors.
- * Copyright 2018 Raising the Floor - International
+ * Copyright 2018 Raising the Floor - US
  *
  * Licensed under the New BSD license. You may not use this file except in
  * compliance with this License.
