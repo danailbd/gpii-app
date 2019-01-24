@@ -470,10 +470,10 @@
         },
         invokers: {
             focusNextVertically: {
-                func: "{that}.focusPrevious"
+                func: "{that}.focusNext"
             },
             focusPreviousVertically: {
-                func: "{that}.focusNext"
+                func: "{that}.focuPrevious"
             }
         }
     });
@@ -508,10 +508,10 @@
         },
         invokers: {
             focusNextHorizontally: {
-                func: "{that}.focusPrevious"
+                func: "{that}.focusNext"
             },
             focusPreviousHorizontally: {
-                func: "{that}.focusNext"
+                func: "{that}.focusPrevious"
             }
         }
     });

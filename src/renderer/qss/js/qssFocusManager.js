@@ -39,11 +39,15 @@
             smallButton: "fl-qss-smallButton"
         },
 
+        // TODO
+        // listeners: {
+        //     "onTreeUpdated.updateGroups": {
+        //         funcName: "",
+        //         args: ["{that}"]
+        //     }
+        // },
+
         invokers: {
-            updateFocusableElements: {
-                funcName: "gpii.qss.qssFocusManager.getFocusInfo",
-                args: ["{that}", "{that}.container", "{that}.options.styles"]
-            },
             getFocusGroupsInfo: {
                 funcName: "gpii.qss.qssFocusManager.getFocusGroupsInfo",
                 args: ["{that}", "{that}.container"]
@@ -93,38 +97,6 @@
         }
     };
 
-    /**
-     * Returns information about the focusable elements in the QSS as well as the index of
-     * the currently focused element. "Focusable element" in terms of the QSS means an element
-     * with a "fl-focusable" class which has a specified `tabindex` greater than or equal to 0.
-     * The focusable elements are returned sorted ascendingly by their tab index.
-     * @param {jQuery} container - The jQuery element representing the container in which this
-     * focus manager handles focus.
-     * @param {Object} styles - A styles object containing various classes related to focusing
-     * of elements
-     * @return {Object} Information about the focusable elements.
-     */
-    // TODO rename
-    gpii.qss.qssFocusManager.getFocusInfo = function (that, container, styles) {
-        var focusableElements =
-            container
-                .find("." + styles.focusable + ":visible")
-                .filter(function (index, element) {
-                    var tabindex = gpii.qss.qssFocusManager.getTabIndex(element);
-                    return tabindex >= 0;
-                })
-                .sort(function (left, right) {
-                    var leftTabIndex = gpii.qss.qssFocusManager.getTabIndex(left),
-                        rightTabIndex = gpii.qss.qssFocusManager.getTabIndex(right);
-                    return leftTabIndex - rightTabIndex;
-                });
-
-        gpii.app.applier.replace(
-            that.applier,
-            "focusableElements",
-            focusableElements.toArray()
-        );
-    };
 
     /**
      * Represents a group of QSS buttons some (or all) of which can gain focus. The number of
@@ -157,7 +129,7 @@
     gpii.qss.qssFocusManager.getFocusGroups = function (that) {
         var focusGroups = [],
             styles = that.options.styles,
-            qssButtons = that.model.focusableElements,
+            qssButtons = qssButtons = that.container.find("." + styles.button + ":visible"),
             currentFocusGroup = [];
 
         fluid.each(qssButtons, function (qssButton) {
@@ -222,7 +194,7 @@
             focusGroups = focusGroupInfo.focusGroups,
             focusGroupIndex = focusGroupInfo.focusGroupIndex,
             focusGroup = focusGroups[focusGroupIndex],
-            delta = backwards ? -1 : 1,
+            delta = backwards ? 1 : -1,
             nextElementIndex = focusGroupInfo.focusIndex + delta;
 
         if (focusGroupIndex > -1) {
