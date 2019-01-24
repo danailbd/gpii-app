@@ -27,6 +27,11 @@
     fluid.defaults("gpii.qss.qssFocusManager", {
         gradeNames: ["gpii.qss.horizontalFocusManager", "gpii.qss.verticalFocusManager"],
 
+        model: {
+            focusGroups: [],
+            focusGroupIndex: null
+        },
+
         maxElementsPerFocusGroup: 2,
 
         styles: {
@@ -54,9 +59,9 @@
         },
 
         invokers: {
-            getFocusInfo: {
+            updateFocusableElements: {
                 funcName: "gpii.qss.qssFocusManager.getFocusInfo",
-                args: ["{that}.container", "{that}.options.styles"]
+                args: ["{that}", "{that}.container", "{that}.options.styles"]
             },
             getFocusGroupsInfo: {
                 funcName: "gpii.qss.qssFocusManager.getFocusGroupsInfo",
@@ -90,7 +95,8 @@
      * of elements
      * @return {Object} Information about the focusable elements.
      */
-    gpii.qss.qssFocusManager.getFocusInfo = function (container, styles) {
+    // TODO rename
+    gpii.qss.qssFocusManager.getFocusInfo = function (that, container, styles) {
         var focusableElements =
             container
                 .find("." + styles.focusable + ":visible")
@@ -102,18 +108,13 @@
                     var leftTabIndex = gpii.qss.qssFocusManager.getTabIndex(left),
                         rightTabIndex = gpii.qss.qssFocusManager.getTabIndex(right);
                     return leftTabIndex - rightTabIndex;
-                }),
-            focusedElement = container.find("." + styles.focused)[0],
-            focusIndex = -1;
+                });
 
-        if (focusedElement) {
-            focusIndex = jQuery.inArray(focusedElement, focusableElements);
-        }
-
-        return {
-            focusableElements: focusableElements,
-            focusIndex: focusIndex
-        };
+        gpii.app.applier.replace(
+            that.applier,
+            "focusableElements",
+            focusableElements.toArray()
+        );
     };
 
     /**
@@ -148,7 +149,7 @@
     gpii.qss.qssFocusManager.getFocusGroups = function (that, container) {
         var focusGroups = [],
             styles = that.options.styles,
-            qssButtons = container.find("." + styles.button + ":visible"),
+            qssButtons = that.model.focusableElements,
             currentFocusGroup = [];
 
         fluid.each(qssButtons, function (qssButton) {
@@ -220,7 +221,7 @@
             while (0 <= nextElementIndex && nextElementIndex < focusGroup.length) {
                 var elementToFocus = focusGroup[nextElementIndex];
                 if (that.isFocusable(elementToFocus)) {
-                    that.focusElement(elementToFocus, true);
+                    that.focusElement(elementToFocus);
                     break;
                 } else {
                     nextElementIndex += delta;
@@ -281,7 +282,7 @@
                 elementToFocus = nextFocusGroup[elementIndex];
 
             if (that.isFocusable(elementToFocus)) {
-                that.focusElement(elementToFocus, true);
+                that.focusElement(elementToFocus);
                 break;
             } else {
                 nextGroupIndex = gpii.psp.modulo(nextGroupIndex + delta, focusGroups.length);

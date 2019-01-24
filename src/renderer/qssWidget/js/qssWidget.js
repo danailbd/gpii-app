@@ -314,7 +314,8 @@
         if (activationParams.key) {
             // If the widget is show via the keyboard, focus the second focusable element, i.e. the
             // element that appears after the close button and the "learn more" link.
-            focusManager.focus(2, true);
+            // TODO
+            focusManager.updateFocusedElement(2, true);
         } else {
             // Otherwise there will be no focused element and any remaining highlight will be removed.
             focusManager.removeHighlight(true);

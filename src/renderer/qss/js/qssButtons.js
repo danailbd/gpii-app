@@ -287,6 +287,7 @@
      * of the button (e.g. which key was used to activate the button).
      */
     gpii.qss.buttonPresenter.onActivationKeyPressed = function (that, focusManager, container, activationParams) {
+        // TODO
         if (focusManager.isHighlighted(container)) {
             that.activate(activationParams);
         }

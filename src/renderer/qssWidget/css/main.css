@@ -62,6 +62,7 @@ body {
     outline: none;
 }
 
+/* TODO move to focusManager */
 .fl-qssWidget .fl-focused {
     outline: none !important;
 }
