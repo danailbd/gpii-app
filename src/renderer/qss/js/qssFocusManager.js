@@ -39,25 +39,6 @@
             smallButton: "fl-qss-smallButton"
         },
 
-        listeners: {
-            "onArrowUpPressed.impl": {
-                funcName: "gpii.qss.qssFocusManager.onArrowUpPressed",
-                args: ["{that}"]
-            },
-            "onArrowDownPressed.impl": {
-                funcName: "gpii.qss.qssFocusManager.onArrowDownPressed",
-                args: ["{that}"]
-            },
-            "onArrowLeftPressed.impl": {
-                funcName: "gpii.qss.qssFocusManager.onArrowLeftPressed",
-                args: ["{that}"]
-            },
-            "onArrowRightPressed.impl": {
-                funcName: "gpii.qss.qssFocusManager.onArrowRightPressed",
-                args: ["{that}"]
-            }
-        },
-
         invokers: {
             updateFocusableElements: {
                 funcName: "gpii.qss.qssFocusManager.getFocusInfo",
@@ -66,6 +47,34 @@
             getFocusGroupsInfo: {
                 funcName: "gpii.qss.qssFocusManager.getFocusGroupsInfo",
                 args: ["{that}", "{that}.container"]
+            },
+            focusNextHorizontally: {
+                funcName: "gpii.qss.qssFocusManager.focusElementHorizontally",
+                args: [
+                    "{that}",
+                    false
+                ]
+            },
+            focusPreviousHorizontally: {
+                funcName: "gpii.qss.qssFocusManager.focusElementHorizontally",
+                args: [
+                    "{that}",
+                    true
+                ]
+            },
+            focusNextVertically: {
+                funcName: "gpii.qss.qssFocusManager.focusNearestVertically",
+                args: [
+                    "{that}",
+                    false
+                ]
+            },
+            focusPreviousVertically: {
+                funcName: "gpii.qss.qssFocusManager.focusNearestVertically",
+                args: [
+                    "{that}",
+                    true
+                ]
             }
         }
     });
@@ -143,10 +152,9 @@
      * buttons. Grouping is performed by examining the buttons in the order in which they appear
      * in the DOM.
      * @param {Component} that - The `gpii.qss.qssFocusManager` instance.
-     * @param {jQuery} container - The jQuery element representing the container of the component.
      * @return {FocusGroup[]} An array of `FocusGroup`s which together contain all QSS buttons.
      */
-    gpii.qss.qssFocusManager.getFocusGroups = function (that, container) {
+    gpii.qss.qssFocusManager.getFocusGroups = function (that) {
         var focusGroups = [],
             styles = that.options.styles,
             qssButtons = that.model.focusableElements,
@@ -231,24 +239,6 @@
     };
 
     /**
-     * Focuses the first focusable button which comes before the currently focused button (if any)
-     * in the same focus group. If there is no focused group initially, this function does nothing.
-     * @param {Component} that - The `gpii.qss.qssFocusManager` instance.
-     */
-    gpii.qss.qssFocusManager.onArrowUpPressed = function (that) {
-        gpii.qss.qssFocusManager.focusNearestVertically(that, true);
-    };
-
-    /**
-     * Focuses the first focusable button which comes after the currently focused button (if any)
-     * in the same focus group. If there is no focused group initially, this function does nothing.
-     * @param {Component} that - The `gpii.qss.qssFocusManager` instance.
-     */
-    gpii.qss.qssFocusManager.onArrowDownPressed = function (that) {
-        gpii.qss.qssFocusManager.focusNearestVertically(that, false);
-    };
-
-    /**
      * Focuses the first available button which conforms to all of the following conditions:
      * 1. The button is focusable.
      * 2. The button is in the first focusable group which comes to the left or to the right
@@ -274,7 +264,7 @@
 
         /* Use a do-while because we are passing the group from which the examination should start,
          * i.e. no need to check the condition the first time. Useful for handling the case when
-         * there is no focus group initially (see usage in `gpii.qss.qssFocusManager.onArrowRightPressed`).
+         * there is no focus group initially (see usage in `gpii.qss.qssFocusManager.focusElementHorizontally`).
          */
         do {
             var nextFocusGroup = focusGroups[nextGroupIndex],
@@ -293,32 +283,6 @@
     /**
      * Focuses the first available button which conforms to all of the following conditions:
      * 1. The button is focusable.
-     * 2. The button is in a focus group which is visually to the left of the current focus group
-     * or the rightmost group if there is no focus group initially.
-     * If there is no such button in any of the groups to the left, the groups to the right of the
-     * current focus group are also examined starting from the farthest.
-     * 3. The button has the same index in its focus group as the index of the currently focused
-     * button in its group. If the new group has fewer buttons, its last button will be focused.
-     * @param {Component} that - The `gpii.qss.qssFocusManager` instance.
-     */
-    gpii.qss.qssFocusManager.onArrowLeftPressed = function (that) {
-        var focusGroupInfo = that.getFocusGroupsInfo(),
-            focusGroupIndex = focusGroupInfo.focusGroupIndex,
-            focusGroups = focusGroupInfo.focusGroups,
-            previousGroupIndex;
-
-        if (focusGroupIndex < 0) {
-            previousGroupIndex = focusGroups.length - 1;
-        } else {
-            previousGroupIndex = gpii.psp.modulo(focusGroupIndex - 1, focusGroups.length);
-        }
-
-        gpii.qss.qssFocusManager.focusNearestHorizontally(that, focusGroupInfo, previousGroupIndex, true);
-    };
-
-    /**
-     * Focuses the first available button which conforms to all of the following conditions:
-     * 1. The button is focusable.
      * 2. The button is in a focus group which is visually to the right of the current focus group
      * or the leftmost group if there is no focus group initially.
      * If there is no such button in any of the groups to the right, the groups to the left of the
@@ -327,18 +291,19 @@
      * button in its group. If the new group has fewer buttons, its last button will be focused.
      * @param {Component} that - The `gpii.qss.qssFocusManager` instance.
      */
-    gpii.qss.qssFocusManager.onArrowRightPressed = function (that) {
+    gpii.qss.qssFocusManager.focusElementHorizontally = function (that, backwards) {
         var focusGroupInfo = that.getFocusGroupsInfo(),
             focusGroupIndex = focusGroupInfo.focusGroupIndex,
             focusGroups = focusGroupInfo.focusGroups,
-            nextGroupIndex;
+            delta = backwards ? -1 : 1,
+            desiredGroupIndex;
 
         if (focusGroupIndex < 0) {
-            nextGroupIndex = 0;
+            desiredGroupIndex = backwards ? focusGroups.length - 1 : 0;
         } else {
-            nextGroupIndex = gpii.psp.modulo(focusGroupIndex + 1, focusGroups.length);
+            desiredGroupIndex = gpii.psp.modulo(focusGroupIndex + delta, focusGroups.length);
         }
 
-        gpii.qss.qssFocusManager.focusNearestHorizontally(that, focusGroupInfo, nextGroupIndex, false);
+        gpii.qss.qssFocusManager.focusNearestHorizontally(that, focusGroupInfo, desiredGroupIndex, backwards);
     };
 })(fluid, jQuery);

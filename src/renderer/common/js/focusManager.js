@@ -461,10 +461,10 @@
         },
         listeners: {
             // TODO update namespace
-            "onArrowUpPressed.impl": {
+            "onArrowUpPressed.handleArrowUp": {
                 func: "{that}.focusNextVertically"
             },
-            "onArrowDownPressed.impl": {
+            "onArrowDownPressed.handleArrowDown": {
                 func: "{that}.focusPreviousVertically"
             }
         },
@@ -499,12 +499,11 @@
             onArrowRightPressed: "{windowKeyListener}.events.onArrowRightPressed"
         },
         listeners: {
-            // TODO update namespace
-            "onArrowLeftPressed.impl": {
-                func: "{that}.focusNextHorizontally"
-            },
-            "onArrowRightPressed.impl": {
+            "onArrowLeftPressed.handleArrowLeft": {
                 func: "{that}.focusPreviousHorizontally"
+            },
+            "onArrowRightPressed.handleArrowLeft": {
+                func: "{that}.focusNextHorizontally"
             }
         },
         invokers: {
