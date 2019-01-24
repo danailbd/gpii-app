@@ -81,7 +81,8 @@
         events: {
             onTabPressed: "{windowKeyListener}.events.onTabPressed",
             onElementFocused: null, // TODO use modelListener
-            onFocusLost: null
+            onFocusLost: null,
+            onDomSubtreeUpdated: null
         },
         listeners: {
             // TODO are there other ways to update the dom (focusedItems) - setting gets updated?
@@ -96,9 +97,14 @@
                 func: "{that}.updateFocusableElements"
             },
 
+            "onDomSubtreeUpdated.updateFocusableElements": {
+                func: "{that}.updateFocusableElements"
+            },
+
             "onTabPressed.impl": {
                 func: "{that}.onTabPressed"
             },
+
             "onCreate.overrideDomInteractionHandlers": {
                 funcName: "gpii.qss.focusManager.overrideDomInteractionHandlers",
                 args: ["{that}"]
@@ -198,7 +204,7 @@
      */
     gpii.qss.focusManager.observeDomChanges = function (that) {
         // TODO check whether the callback is triggered with init
-        that.mutationObserver = new MutationObserver(that.updateFocusableElements);
+        that.mutationObserver = new MutationObserver(that.events.onDomSubtreeUpdated.fire);
 
         // Start observing the target node for configured mutations
         that.mutationObserver.observe(that.container[0], {

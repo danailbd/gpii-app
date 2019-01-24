@@ -28,8 +28,12 @@
         gradeNames: ["gpii.qss.horizontalFocusManager", "gpii.qss.verticalFocusManager"],
 
         model: {
-            focusGroups: [],
-            focusGroupIndex: null
+            // TODO doc
+            focusGroupsInfo: {
+                focusGroups: [],
+                focusGroupIndex: -1,
+                focusIndex: -1
+            }
         },
 
         maxElementsPerFocusGroup: 2,
@@ -40,18 +44,32 @@
         },
 
         // TODO
-        // listeners: {
-        //     "onTreeUpdated.updateGroups": {
-        //         funcName: "",
-        //         args: ["{that}"]
-        //     }
-        // },
+        listeners: {
+            "onDomSubtreeUpdated.updateFocusGroups": {
+                func: "{that}.updateFocusGroupInfo"
+            },
+            "onCreate.initFocusGroups": {
+                func: "{that}.updateFocusGroupInfo"
+            }
+        },
+
+        modelListeners: {
+            "focusedElementData": {
+                funcName: "gpii.qss.qssFocusManager.updateGroupFocusIndex",
+                args: [
+                    "{that}",
+                    "{change}.value"
+                ],
+                excludeSource: "init"
+            }
+        },
 
         invokers: {
-            getFocusGroupsInfo: {
-                funcName: "gpii.qss.qssFocusManager.getFocusGroupsInfo",
+            updateFocusGroupInfo: {
+                funcName: "gpii.qss.qssFocusManager.updateFocusGroupInfo",
                 args: ["{that}", "{that}.container"]
             },
+
             focusNextHorizontally: {
                 funcName: "gpii.qss.qssFocusManager.focusElementHorizontally",
                 args: [
@@ -155,28 +173,44 @@
     };
 
     /**
-     * Retrieves information about the focusable elements in the QSS.
+     * Generates necessary metadata to support navigation with arrow keys in groups.
      * @param {Component} that - The `gpii.qss.qssFocusManager` instance.
      * @param {jQuery} container - The jQuery element representing the container of the component.
-     * @return {FocusGroupsInfo} - A `FocusGroupsInfo` object with the requested information.
      */
-    gpii.qss.qssFocusManager.getFocusGroupsInfo = function (that, container) {
-        var focusGroups = gpii.qss.qssFocusManager.getFocusGroups(that, container),
-            focusedElement = container.find("." + that.options.styles.focused)[0];
+    gpii.qss.qssFocusManager.updateFocusGroupInfo = function (that, container) {
+        var focusGroups = gpii.qss.qssFocusManager.getFocusGroups(that, container);
 
+        that.applier.change(
+            "focusGroupsInfo", {
+                focusGroups: focusGroups
+            }
+        );
+    };
+
+ 
+    /**
+     * TODO
+     * This is related to the base `focusedElementData` and it is updated dependent on it.
+     * @param that
+     * @param focusedElementData
+     * @returns {undefined}
+     */
+    gpii.qss.qssFocusManager.updateGroupFocusIndex = function (that, focusedElementData) {
+        // find group index & index
         var focusIndex = -1,
-            focusGroupIndex = fluid.find(focusGroups, function (focusGroup, index) {
-                focusIndex = jQuery.inArray(focusedElement, focusGroup);
+            focusGroupIndex = fluid.find(that.model.focusGroupsInfo.focusGroups, function (focusGroup, index) {
+                focusIndex = jQuery.inArray(focusedElementData.element, focusGroup);
                 if (focusIndex > -1) {
                     return index;
                 }
             }, -1);
 
-        return {
-            focusGroups: focusGroups,
-            focusGroupIndex: focusGroupIndex,
-            focusIndex: focusIndex
-        };
+        that.applier.change(
+            "focusGroupsInfo", {
+                focusGroupIndex: focusGroupIndex,
+                focusIndex: focusIndex
+            }
+        );
     };
 
     /**
@@ -190,12 +224,12 @@
      * Otherwise, it will be from top to bottom.
      */
     gpii.qss.qssFocusManager.focusNearestVertically = function (that, backwards) {
-        var focusGroupInfo = that.getFocusGroupsInfo(),
-            focusGroups = focusGroupInfo.focusGroups,
-            focusGroupIndex = focusGroupInfo.focusGroupIndex,
+        var focusGroupsInfo = that.model.focusGroupsInfo,
+            focusGroups = focusGroupsInfo.focusGroups,
+            focusGroupIndex = focusGroupsInfo.focusGroupIndex,
             focusGroup = focusGroups[focusGroupIndex],
             delta = backwards ? 1 : -1,
-            nextElementIndex = focusGroupInfo.focusIndex + delta;
+            nextElementIndex = focusGroupsInfo.focusIndex + delta;
 
         if (focusGroupIndex > -1) {
             while (0 <= nextElementIndex && nextElementIndex < focusGroup.length) {
@@ -221,16 +255,16 @@
      * 3. The button has the same index in its focus group as the index of the currently focused
      * button in its group. If the new group has fewer buttons, its last button will be focused.
      * @param {Component} that - The `gpii.qss.qssFocusManager` instance.
-     * @param {FocusGroupsInfo} focusGroupInfo - An object holding information about the focusable
+     * @param {FocusGroupsInfo} focusGroupsInfo - An object holding information about the focusable
      * elements in the QSS.
      * @param {Number} initialGroupIndex - the index of the focus group from which the examination
      * should commence
      * @param {Boolean} backwards - If `true` the scanning direction will be from right to left
      * Otherwise, it will be from left to right.
      */
-    gpii.qss.qssFocusManager.focusNearestHorizontally = function (that, focusGroupInfo, initialGroupIndex, backwards) {
-        var focusGroups = focusGroupInfo.focusGroups,
-            focusIndex = focusGroupInfo.focusIndex,
+    gpii.qss.qssFocusManager.focusNearestHorizontally = function (that, focusGroupsInfo, initialGroupIndex, backwards) {
+        var focusGroups = focusGroupsInfo.focusGroups,
+            focusIndex = focusGroupsInfo.focusIndex,
             delta = backwards ? -1 : 1,
             nextGroupIndex = initialGroupIndex;
 
@@ -264,9 +298,9 @@
      * @param {Component} that - The `gpii.qss.qssFocusManager` instance.
      */
     gpii.qss.qssFocusManager.focusElementHorizontally = function (that, backwards) {
-        var focusGroupInfo = that.getFocusGroupsInfo(),
-            focusGroupIndex = focusGroupInfo.focusGroupIndex,
-            focusGroups = focusGroupInfo.focusGroups,
+        var focusGroupsInfo = that.model.focusGroupsInfo,
+            focusGroupIndex = focusGroupsInfo.focusGroupIndex,
+            focusGroups = focusGroupsInfo.focusGroups,
             delta = backwards ? -1 : 1,
             desiredGroupIndex;
 
@@ -276,6 +310,6 @@
             desiredGroupIndex = gpii.psp.modulo(focusGroupIndex + delta, focusGroups.length);
         }
 
-        gpii.qss.qssFocusManager.focusNearestHorizontally(that, focusGroupInfo, desiredGroupIndex, backwards);
+        gpii.qss.qssFocusManager.focusNearestHorizontally(that, focusGroupsInfo, desiredGroupIndex, backwards);
     };
 })(fluid, jQuery);
