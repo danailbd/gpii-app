@@ -140,7 +140,6 @@
                 funcName: "gpii.qss.buttonPresenter.notifyButtonFocused",
                 args: [
                     "{that}",
-                    "{focusManager}",
                     "{that}.container",
                     "{arguments}.0" // focusedElement
                 ]
@@ -278,8 +277,8 @@
     /**
      * Invoked when a button is activated using the Spacebar or Enter key. Some QSS buttons
      * can also be activated using ArrowUp or ArrowDown keys in which case this function is
-     * also invoked. Only if the QSS button has a keyboard highlight will it be actually
-     * activated.
+     * also invoked. Separate key listeners are attached to the different buttons.
+     * Additionally, it is expected that if a button is activated it would also be focused.
      * @param {Component} that - The `gpii.qss.buttonPresenter` instance.
      * @param {focusManager} focusManager - The `gpii.qss.focusManager` instance for the QSS.
      * @param {jQuery} container - A jQuery object representing the button's container.
@@ -287,10 +286,9 @@
      * of the button (e.g. which key was used to activate the button).
      */
     gpii.qss.buttonPresenter.onActivationKeyPressed = function (that, focusManager, container, activationParams) {
-        // TODO
-        if (focusManager.isHighlighted(container)) {
-            that.activate(activationParams);
-        }
+        // XXX DEV
+        console.log("Activate key press");
+        that.activate(activationParams);
     };
 
     /**
@@ -320,7 +318,7 @@
             isKeyPressed = fluid.get(activationParams, "key"),
             applyKeyboardHighlight = that.options.applyKeyboardHighlight;
 
-        focusManager.focusElement(container, isKeyPressed && applyKeyboardHighlight);
+        focusManager.focusElement(container, !isKeyPressed || !applyKeyboardHighlight);
         qssList.events.onButtonActivated.fire(that.model.item, metrics, activationParams);
     };
 
@@ -340,14 +338,16 @@
      * Fires the appropriate event if the `container` for the current button is the element
      * that has been focused by the `focusManager`.
      * @param {Component} that - The `gpii.qss.buttonPresenter` instance.
-     * @param {focusManager} focusManager - The `gpii.qss.focusManager` instance for the QSS.
+     * @param {jQuery} container - A jQuery object representing the button's container.
      * @param {jQuery} container - A jQuery object representing the button's container.
      */
-    gpii.qss.buttonPresenter.notifyButtonFocused = function (that, focusManager, container) {
-        if (focusManager.isHighlighted(container)) {
+    gpii.qss.buttonPresenter.notifyButtonFocused = function (that, buttonContainer, focusedContainer) {
+        // TODO
+        console.log("Button focus");
+        if (buttonContainer[0] === focusedContainer) {
             that.events.onButtonFocused.fire(
                 that.model.item,
-                gpii.qss.buttonPresenter.getElementMetrics(container));
+                gpii.qss.buttonPresenter.getElementMetrics(buttonContainer));
         }
     };
 
@@ -365,7 +365,8 @@
      */
     gpii.qss.buttonPresenter.focusButton = function (that, focusManager, container, index, applyHighlight, silentFocus) {
         if (that.model.index === index) {
-            focusManager.focusElement(container, applyHighlight, silentFocus);
+            // TODO
+            focusManager.focusElement(container, !applyHighlight || silentFocus);
         }
     };
 

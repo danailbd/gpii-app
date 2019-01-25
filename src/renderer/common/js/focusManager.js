@@ -151,13 +151,6 @@
                     "{arguments}.0" // clearFocus
                 ]
             },
-            isHighlighted: {
-                funcName: "gpii.qss.focusManager.isHighlighted",
-                args: [
-                    "{that}",
-                    "{arguments}.0" // element
-                ]
-            },
             isFocusable: {
                 funcName: "gpii.qss.focusManager.isFocusable",
                 args: [
@@ -244,15 +237,19 @@
 
     gpii.qss.focusManager.handleFocusedElementChange = function (that, newFocusedElementData, oldFocusedElementData) {
         // we'd always want to clear the previous focused element
-        if (oldFocusedElementData.element || !newFocusedElementData.isHighlighted) {
+        var isChangeInElement = oldFocusedElementData.element !== newFocusedElementData.element,
+            isChangeInHighlight = !newFocusedElementData.isHighlighted &&
+                oldFocusedElementData.isHighlighted !== newFocusedElementData.isHighlighted;
+
+        // we want to avoid index change notifications
+        if (oldFocusedElementData.element && (isChangeInElement || isChangeInHighlight)) {
             that.clearFocus(oldFocusedElementData.element);
+            // the previous element has lost focus...
+            that.events.onFocusLost.fire();
         }
 
-        if (!newFocusedElementData.element) {
-            that.events.onFocusLost.fire();
-        } else if (newFocusedElementData.isHighlighted) {
+        if (newFocusedElementData.element && newFocusedElementData.isHighlighted) {
             that.applyFocus(newFocusedElementData.element);
-
             // TODO
             // Notify with full element data (this is useful for positioning the tooltip)
             that.events.onElementFocused.fire(newFocusedElementData.element);
@@ -347,9 +344,18 @@
     };
 
     // TODO rename isSilent
+
+    /**
+     * 
+     * @param that
+     * @param {HTML} element TODO
+     * @param isSilent
+     * @returns {undefined}
+     */
     gpii.qss.focusManager.focusElement = function (that, element, isSilent) {
+        element = jQuery(element); // ensure we're working with a jQuery element
         var focusableElementIdx = that.model.focusableElements.findIndex(function (focusableElement) {
-            return focusableElement === element;
+            return focusableElement === element[0];
         });
 
         if (focusableElementIdx >= 0) {
@@ -430,21 +436,6 @@
     };
 
     /**
-     * Returns whether the given element has a keyboard navigation highlight.
-     * @param {Component} that - The `gpii.qss.focusManager` instance.
-     * @param {jQuery} element - A jQuery object representing the element to be checked.
-     * @return {Boolean} `true` if the element has a keyboard navigation highlight and `false`
-     * otherwise.
-     */
-    // TODO rework or get rid of
-    gpii.qss.focusManager.isHighlighted = function (that, element) {
-        var styles = that.options.styles;
-        return element.hasClass(styles.focusable) &&
-                element.hasClass(styles.focused) &&
-                element.hasClass(styles.highlighted);
-    };
-
-    /**
      * An instance of a focus manager which enables focusing of elements both by using the Tab /
      * Shift + Tab keys and by using the Arrow Up and Arrow Down keys. Note that the keyboard
      * navigation highlight will be applied in this case.
@@ -479,7 +470,7 @@
                 func: "{that}.focusNext"
             },
             focusPreviousVertically: {
-                func: "{that}.focuPrevious"
+                func: "{that}.focusPrevious"
             }
         }
     });

@@ -187,7 +187,7 @@
         );
     };
 
- 
+
     /**
      * TODO
      * This is related to the base `focusedElementData` and it is updated dependent on it.
