@@ -19,6 +19,7 @@
     var gpii = fluid.registerNamespace("gpii");
 
     /**
+     * TODO
      * A component responsible for managing focus within a container. All elements in the
      * container that can gain focus must have the class "fl-focusable". The currently
      * focused element (can be only one at any given time) will have the "fl-focused" class which
@@ -37,7 +38,7 @@
             focusableElements: [],
             // TODO default focus - 2 ?
             focusedElementData: {
-                index: -1, // TODO use default
+                index: -1,
                 element: null,
                 isHighlighted: true
             }
@@ -459,10 +460,10 @@
         listeners: {
             // TODO update namespace
             "onArrowUpPressed.handleArrowUp": {
-                func: "{that}.focusNextVertically"
+                func: "{that}.focusPreviousVertically"
             },
             "onArrowDownPressed.handleArrowDown": {
-                func: "{that}.focusPreviousVertically"
+                func: "{that}.focusNextVertically"
             }
         },
         invokers: {
@@ -499,7 +500,7 @@
             "onArrowLeftPressed.handleArrowLeft": {
                 func: "{that}.focusPreviousHorizontally"
             },
-            "onArrowRightPressed.handleArrowLeft": {
+            "onArrowRightPressed.handleArrowRight": {
                 func: "{that}.focusNextHorizontally"
             }
         },

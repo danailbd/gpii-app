@@ -88,14 +88,14 @@
                 funcName: "gpii.qss.qssFocusManager.focusNearestVertically",
                 args: [
                     "{that}",
-                    false
+                    true
                 ]
             },
             focusPreviousVertically: {
                 funcName: "gpii.qss.qssFocusManager.focusNearestVertically",
                 args: [
                     "{that}",
-                    true
+                    false
                 ]
             }
         }

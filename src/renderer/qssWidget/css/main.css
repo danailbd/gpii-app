@@ -62,12 +62,8 @@ body {
     outline: none;
 }
 
-/* TODO move to focusManager */
-.fl-qssWidget .fl-focused {
+.fl-focusable.fl-focused {
     outline: none !important;
-}
-
-.fl-qssWidget .fl-highlighted {
     border: 1px solid #ff0000 !important;
 }
 

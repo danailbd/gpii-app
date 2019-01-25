@@ -396,6 +396,8 @@ gpii.app.qssWrapper.saveSettings = function (that, pspChannel, qssNotification, 
  * @param {Object} setting - the setting for the newly focused QSS button.
  */
 gpii.app.qss.hideQssMenus = function (that, qssWidget, setting) {
+    // XXX DEV
+    console.log("Hide menus", setting);
     if (setting.path !== qssWidget.model.setting.path) {
         qssWidget.hide();
     }
@@ -871,22 +873,21 @@ fluid.defaults("gpii.app.qssInWrapper", {
                 "qss"
             ]
         },
-        "{channelListener}.events.onQssButtonFocused": {
+        "{channelListener}.events.onQssButtonActivated": [{
             funcName: "gpii.app.qss.hideQssMenus",
             args: [
                 "{that}",
                 "{qssWidget}",
                 "{arguments}.0" // setting
             ]
-        },
-        "{channelListener}.events.onQssButtonActivated": {
+        }, {
             func: "{qssWidget}.toggle",
             args: [
                 "{arguments}.0", // setting
                 "@expand:gpii.app.qssWrapper.getButtonPosition({gpii.app.qss}, {arguments}.1)",  // btnCenterOffset
                 "{arguments}.2"  // activationParams
             ]
-        },
+        }],
         "{channelListener}.events.onQssNotificationRequired": {
             func: "{qssNotification}.show",
             args: [{

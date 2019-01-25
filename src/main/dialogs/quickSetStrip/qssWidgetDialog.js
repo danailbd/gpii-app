@@ -183,8 +183,11 @@ gpii.app.qssWidget.toggle = function (that, setting, btnCenterOffset, activation
     }
 
     if (that.options.supportedSettings.includes(setting.schema.type)) {
+        // XXX DEV
+        console.log("Show", btnCenterOffset);
         that.show(setting, btnCenterOffset, activationParams);
     } else {
+        console.log("hiding");
         that.hide();
     }
 };

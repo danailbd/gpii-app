@@ -113,8 +113,12 @@ body {
     filter: brightness(95%);
 }
 
-.fl-qss-button.fl-focused {
+.fl-qss-button:focus {
     outline: none !important;
+}
+
+.fl-focusable.fl-focused {
+    outline: none;
     border: 2px solid #ff0000;
 }
 
