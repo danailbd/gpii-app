@@ -874,7 +874,7 @@ fluid.defaults("gpii.app.qssInWrapper", {
             ]
         },
         "{channelListener}.events.onQssButtonActivated": [{
-            funcName: "gpii.app.qss.hideQssMenus",
+            funcName: "gpii.app.qss.hideQssMenus", // ensure the menus are in proper state
             args: [
                 "{that}",
                 "{qssWidget}",

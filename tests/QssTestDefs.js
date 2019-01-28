@@ -149,7 +149,7 @@ gpii.tests.qss.assertFocusedElementIndex = function (expectedIndex) {
 };
 
 gpii.tests.qss.clearFocusedElement = function () {
-    jQuery(".fl-qss-button").removeClass("fl-focused fl-highlighted");
+    jQuery(".fl-qss-button").removeClass("fl-focused");
 };
 
 var qssSettingsCount = 11;
@@ -183,6 +183,7 @@ var navigationSequence = [
     gpii.tests.qss.assertFocusedElementIndex(qssSettingsCount - 3),
     // Manually clear the focused state in order to test the Arrow Left behavior when
     // there is no focused element.
+    // TODO close and open
     {
         task: "gpii.test.invokeFunctionInWebContentsDelayed",
         args: [
