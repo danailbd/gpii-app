@@ -106,7 +106,8 @@
             "gpii.psp.messageBundles",
             "fluid.viewComponent",
             "gpii.psp.linksInterceptor",
-            "gpii.psp.baseWindowCmp.signalDialogReady"
+            "gpii.psp.baseWindowCmp.signalDialogReady",
+            "gpii.psp.baseWindowCmp.zoomOpPropagator"
         ],
 
         components: {

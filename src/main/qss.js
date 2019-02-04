@@ -32,7 +32,7 @@ require("./common/undoStack.js");
  * from a local configuration file.
  */
 fluid.defaults("gpii.app.qssWrapper", {
-    gradeNames: "fluid.modelComponent",
+    gradeNames: ["fluid.modelComponent", "gpii.app.dialog.zoomRedirect"],
 
 
     /*

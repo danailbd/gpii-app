@@ -16,7 +16,8 @@
 "use strict";
 (function (fluid) {
     var electron = require("electron"),
-        windowInitialParams = electron.remote.getCurrentWindow().params;
+        windowInitialParams = electron.remote.getCurrentWindow().params,
+        gpii = fluid.registerNamespace("gpii");
 
     // Make the object just a simple data container (get rid of additional
     // methods and prototypes). In case this is omitted, the merging of
@@ -31,7 +32,8 @@
             "gpii.psp.messageBundles",
             "fluid.viewComponent",
             "gpii.psp.linksInterceptor",
-            "gpii.psp.baseWindowCmp.signalDialogReady"
+            "gpii.psp.baseWindowCmp.signalDialogReady",
+            "gpii.psp.baseWindowCmp.zoomOpPropagator"
         ],
 
         baseGrade: null, // to be overridden
@@ -46,6 +48,61 @@
             }
         }
     });
+
+    fluid.defaults("gpii.psp.baseWindowCmp.zoomOpPropagator", {
+        invokers: {
+            notify: {
+                funcName: "gpii.psp.baseWindowCmp.notifyZoomOperation",
+                args: [
+                    "{zoomChannelNotifier}",
+                    "{arguments}.0", // isZoomIn?
+                    "{arguments}.1"  // keyEvent
+                ]
+            }
+        },
+
+        components: {
+            zoomKeysListener: {
+                type: "fluid.component",
+                options: {
+                    gradeNames: "gpii.app.keyListener",
+                    target: { expander: { funcName: "jQuery", args: [window] } },
+
+                    keyEventNamespace: "zoomInterceptor",
+
+                    events: {
+                        onAddPressed: null,
+                        onSubtractPressed: null,
+                        onEqualsPressed: null
+                    },
+                    listeners: {
+                        onAddPressed:      "{zoomOpPropagator}.notify(true, {arguments}.0)",
+                        onEqualsPressed:   "{zoomOpPropagator}.notify(true, {arguments}.0)",
+                        onSubtractPressed: "{zoomOpPropagator}.notify(false, {arguments}.0)"
+                    }
+                }
+            },
+            zoomChannelNotifier: {
+                type: "gpii.psp.channelNotifier",
+                options: {
+                    events: {
+                        onZoomInOccurred: null,
+                        onZoomOutOccurred: null
+                    }
+                }
+            }
+        }
+    });
+
+    gpii.psp.baseWindowCmp.notifyZoomOperation = function (zoomChannelNotifier, isZoomIn, keyEvent) {
+        if (keyEvent.ctrlKey) {
+            if (isZoomIn) {
+                zoomChannelNotifier.events.onZoomInOccurred.fire();
+            } else {
+                zoomChannelNotifier.events.onZoomOutOccurred.fire();
+            }
+        }
+    };
 
     /**
      * Notify the corresponding dialog wrapper component in main,

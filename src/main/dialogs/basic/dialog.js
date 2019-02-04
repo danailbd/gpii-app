@@ -701,3 +701,35 @@ fluid.defaults("gpii.app.channelNotifier", {
     // TODO improve `i18n.channel` to use event instead of a direct notifying
     ipcTarget: "{dialog}.dialog.webContents" // get the closest dialog
 });
+
+fluid.defaults("gpii.app.dialog.zoomRedirect", {
+    components: {
+        zoomChannelListener: {
+            type: "gpii.app.channelListener",
+            options: {
+                events: {
+                    onZoomInOccurred: null,
+                    onZoomOutOccurred: null
+                },
+                listeners: {
+                    "onZoomOutOccurred.log": { // XXX dev
+                        funcName: "console.log",
+                        args: ["Zooooming out!"]
+                    },
+                    "onZoomInOccurred.log": { // XXX dev
+                        funcName: "console.log",
+                        args: ["Zooooming in!"]
+                    },
+                    "onZoomInOccurred.handleZoomIn": {
+                        func: "{appZoomHandler}.sendZoom",
+                        args: "increase"
+                    },
+                    "onZoomOutOccurred.handleZoomOut": {
+                        func: "{appZoomHandler}.sendZoom",
+                        args: "decrease"
+                    }
+                }
+            }
+        }
+    }
+});

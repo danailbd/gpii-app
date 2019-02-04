@@ -78,6 +78,8 @@
 
         events: {}, // given by implementor
 
+        keyEventNamespace: "keyListener",
+
         target: null,
 
         // Some keys lack descriptive names so we attach such to them
@@ -115,7 +117,7 @@
     gpii.app.keyListener.registerListener = function (that) {
         var target = that.options.target || that.container;
 
-        target.on("keyup", that.registerKeyPress);
+        target.on("keyup." + that.options.keyEventNamespace, that.registerKeyPress);
     };
 
     /**
@@ -126,7 +128,7 @@
     gpii.app.keyListener.deregisterListener = function (that) {
         var target = that.options.target || that.container;
 
-        target.off("keyup", that.registerKeyPress);
+        target.off("keyup." + that.options.keyEventNamespace, that.registerKeyPress);
     };
 
     /**
