@@ -187,13 +187,17 @@ fluid.defaults("gpii.app.qss", {
     }
 });
 
-
+/**
+ * Represents a group of setting data from which we using only the buttonTypes array
+ * @typedef {Object} ButtonList
+ * @property {Array} [buttonTypes] Array from diffent button types
+ */
 
 /**
  * Computes the total width of all of the QSS buttons, based on their sizes inside
  * the BrowserWindow.
- * @param {Object[]} options - Object containing information for buttons
- * @param {Object[]} buttons - The list of QSS buttons
+ * @param {Component} options - Object containing information for buttons
+ * @param {ButtonList[]} buttons - The list of QSS buttons
  * @param {Number} - modelScaleFactor - Predefined scale factor setting in siteconfig
  * @return {Number} - The total scaled size of the QSS's buttons
  */
