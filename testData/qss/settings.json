@@ -1,36 +1,5 @@
 [
     {
-        "path": "mouse",
-        "schema": {
-            "type": "mouse",
-            "title": "Mouse button"
-        },
-        "settings": {
-            "mouseSpeed": {
-                "path": "http://registry\\.gpii\\.net/common/DPIScale",
-                "schema": {
-                    "type": "number",
-                    "title": "Mouse speed",
-                    "default": 0,
-                    "min": 0,
-                    "max": 11
-                },
-                "value": 0
-            },
-            "swapMouseButtons": {
-                "path": "http://registry\\.gpii\\.net/common/selfVoicing/enabled",
-                "schema": {
-                    "type": "boolean",
-                    "title": "Swap mouse buttons"
-                },
-                "value": false
-            }
-        },
-        "buttonTypes": ["largeButton", "settingButton"],
-        "tabindex": 0,
-        "messageKey": null,
-        "tooltip": "<p>Mouse Button</p>"
-    }, {
         "path": "http://registry\\.gpii\\.net/common/language",
         "schema": {
             "type": "string",
